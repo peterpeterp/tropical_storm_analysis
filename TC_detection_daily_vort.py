@@ -19,12 +19,12 @@ os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
 
 
 class tc_tracks(object):
-    def __init__(self,wind,mslp,sst,dates,year,tc_sel,working_dir):
+    def __init__(self,wind,mslp,sst,vort,dates,year,tc_sel,working_dir):
         self.year=year
         self.working_dir=working_dir
         # input fields
         self.wind=wind
-        #self.vort=vort
+        self.vort=vort
         self.mslp=mslp
         self.sst=sst
         self.time=wind.time
@@ -63,10 +63,16 @@ class tc_tracks(object):
     def save_track(self,tk,t_i,i_f,i_b,y_ini,x_ini,plot):
         pos_ar=np.array([tk['time'],tk['lat'],tk['lon']]).T
         #if True:
-        if i_f+i_b>10 and len(unique(self.all_pos.tolist()+pos_ar.tolist()))-self.all_pos.shape[0]>3:
+        if i_f+i_b>1 and len(unique(self.all_pos.tolist()+pos_ar.tolist()))-self.all_pos.shape[0]>3:
             self.tcs[str(self.id_)]=da.DimArray(pos_ar,axes=[tk['time'],['time','lat','lon']],dims=['time','pos'])
             self.all_pos=np.concatenate((self.all_pos,pos_ar))
             if plot:    self.plot_track(tk,t_i,i_f,i_b,y_ini,x_ini)
+            print '--------',t_i
+            print np.max(self.wind[self.time[t_i],y_ini+3:y_ini-3,x_ini-3:x_ini+3])
+            print np.min(self.mslp[self.time[t_i],y_ini+3:y_ini-3,x_ini-3:x_ini+3])
+            y,x=local_extrem(self.mslp[self.time[t_i],:,:],'min',threshold=101000)
+            print y_ini,self.lat[y]
+            print x_ini,self.lon[x]
             self.id_+=1
         else:
             pass
@@ -80,8 +86,12 @@ class tc_tracks(object):
         tmp.append(self.m.plot([x_ini],[y_ini],'*m'))
         self.ax.set_title(str(dates[t_i]))
 
-
-        storms=[np.where(self.tc_time==zz)[0][0] for zz in self.yr_frac[max(0,t_i-i_b-5):min(t_i+i_f+5,len(self.yr_frac)-1)] if zz in self.tc_time]
+        obs_tc=[]
+        for zz in self.yr_frac[max(0,t_i-i_b-5):min(t_i+i_f+5,len(self.yr_frac)-1)]:
+            obs_tc+=list(np.where(abs(self.tc_time-zz)<0.002)[0])
+        storms=set(obs_tc)
+        print storms
+        #storms=[np.where(self.tc_time==zz)[0][0] for zz in self.yr_frac[max(0,t_i-i_b-5):min(t_i+i_f+5,len(self.yr_frac)-1)] if zz in self.tc_time]
         for storm in set(storms):
             tmp+=tc_plot(self.m,self.tc_lon[storm,:],self.tc_lat[storm,:],self.tc_intens[storm,:,0])
             last_pos=np.where(np.isfinite(self.tc_lon[storm,:]))[0][-1]
@@ -115,8 +125,8 @@ class tc_tracks(object):
         for tt in self.time[t_i+1:]:
             y_0,x_0=tk['lat'][-1],tk['lon'][-1]
             if y_0<self.lat[4] and y_0>self.lat[-4] and x_0<self.lon[-4] and x_0>self.lon[4]:
-                y_1,x_1=np.argmin(self.mslp[tt,y_0+2.5:y_0-2.5,x_0-2.5:x_0+2.5])
-                if np.nanmax(self.wind[tt,y_1+2.5:y_1-2.5,x_1-2.5:x_1+2.5])>10:
+                y_1,x_1=np.argmin(self.mslp[tt,y_0+3:y_0-3,x_0-3:x_0+3])
+                if np.nanmax(self.wind[tt,y_1+3:y_1-3,x_1-3:x_1+3])>9:
                     tk['lat']+=[y_1]
                     tk['lon']+=[x_1]
                     tk['time']+=[tt]
@@ -131,8 +141,8 @@ class tc_tracks(object):
         for tt in self.time[t_i-1::-1]:
             y_0,x_0=tk['lat'][0],tk['lon'][0]
             if y_0<self.lat[4] and y_0>self.lat[-4] and x_0<self.lon[-4] and x_0>self.lon[4]:
-                y_1,x_1=np.argmin(self.mslp[tt,y_0+2.5:y_0-2.5,x_0-2.5:x_0+2.5])
-                if np.nanmax(self.wind[tt,y_1+2.5:y_1-2.5,x_1-2.5:x_1+2.5])>8:
+                y_1,x_1=np.argmin(self.mslp[tt,y_0+4:y_0-4,x_0-4:x_0+4])
+                if np.nanmax(self.wind[tt,y_1+4:y_1-4,x_1-4:x_1+4])>9:
                     tk['lat']=[y_1]+tk['lat']
                     tk['lon']=[x_1]+tk['lon']
                     tk['time']=[tt]+tk['time']
@@ -152,12 +162,12 @@ class tc_tracks(object):
         # go through time
         for t,t_i in zip(detection_window,range(len(detection_window))):
             # detect strong wind
-            y,x=local_extrem(self.wind[t,:,:],'max',threshold=wind_thresh)
+            y,x=local_extrem(self.vort[t,85000,:,:],'max',threshold=2.5*10**(-5))
             for y_,x_ in zip(self.lat[y],self.lon[x]):
                 # find the eye of the cyclone
                 y_c,x_c=np.argmin(self.mslp[t,y_+2.5:y_-2.5,x_-2.5:x_+2.5])
                 # check if over warm water (or some other conditions)
-                if self.sst[t,y_c,x_c]>sst_thresh:
+                if self.sst[t,y_c,x_c]>sst_thresh and np.isfinite(self.sst[t,y_c,x_c]) and np.max(self.wind[t,y_+3:y_-3,x_-3:x_+3])>9:
                     # check if TC already detected
                     if [t,y_c,x_c] not in self.all_pos.tolist():
                         # complete the track of the cyclone
@@ -168,23 +178,24 @@ class tc_tracks(object):
 # TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
 
 found_tracks={}
-for year in [2008]:
+for year in [2008,2016]:
     start = time.time()
     # read ERA interim
-    wind_nc=da.read_nc('data/ERA_6hourly/atl_10mWind_'+str(year)+'.nc')
+    vort=da.read_nc('data/ERA_daily/atl_atmos_'+str(year)+'.nc')['VO']
+    wind_nc=da.read_nc('data/ERA_daily/atl_10mWind_'+str(year)+'.nc')
     wind=wind_nc['ws']
-    mslp=da.read_nc('data/ERA_6hourly/atl_MSL_'+str(year)+'.nc')['MSL']
-    sst=da.read_nc('data/ERA_6hourly/atl_interim_ocean_'+str(year)+'.nc')['SSTK']-273.15
+    mslp=da.read_nc('data/ERA_daily/atl_MSL_'+str(year)+'.nc')['MSL']
+    sst=da.read_nc('data/ERA_daily/atl_interim_ocean_'+str(year)+'.nc')['SSTK']-273.15
     dates=[num2date(t,units = wind_nc.axes['time'].units,calendar = wind_nc.axes['time'].calendar) for t in wind.time]
 
     tc_sel=TC.ix[np.where((TC['season']==year) & (TC['basin'][:,0]==0))[0]]
     elapsed = time.time() - start
     print('Elapsed %.3f seconds.' % elapsed)
 
-    working_dir='plots/detected/6hour'+str(year)+'/'
+    working_dir='plots/detected/'+str(year)+'_vort/'
     os.system('mkdir '+working_dir)
-    found_tracks[year]=tc_tracks(wind,mslp,sst,dates,year,tc_sel,working_dir=working_dir)
-    found_tracks[year].detect_TC(wind_thresh=15,sst_thresh=26,plot=True)
+    found_tracks[year]=tc_tracks(wind,mslp,sst,vort,dates,year,tc_sel,working_dir=working_dir)
+    found_tracks[year].detect_TC(wind_thresh=9,sst_thresh=24,plot=True)
     found_tracks[year].plot_season()
     elapsed = time.time() - start
     print('Elapsed %.3f seconds.' % elapsed)
