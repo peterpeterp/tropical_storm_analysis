@@ -236,8 +236,9 @@ class tc_tracks(object):
                                 self.detected.append((t,self.lat[y],self.lon[x]))
 
 
-        '''implement temperature condition!!!!'''
-
+        '''implement temperature condition!!!!
+        asdasd
+        '''
 
 # # read ibtracks
 # TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
