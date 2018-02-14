@@ -351,10 +351,10 @@ class tc_tracks(object):
 
 
 # # read ibtracks
-# TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
+TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
 
 found_tracks={}
-for year in range(2016,2018):
+for year in range(2000,2018):
     start = time.time()
     # read ERA interim
     wind_nc=da.read_nc('data/ERA_6hourly/atl_10mWind_'+str(year)+'.nc')
