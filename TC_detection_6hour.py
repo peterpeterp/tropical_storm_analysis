@@ -25,12 +25,12 @@ try:
 except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
 
-
+from TC_support import *
 
 class tc_tracks(object):
-    def __init__(self,wind,mslp,sst,vort,ta,dates,year,tc_sel,working_dir,time_steps=None):
+    def __init__(self,wind,mslp,sst,vort,ta,dates,year,tc_sel,plot_dir,time_steps=None):
         self.year=year
-        self.working_dir=working_dir
+        self.plot_dir=plot_dir
         # input fields
         if time_steps is None:
             time_steps=range(len(wind.time))
@@ -137,7 +137,7 @@ class tc_tracks(object):
         return ex_y,ex_x
 
     def plot_surrounding(self):
-        os.system('mkdir '+self.working_dir+'surrounding')
+        os.system('mkdir '+self.plot_dir+'surrounding')
         for t,t_i in zip(self.time[self.time_i],self.time_i):
             plt.close()
             fig,axes = plt.subplots(nrows=2,ncols=2)
@@ -213,7 +213,7 @@ class tc_tracks(object):
 
             plt.suptitle(str(dates[t_i]))
             plt.tight_layout()
-            plt.savefig(self.working_dir+'surrounding/'+str(t_i)+'.png', bbox_inches = 'tight')
+            plt.savefig(self.plot_dir+'surrounding/'+str(t_i)+'.png', bbox_inches = 'tight')
 
     def plot_track(self,track):
         t=int(track.ix[0,0])
@@ -232,7 +232,7 @@ class tc_tracks(object):
             text.append(self.ax.text(self.tc_lon[storm,last_pos],self.tc_lat[storm,last_pos],''.join(self.tc_sel['name'].ix[storm,:])))
 
         plt.tight_layout()
-        plt.savefig(self.working_dir+'track_'+str(self.year)+'_'+str(t)+'_'+str(self.id_)+'_.png')
+        plt.savefig(self.plot_dir+'track_'+str(self.year)+'_'+str(t)+'_'+str(self.id_)+'_.png')
 
         # clean map
         for element in tmp:
@@ -243,7 +243,7 @@ class tc_tracks(object):
     def plot_season(self,out_name=None):
         tmp=[]
         if out_name is None:
-            out_name=self.working_dir+'track_'+str(self.year)+'_found_tracks.png'
+            out_name=self.plot_dir+'track_'+str(self.year)+'_found_tracks.png'
 
         for storm in range(len(self.tc_sel.storm)):
             tmp+=tc_plot(self.m,self.tc_lon[storm,:],self.tc_lat[storm,:],self.tc_intens.values[storm,:,0])
@@ -368,9 +368,9 @@ for year in range(2016,2018):
     elapsed = time.time() - start
     print('Elapsed %.3f seconds.' % elapsed)
 
-    working_dir='plots/detected/'+str(year)+'_6hourly/'
-    os.system('mkdir '+working_dir)
-    found_tracks[year]=tc_tracks(wind,mslp,sst,vort,ta,dates,year,tc_sel,working_dir=working_dir)#,time_steps=range(360,400)
+    plot_dir='plots/detection/'+str(year)+'_6hourly/'
+    os.system('mkdir '+plot_dir)
+    found_tracks[year]=tc_tracks(wind,mslp,sst,vort,ta,dates,year,tc_sel,plot_dir=plot_dir)#,time_steps=range(360,400)
 
     found_tracks[year].set_thresholds(thr_wind=14,thr_vort=1*10**(-4),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=3,win2=5,win_step=6,neighborhood_size=4)
     found_tracks[year].detect(); saved_detect=found_tracks[year].detect
