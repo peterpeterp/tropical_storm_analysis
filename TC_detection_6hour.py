@@ -19,10 +19,11 @@ from matplotlib.path import Path
 from matplotlib.collections import PatchCollection
 import matplotlib.patches as patches
 
-os.chdir('/Users/peterpfleiderer/Documents/Projects/Scripts/allgemeine_scripte')
-from support_functions import *
 
-os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
+try:
+    os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
+except:
+    os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
 
 
 
