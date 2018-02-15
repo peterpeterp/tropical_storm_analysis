@@ -8,9 +8,6 @@ from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import seaborn as sn
 import webcolors
-import scipy
-import scipy.ndimage as ndimage
-import scipy.ndimage.filters as filters
 
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
@@ -18,6 +15,9 @@ from shapely.geometry.polygon import Polygon
 from matplotlib.path import Path
 from matplotlib.collections import PatchCollection
 import matplotlib.patches as patches
+
+from sklearn.cluster import KMeans
+from scipy import stats
 
 
 try:
@@ -97,11 +97,6 @@ class tc_tracks(object):
             y=self.lat[int(y)]
         return self.m.plot(x,y,**kwargs)
 
-    def get_surrounding(self,y,x,window):
-        y_=range(max(0,y-window),min(len(self.lat),y+window+1))
-        x_=range(max(0,x-window),min(len(self.lon),x+window+1))
-        return y_,x_
-
     def points_in_box(self,box):
         points=[]
         for i in range(box[0],box[1]):
@@ -136,84 +131,169 @@ class tc_tracks(object):
                 ex_x.append(x_)
         return ex_y,ex_x
 
+    def max_clusters_old(self,data,threshold,neighborhood_size):
+        y,x=np.where(data>threshold)
+        points=[]
+        y__,x__=[],[]
+        groups=0
+        for y_,x_ in zip(y,x):
+            box=get_box(y_,x_,neighborhood_size)
+            if len(np.where(data[box[0]:box[1],box[2]:box[3]]>threshold)[0])>5:
+                points.append([y_,x_])
+                y__.append(y_)
+                x__.append(x_)
+                if data[y_,x_]==np.max(data[box[0]:box[1],box[2]:box[3]]):
+                    groups+=1
+
+        return KMeans(n_clusters=groups, random_state=0).fit(np.array(points)).labels_,np.array(y__),np.array(x__)
+
+    def max_clusters__(self,data,threshold,neighborhood_size):
+        y,x=np.where(data>threshold)
+        points=[]
+        groups=0
+        for y_,x_ in zip(y,x):
+            box_1=get_box(y_,x_,4)
+            box_2=get_box(y_,x_,7)
+            if len(np.where(data[box_1[0]:box_1[1],box_1[2]:box_1[3]]>threshold)[0])>4:
+                points.append((y_,x_))
+            if data[y_,x_]==np.max(data[box_2[0]:box_2[1],box_2[2]:box_2[3]]):
+                groups+=1
+
+        points=np.array(points)
+        elbow=[]
+        for n_clusters in range(1,groups):
+            elbow.append(KMeans(n_clusters=n_clusters, random_state=0).fit(points).inertia_)
+
+        crit=np.diff([elbow[i]/elbow[i-1] for i in range(1,len(elbow))],1)
+        groups=np.where(crit<0.2)[0][-1]+1
+        if groups>0:
+            kmeans=KMeans(n_clusters=groups,random_state=0).fit(np.array(points)).labels_
+            clustered={}
+            for i in range(groups):
+                clustered[i]={'y':points[:,0][kmeans==i],'x':points[:,1][kmeans==i]}
+            return clustered
+        else:
+            return {}
+
+    def max_clusters(self,data,threshold,neighborhood_size):
+        y,x=np.where(data>threshold)
+        points=[(y_,x_) for y_,x_ in zip(y,x)]
+        group=0
+        clusters={}
+        for y_,x_ in zip(y,x):
+            box_1=get_box(y_,x_,5)
+            box_2=get_box(y_,x_,3)
+            if data[y_,x_]==np.max(data[box_1[0]:box_1[1],box_1[2]:box_1[3]]):
+                candidates=points[:]
+                found=[(y_,x_)]
+                candidates.remove((y_,x_))
+                for p in found:
+                    for nei in get_surrounding(p[0],p[1],1):
+                        if nei in candidates:
+                            found.append(nei)
+                            candidates.remove(nei)
+
+                clusters[group]={'y':[pp[0] for pp in found],'x':[pp[1] for pp in found]}
+                group+=1
+
+        return clusters
+
     def plot_surrounding(self):
         os.system('mkdir '+self.plot_dir+'surrounding')
-        for t,t_i in zip(self.time[self.time_i],self.time_i):
+        for t in self.time_i:
             plt.close()
             fig,axes = plt.subplots(nrows=2,ncols=2)
             axes=axes.flatten()
 
-            ax=axes[0]
-            ax.set_title('10m wind speed')
-            data=self.wind.values[t_i,:,:]
+            ax=axes[0]; ax.set_title('rel. Vorticity')
+            im=ax.imshow(self.vort.values[t,0,:,:],vmin=-9.5*10**(-5),vmax=0.0002,interpolation='none')
+            im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
-            y_w,x_w = self.local_max(data,threshold=self.thr_wind,neighborhood_size=self.neighborhood_size)
-            im=ax.imshow(data,vmin=0,vmax=13,interpolation='none')
-            im.set_cmap('bone')
-            ax.autoscale(False)
-            ax.axis('off')
-            ax.scatter(x_w,y_w,color='r',s=50,facecolors='none')
+            ax=axes[1]; ax.set_title('mean sea level pressure')
+            im=ax.imshow(self.mslp.values[t,:,:],vmin=100360,vmax=103000,interpolation='none')
+            im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
-            ax=axes[1]
-            ax.set_title('rel. Vorticity')
-            data=self.vort.values[t_i,0,:,:]
-            y_v,x_v = self.local_max(data,threshold=self.thr_vort,neighborhood_size=self.neighborhood_size)
-            im=ax.imshow(data,vmin=-9.5*10**(-5),vmax=0.0002,interpolation='none')
-            im.set_cmap('bone')
-            ax.autoscale(False)
-            ax.axis('off')
-            ax.scatter(x_v,y_v,color='r',s=50,facecolors='none')
-
-            ax=axes[2]
-            # aplot showing max wind, min mslp and max vort next to tc loc
-            im=ax.imshow(self.ta.values[t_i,:,:],vmin=255,vmax=275,interpolation='none')
-            im.set_cmap('bone')
-            ax.autoscale(False)
-            ax.axis('off')
-            # add ibtracks info
-            obs_tc=np.where(abs(self.tc_time-self.yr_frac[t_i])<0.002)
-            if len(obs_tc[0])>0:
-                for storm in set(obs_tc[0]):
-                    first_day=obs_tc[1][obs_tc[0]==storm][0]
-                    # if np.isfinite(tc_sel['source_wind'].ix[storm,first_day,0]):
-                    x_,y_=np.argmin(abs(self.lon-self.tc_lon[storm,first_day])),np.argmin(abs(self.lat-self.tc_lat[storm,first_day]))
-                    ax.text(x_,y_,'wind: '+str(round(np.max(self.wind[t,self.lat[y_]+3:self.lat[y_]-3,self.lon[x_]-3:self.lon[x_]+3]),01))+'\nmslp: '+str(round(np.min(mslp[t,self.lat[y_]+3:self.lat[y_]-3,self.lon[x_]-3:self.lon[x_]+3]),06))+'\nvort: '+str(np.max(vort[t,85000,self.lat[y_]+3:self.lat[y_]-3,self.lon[x_]-3:self.lon[x_]+3])),color='white',va='top',fontsize=7)
+            ax=axes[2]; ax.set_title('10m wind speed')
+            im=ax.imshow(self.wind.values[t,:,:],vmin=0,vmax=13,interpolation='none')
+            im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
             # add ibtracks info
-            obs_tc=np.where(self.tc_time==self.yr_frac[t_i])
+            obs_tc=np.where(abs(self.tc_time-self.yr_frac[t])<0.002)
             if len(obs_tc[0])>0:
                 for oo in range(len(obs_tc[0])):
                     if np.isfinite(self.tc_sel['source_wind'].ix[obs_tc[0][oo],obs_tc[1][oo],0]):
                         for ax in axes:
                             ax.plot(np.argmin(abs(self.lon-self.tc_lon[obs_tc[0][oo],obs_tc[1][oo]])),np.argmin(abs(self.lat-self.tc_lat[obs_tc[0][oo],obs_tc[1][oo]])),color=get_tc_color(self.tc_intens.ix[obs_tc[0][oo],obs_tc[1][oo],0]),marker='.')
 
-            ax=axes[3]
-            ax.set_title('detected (MSLP)')
-            data=self.mslp.values[t_i,:,:]
-            y_p,x_p = self.local_min(data,threshold=self.thr_mslp,neighborhood_size=self.neighborhood_size)
-            im=ax.imshow(data,vmin=100360,vmax=103000,interpolation='none')
-            im.set_cmap('bone')
-            ax.autoscale(False)
-            ax.axis('off')
-            ax.scatter(x_p,y_p,marker='o',color='r',s=50,facecolors='none')
-            ax.scatter(x_v,y_v,marker='*',color='m')
-            ax.scatter(x_w,y_w,marker='*',color='c')
+
+            for point in self.detect[self.detect[:,'t']==t].values.tolist():
+                if point[3]:
+                    axes[0].plot(point[2]+2,point[1],'*b')
+                if point[4]:
+                    axes[1].plot(point[2]+2,point[1],'*g')
+                if point[5]:
+                    axes[1].plot(point[2]+6,point[1],'*m')
+
+            # # get mslp min
+            # y_p,x_p = self.local_min(self.mslp.values[t,:,:],threshold=self.thr_mslp,neighborhood_size=self.neighborhood_size)
+            # p_mins=[(y,x) for y,x in zip(y_p,x_p)]
+            #
+            # # get vort clusters
+            # print t,'***********'
+            # clustered=self.max_clusters(self.vort.values[t,0,:,:],self.thr_vort,7)
+            # for group in clustered.values():
+            #     if len(group['x'])>4:
+            #         axes[0].plot(group['x'],group['y'],marker='.')
+            #         lr=stats.linregress(group['x'],group['y'])
+            #         xxx=np.array(list(set(group['x'])))
+            #         axes[0].plot(xxx,xxx*lr.slope+lr.intercept)
+            #         for step in range(4):
+            #             xx=min(xxx)+len(xxx)/4.*step
+            #             axes[0].plot([xx],[xx*lr.slope+lr.intercept],'*r')
+
+                    #
+                    # if 0<x<len(self.lon) and 0<y<len(self.lat):
+                    #     box_1=self.get_box(y,x,self.win1)
+                    #     box_2=self.get_box(y,x,self.win2)
+                    #     points_1=self.points_in_box(box_1)
+                    #     tmp=[t,y,x,1,0,0,0,0,0,0]
+                    #     # ii pressure min
+                    #     if sum([(yy,xx) in p_mins for yy,xx in points_1]):
+                    #         tmp[4]=1
+                    #     # iii wind speed
+                    #     if self.wind.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()>self.thr_wind:
+                    #         tmp[5]=1
+                    #     # iv warm core
+                    #     if self.ta.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self.ta.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>self.thr_ta:
+                    #         tmp[6]=1
+                    #     # v warm sea
+                    #     if self.sst.ix[t,y,x]>self.thr_sst:
+                    #         tmp[7]=1
+                    #     # vi tropical
+                    #     if self.lat[y]<=30:
+                    #         tmp[8]=1
+                    #     tmp[9]=sum(tmp[3:7])
+                    #     detect=np.concatenate((detect,np.array([tmp])))
+                    #
 
 
-            if t_i in self.detect.keys():
-                for point in self.detect[t_i]:
-                    if 'vort' in self.detect[t_i][point]:
-                        ax.plot(point[1]+2,point[0],'^w')
-                    if 'mslp' in self.detect[t_i][point]:
-                        ax.plot(point[1]+4,point[0],'*g')
-                    if 'wind' in self.detect[t_i][point]:
-                        ax.plot(point[1]+6,point[0],'vm')
-                    if 'ta' in self.detect[t_i][point]:
-                        ax.plot(point[1]+8,point[0],'*r')
 
-            plt.suptitle(str(dates[t_i]))
+            ax=axes[3]; ax.set_title('ibtracks')
+            # aplot showing max wind, min mslp and max vort next to tc loc
+            im=ax.imshow(self.ta.values[t,:,:],vmin=255,vmax=275,interpolation='none')
+            im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
+            # add ibtracks info
+            # obs_tc=np.where(abs(self.tc_time-self.yr_frac[t])<0.002)
+            # if len(obs_tc[0])>0:
+            #     for storm in set(obs_tc[0]):
+            #         first_day=obs_tc[1][obs_tc[0]==storm][0]
+            #         # if np.isfinite(tc_sel['source_wind'].ix[storm,first_day,0]):
+            #         x_,y_=np.argmin(abs(self.lon-self.tc_lon[storm,first_day])),np.argmin(abs(self.lat-self.tc_lat[storm,first_day]))
+            #         ax.text(x_,y_,'wind: '+str(round(np.max(self.wind[t,self.lat[y_]+3:self.lat[y_]-3,self.lon[x_]-3:self.lon[x_]+3]),01))+'\nmslp: '+str(round(np.min(mslp[t,self.lat[y_]+3:self.lat[y_]-3,self.lon[x_]-3:self.lon[x_]+3]),06))+'\nvort: '+str(np.max(vort[t,85000,self.lat[y_]+3:self.lat[y_]-3,self.lon[x_]-3:self.lon[x_]+3])),color='white',va='top',fontsize=7)
+
+            plt.suptitle(str(dates[t]))
             plt.tight_layout()
-            plt.savefig(self.plot_dir+'surrounding/'+str(t_i)+'.png', bbox_inches = 'tight')
+            plt.savefig(self.plot_dir+'surrounding/'+str(t)+'.png', bbox_inches = 'tight')
 
     def plot_track(self,track):
         t=int(track.ix[0,0])
@@ -320,32 +400,46 @@ class tc_tracks(object):
     def detect(self):
         detect=np.array([[np.nan]*10])
         for t in self.time_i:
+
+            # get mslp min
             y_p,x_p = self.local_min(self.mslp.values[t,:,:],threshold=self.thr_mslp,neighborhood_size=self.neighborhood_size)
             p_mins=[(y,x) for y,x in zip(y_p,x_p)]
-            # i vort max
-            y_v,x_v = self.local_max(self.vort.values[t,0,:,:],threshold=self.thr_vort,neighborhood_size=self.neighborhood_size)
-            for y,x in zip(y_v,x_v):
-                box_1=self.get_box(y,x,self.win1)
-                box_2=self.get_box(y,x,self.win2)
-                points_1=self.points_in_box(box_1)
-                tmp=[t,y,x,1,0,0,0,0,0,0]
-                # ii pressure min
-                if sum([(yy,xx) in p_mins for yy,xx in points_1]):
-                    tmp[4]=1
-                # iii wind speed
-                if self.wind.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()>self.thr_wind:
-                    tmp[5]=1
-                # iv warm core
-                if self.ta.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self.ta.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>self.thr_ta:
-                    tmp[6]=1
-                # v warm sea
-                if self.sst.ix[t,y,x]>self.thr_sst:
-                    tmp[7]=1
-                # vi tropical
-                if self.lat[y]<=30:
-                    tmp[8]=1
-                tmp[9]=sum(tmp[3:7])
-                detect=np.concatenate((detect,np.array([tmp])))
+
+            # get vort clusters
+            clustered=self.max_clusters(self.vort.values[t,0,:,:],self.thr_vort,7)
+            for group in clustered.values():
+                if len(group['x'])>4:
+                    axes[0].plot(group['x'],group['y'],marker='.')
+                    lr=stats.linregress(group['x'],group['y'])
+                    xxx=np.array(list(set(group['x'])))
+                    axes[0].plot(xxx,xxx*lr.slope+lr.intercept)
+                    for step in range(4):
+                        x=int(round(min(xxx)+len(xxx)/4.*step))
+                        y=int(round(x*lr.slope+lr.intercept))
+
+
+                        if 0<x<len(self.lon) and 0<y<len(self.lat):
+                            box_1=self.get_box(y,x,self.win1)
+                            box_2=self.get_box(y,x,self.win2)
+                            points_1=self.points_in_box(box_1)
+                            tmp=[t,y,x,1,0,0,0,0,0,0]
+                            # ii pressure min
+                            if sum([(yy,xx) in p_mins for yy,xx in points_1]):
+                                tmp[4]=1
+                            # iii wind speed
+                            if self.wind.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()>self.thr_wind:
+                                tmp[5]=1
+                            # iv warm core
+                            if self.ta.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self.ta.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>self.thr_ta:
+                                tmp[6]=1
+                            # v warm sea
+                            if self.sst.ix[t,y,x]>self.thr_sst:
+                                tmp[7]=1
+                            # vi tropical
+                            if self.lat[y]<=30:
+                                tmp[8]=1
+                            tmp[9]=sum(tmp[3:7])
+                            detect=np.concatenate((detect,np.array([tmp])))
 
         self.detect=da.DimArray(detect[1:,:],axes=[range(detect.shape[0]-1),['t','y','x','vort','mslp','wind','ta','sst','tropical','tc_cond']],dims=['ID','z'])
 
@@ -354,29 +448,27 @@ class tc_tracks(object):
 # TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
 
 found_tracks={}
-for year in range(2016,2018):
+for year in range(2008,2009):
     start = time.time()
-    # read ERA interim
-    wind_nc=da.read_nc('data/ERA_6hourly/atl_10mWind_'+str(year)+'.nc')
-    wind=wind_nc['ws']
-    mslp=da.read_nc('data/ERA_6hourly/atl_MSL_'+str(year)+'.nc')['MSL']
-    vort=da.read_nc('data/ERA_6hourly/atl_atmos_'+str(year)+'.nc')['VO']
-    ta=da.read_nc('data/ERA_6hourly/atl_atmos_'+str(year)+'.nc')['T']
-    sst=da.read_nc('data/ERA_6hourly/atl_interim_ocean_'+str(year)+'.nc')['SSTK']-273.15
-    dates=[num2date(t,units = wind_nc.axes['time'].units,calendar = wind_nc.axes['time'].calendar) for t in wind.time]
-    tc_sel=TC.ix[np.where((TC['season']==year) & (TC['basin'][:,0]==0))[0]]
-    elapsed = time.time() - start
-    print('Elapsed %.3f seconds.' % elapsed)
-
-    plot_dir='plots/detection/'+str(year)+'_6hourly/'
-    os.system('mkdir '+plot_dir)
-    found_tracks[year]=tc_tracks(wind,mslp,sst,vort,ta,dates,year,tc_sel,plot_dir=plot_dir)#,time_steps=range(360,400)
-
+    # # read ERA interim
+    # wind_nc=da.read_nc('data/ERA_dayX/atl_10mWind_'+str(year)+'.nc')
+    # wind=wind_nc['ws']
+    # mslp=da.read_nc('data/ERA_dayX/atl_MSL_'+str(year)+'.nc')['MSL']
+    # vort=da.read_nc('data/ERA_dayX/atl_atmos_'+str(year)+'.nc')['VO']
+    # ta=da.read_nc('data/ERA_dayX/atl_atmos_'+str(year)+'.nc')['T']
+    # sst=da.read_nc('data/ERA_dayX/atl_interim_ocean_'+str(year)+'.nc')['SSTK']-273.15
+    # dates=[num2date(t,units = wind_nc.axes['time'].units,calendar = wind_nc.axes['time'].calendar) for t in wind.time]
+    # tc_sel=TC.ix[np.where((TC['season']==year) & (TC['basin'][:,0]==0))[0]]
+    # elapsed = time.time() - start
+    # print('Elapsed %.3f seconds.' % elapsed)
+    # plot_dir='plots/detection/'+str(year)+'_6hourly/'
+    # os.system('mkdir '+plot_dir)
+    found_tracks[year]=tc_tracks(wind,mslp,sst,vort,ta,dates,year,tc_sel,plot_dir=plot_dir,time_steps=range(90,110))
     found_tracks[year].set_thresholds(thr_wind=14,thr_vort=1*10**(-4),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=3,win2=5,win_step=6,neighborhood_size=4)
-    found_tracks[year].detect(); saved_detect=found_tracks[year].detect
-    #found_tracks[year].detect=saved_detect
-    found_tracks[year].combine_tracks()
-    found_tracks[year].plot_season()
-    #found_tracks[year].plot_surrounding()
+    #found_tracks[year].detect(); saved_detect=found_tracks[year].detect
+    found_tracks[year].detect=saved_detect
+    #found_tracks[year].combine_tracks()
+    #found_tracks[year].plot_season()
+    found_tracks[year].plot_surrounding()
     elapsed = time.time() - start
     print('Elapsed %.3f seconds.' % elapsed)
