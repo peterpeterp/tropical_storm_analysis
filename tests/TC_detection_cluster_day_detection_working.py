@@ -19,7 +19,6 @@ import matplotlib.patches as patches
 from sklearn.cluster import KMeans
 from scipy import stats
 
-import itertools
 
 try:
     os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
@@ -112,14 +111,6 @@ class tc_tracks(object):
         x_max=min(len(self.lon),x+window+1)
         return (y_min,y_max,x_min,x_max)
 
-    def get_surrounding(self,y,x,window):
-        y_min,y_max,x_min,x_max=self.get_box(y,x,window)
-        points=[]
-        for y in range(y_min,y_max):
-            for x in range(x_min,x_max):
-                points.append((y,x))
-        return points
-
     def local_max(self,data,threshold,neighborhood_size):
         y,x=np.where(data>threshold)
         ex_x,ex_y=[],[]
@@ -140,6 +131,50 @@ class tc_tracks(object):
                 ex_x.append(x_)
         return ex_y,ex_x
 
+    def max_clusters_old(self,data,threshold,neighborhood_size):
+        y,x=np.where(data>threshold)
+        points=[]
+        y__,x__=[],[]
+        groups=0
+        for y_,x_ in zip(y,x):
+            box=get_box(y_,x_,neighborhood_size)
+            if len(np.where(data[box[0]:box[1],box[2]:box[3]]>threshold)[0])>5:
+                points.append([y_,x_])
+                y__.append(y_)
+                x__.append(x_)
+                if data[y_,x_]==np.max(data[box[0]:box[1],box[2]:box[3]]):
+                    groups+=1
+
+        return KMeans(n_clusters=groups, random_state=0).fit(np.array(points)).labels_,np.array(y__),np.array(x__)
+
+    def max_clusters__(self,data,threshold,neighborhood_size):
+        y,x=np.where(data>threshold)
+        points=[]
+        groups=0
+        for y_,x_ in zip(y,x):
+            box_1=get_box(y_,x_,4)
+            box_2=get_box(y_,x_,7)
+            if len(np.where(data[box_1[0]:box_1[1],box_1[2]:box_1[3]]>threshold)[0])>4:
+                points.append((y_,x_))
+            if data[y_,x_]==np.max(data[box_2[0]:box_2[1],box_2[2]:box_2[3]]):
+                groups+=1
+
+        points=np.array(points)
+        elbow=[]
+        for n_clusters in range(1,groups):
+            elbow.append(KMeans(n_clusters=n_clusters, random_state=0).fit(points).inertia_)
+
+        crit=np.diff([elbow[i]/elbow[i-1] for i in range(1,len(elbow))],1)
+        groups=np.where(crit<0.2)[0][-1]+1
+        if groups>0:
+            kmeans=KMeans(n_clusters=groups,random_state=0).fit(np.array(points)).labels_
+            clustered={}
+            for i in range(groups):
+                clustered[i]={'y':points[:,0][kmeans==i],'x':points[:,1][kmeans==i]}
+            return clustered
+        else:
+            return {}
+
     def max_clusters(self,data,threshold,neighborhood_size):
         y,x=np.where(data>threshold)
         points=[(y_,x_) for y_,x_ in zip(y,x)]
@@ -153,7 +188,7 @@ class tc_tracks(object):
                 found=[(y_,x_)]
                 candidates.remove((y_,x_))
                 for p in found:
-                    for nei in self.get_surrounding(p[0],p[1],1):
+                    for nei in get_surrounding(p[0],p[1],1):
                         if nei in candidates:
                             found.append(nei)
                             candidates.remove(nei)
@@ -306,81 +341,76 @@ class tc_tracks(object):
         for element in tmp:
             l = element.pop(0); wl = weakref.ref(l); l.remove(); del l
 
-    def path_length(self,points):
-        return np.sum(np.sqrt(np.sum(np.diff(np.array(points), axis=0)**2, axis=1)))
-
-    def rearange_track(self,track):
-        if len(set(track[:,0]))<2:
-            return track
-
-        segments=[]
-        permu=[]
-        permu_n=[]
-        for tt in sorted(set(track[:,0])):
-            permu.append(list(set(itertools.permutations(range(len(np.where(track[:,0]==tt)[0]))))))
-            segments.append(track[track[:,0]==tt])
-            permu_n.append(len(permu[-1]))
-
-        best_permu=(0,0)
-        length=self.path_length(np.concatenate((segments[0][permu[0][best_permu[0]],1:3],segments[1][permu[1][best_permu[1]],1:3])))
-        for per1,per2 in itertools.product(range(permu_n[0]),range(permu_n[1])):
-            length_new=self.path_length(np.concatenate((segments[0][permu[0][per1],1:3],segments[1][permu[1][per2],1:3])))
-            if length>length_new:
-                best_permu=(per1,per2)
-                length=length_new
-
-        ordered_track=np.concatenate((segments[0][permu[0][best_permu[0]],:],segments[1][permu[1][best_permu[1]],:]))
-        start_point=ordered_track[-1,1:3]
-
-        for step in range(len(permu_n))[2:]:
-            best_permu=0
-            length=self.path_length(np.vstack((start_point,segments[step][permu[step][best_permu],1:3])))
-            for per in range(permu_n[step]):
-                length_new=self.path_length(np.vstack((start_point,segments[step][permu[step][per],1:3])))
-                if length>length_new:
-                    best_permu=per
-                    length=length_new
-
-            ordered_track=np.concatenate((ordered_track,segments[step][permu[step][best_permu],:]))
-
-        return ordered_track
 
     def combine_tracks(self,plot=True):
         detected=self.detect[self.detect[:,'tc_cond']==4].values
-        mslp_found=self.detect[((self.detect[:,'mslp']==1) & (self.detect[:,'tc_cond']!=4))].values
-        candidates=detected[:,:].tolist()
-        weak_candidates=mslp_found[:,:].tolist()
+        mslp_found=self.detect[self.detect[:,'mslp']==1].values
         used_pos=[]
-        for p in candidates:
+        for p in detected.tolist():
             if p[7] and p[8]:
                 if p not in used_pos:
+
                     used_pos.append(p)
+
+                    candidates=detected.tolist()[:]
+                    found=[(y_,x_)]
+                    candidates.remove((y_,x_))
+                    for p in found:
+                        for nei in get_surrounding(p[0],p[1],1):
+                            if nei in candidates:
+                                found.append(nei)
+                                candidates.remove(nei)
+
+
                     track=[p]
-                    candidates.remove(p)
-                    for p in track:
-                        tmp=np.array(candidates)
-                        loc_candidates=tmp[((tmp[:,0]<=p[0]+1) & (tmp[:,0]>=p[0]-1)),:].tolist()
-                        for nei in self.get_surrounding(int(p[1]),int(p[2]),4):
-                            for candi in loc_candidates:
-                                if tuple(candi[1:3])==nei:
-                                    track.append(candi)
-                                    candidates.remove(candi)
-                        if len(candidates)==0:
-                            break
-                    for p in track:
-                        tmp=np.array(weak_candidates)
-                        loc_candidates=tmp[((tmp[:,0]<=p[0]+1) & (tmp[:,0]>=p[0]-1)),:].tolist()
-                        for nei in self.get_surrounding(int(p[1]),int(p[2]),4):
-                            for candi in loc_candidates:
-                                if tuple(candi[1:3])==nei:
-                                    track.append(candi)
-                                    weak_candidates.remove(candi)
-                        if len(weak_candidates)==0:
-                            break
+                    # get postitions on same day
+                    candidates=[]
+                    for p_1 in detected[detected[:,0]==p[0]+1,:].tolist():
+                        if ((p[1]-p_1[1])**2+(p[2]-p_1[2])**2)**0.5<self.win_step:
+                            candidates.append(p_1)
+                            end=False
 
+                    # go foreward
+                    while True:
+                        p=track[-1]
+                        end=True
+                        candidates=[]
+                        for p_1 in detected[detected[:,0]==p[0]+1,:].tolist():
+                            if ((p[1]-p_1[1])**2+(p[2]-p_1[2])**2)**0.5<self.win_step:
+                                candidates.append(p_1)
+                                end=False
 
-                    track=self.rearange_track(np.array(track))
-                    track=da.DimArray(track,axes=[track[:,0],['t','y','x','vort','mslp','wind','ta','sst','tropical','tc_cond']],dims=['time','z'])
+                        if end:
+                            # check for points with fewer conditions fullfilled
+                            for p_1 in mslp_found[mslp_found[:,0]==p[0]+1,:].tolist():
+                                if ((p[1]-p_1[1])**2+(p[2]-p_1[2])**2)**0.5<self.win_step:
+                                    candidates.append(p_1)
+                                    end=False
+                            if end:
+                                break
+                            else:
+                                track.append(candidates[0])
+                                used_pos.append(candidates[0])
+                        else:
+                            track.append(candidates[0])
+                            used_pos.append(candidates[0])
+
+                    # search origin of storm
+                    while p[0]>0:
+                        p=track[0]
+                        end=True
+                        candidates=[]
+                        for p_1 in mslp_found[mslp_found[:,0]==p[0]-1,:].tolist():
+                            if ((p[1]-p_1[1])**2+(p[2]-p_1[2])**2)**0.5<self.win_step:
+                                candidates.append(p_1)
+                                end=False
+
+                        if end:
+                            break
+                        else:
+                            track=[candidates[0]]+track
+
+                    track=da.DimArray(np.array(track),axes=[np.array(track)[:,0],['t','y','x','vort','mslp','wind','ta','sst','tropical','tc_cond']],dims=['time','z'])
                     if track[track[:,'tc_cond']==4].shape[0]>6 or track.shape[0]>10:
                         self.tcs[self.id_]=track
                         if plot:    self.plot_track(track)
@@ -398,45 +428,46 @@ class tc_tracks(object):
             clustered=self.max_clusters(self.vort.values[t,0,:,:],self.thr_vort,7)
             for group in clustered.values():
                 if len(group['x'])>4:
+                    axes[0].plot(group['x'],group['y'],marker='.')
                     lr=stats.linregress(group['x'],group['y'])
                     xxx=np.array(list(set(group['x'])))
-                    if np.isfinite(lr.slope):
-                        for step in range(4):
-                            x=int(round(min(xxx)+len(xxx)/4.*step))
-                            y=int(round(x*lr.slope+lr.intercept))
+                    axes[0].plot(xxx,xxx*lr.slope+lr.intercept)
+                    for step in range(4):
+                        x=int(round(min(xxx)+len(xxx)/4.*step))
+                        y=int(round(x*lr.slope+lr.intercept))
 
 
-                            if 0<x<len(self.lon) and 0<y<len(self.lat):
-                                box_1=self.get_box(y,x,self.win1)
-                                box_2=self.get_box(y,x,self.win2)
-                                points_1=self.points_in_box(box_1)
-                                tmp=[t,y,x,1,0,0,0,0,0,0]
-                                # ii pressure min
-                                if sum([(yy,xx) in p_mins for yy,xx in points_1]):
-                                    tmp[4]=1
-                                # iii wind speed
-                                if self.wind.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()>self.thr_wind:
-                                    tmp[5]=1
-                                # iv warm core
-                                if self.ta.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self.ta.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>self.thr_ta:
-                                    tmp[6]=1
-                                # v warm sea
-                                if self.sst.ix[t,y,x]>self.thr_sst:
-                                    tmp[7]=1
-                                # vi tropical
-                                if self.lat[y]<=30:
-                                    tmp[8]=1
-                                tmp[9]=sum(tmp[3:7])
-                                detect=np.concatenate((detect,np.array([tmp])))
+                        if 0<x<len(self.lon) and 0<y<len(self.lat):
+                            box_1=self.get_box(y,x,self.win1)
+                            box_2=self.get_box(y,x,self.win2)
+                            points_1=self.points_in_box(box_1)
+                            tmp=[t,y,x,1,0,0,0,0,0,0]
+                            # ii pressure min
+                            if sum([(yy,xx) in p_mins for yy,xx in points_1]):
+                                tmp[4]=1
+                            # iii wind speed
+                            if self.wind.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()>self.thr_wind:
+                                tmp[5]=1
+                            # iv warm core
+                            if self.ta.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self.ta.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>self.thr_ta:
+                                tmp[6]=1
+                            # v warm sea
+                            if self.sst.ix[t,y,x]>self.thr_sst:
+                                tmp[7]=1
+                            # vi tropical
+                            if self.lat[y]<=30:
+                                tmp[8]=1
+                            tmp[9]=sum(tmp[3:7])
+                            detect=np.concatenate((detect,np.array([tmp])))
 
         self.detect=da.DimArray(detect[1:,:],axes=[range(detect.shape[0]-1),['t','y','x','vort','mslp','wind','ta','sst','tropical','tc_cond']],dims=['ID','z'])
 
 
-# # read ibtracks
-# TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
+# read ibtracks
+TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
 
 found_tracks={}
-for year in range(2000,2017):
+for year in range(2008,2009):
     start = time.time()
     # read ERA interim
     wind_nc=da.read_nc('data/ERA_dayX/atl_10mWind_'+str(year)+'.nc')
@@ -449,14 +480,14 @@ for year in range(2000,2017):
     tc_sel=TC.ix[np.where((TC['season']==year) & (TC['basin'][:,0]==0))[0]]
     elapsed = time.time() - start
     print('Elapsed %.3f seconds.' % elapsed)
-    plot_dir='plots/detection/'+str(year)+'_dayX/'
+    plot_dir='plots/detection/'+str(year)+'_6hourly/'
     os.system('mkdir '+plot_dir)
-    found_tracks[year]=tc_tracks(wind,mslp,sst,vort,ta,dates,year,tc_sel,plot_dir=plot_dir)#,time_steps=range(90,110)
+    found_tracks[year]=tc_tracks(wind,mslp,sst,vort,ta,dates,year,tc_sel,plot_dir=plot_dir,time_steps=range(90,110))
     found_tracks[year].set_thresholds(thr_wind=14,thr_vort=1*10**(-4),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=3,win2=5,win_step=6,neighborhood_size=4)
     found_tracks[year].detect(); saved_detect=found_tracks[year].detect
     #found_tracks[year].detect=saved_detect
-    found_tracks[year].combine_tracks()
-    found_tracks[year].plot_season()
-    # found_tracks[year].plot_surrounding()
+    #found_tracks[year].combine_tracks()
+    #found_tracks[year].plot_season()
+    found_tracks[year].plot_surrounding()
     elapsed = time.time() - start
     print('Elapsed %.3f seconds.' % elapsed)
