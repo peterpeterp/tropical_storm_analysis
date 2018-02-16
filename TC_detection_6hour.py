@@ -263,59 +263,45 @@ class tc_tracks(object):
 
     def combine_tracks(self,plot=True):
         detected=self.detect[self.detect[:,'tc_cond']==4].values
-        mslp_found=self.detect[self.detect[:,'mslp']==1].values
+        mslp_found=self.detect[((self.detect[:,'mslp']==1) & (self.detect[:,'tc_cond']!=4))].values
+        candidates=detected[:,:].tolist()
+        weak_candidates=mslp_found[:,:].tolist()
         used_pos=[]
-        for p in detected.tolist():
+        for p in candidates:
             if p[7] and p[8]:
                 if p not in used_pos:
                     used_pos.append(p)
                     track=[p]
-
-                    # go foreward
-                    while True:
-                        p=track[-1]
-                        end=True
-                        candidates=[]
-                        for p_1 in detected[detected[:,0]==p[0]+1,:].tolist():
-                            if ((p[1]-p_1[1])**2+(p[2]-p_1[2])**2)**0.5<self.win_step:
-                                candidates.append(p_1)
-                                end=False
-
-                        if end:
-                            # check for points with fewer conditions fullfilled
-                            for p_1 in mslp_found[mslp_found[:,0]==p[0]+1,:].tolist():
-                                if ((p[1]-p_1[1])**2+(p[2]-p_1[2])**2)**0.5<self.win_step:
-                                    candidates.append(p_1)
-                                    end=False
-                            if end:
-                                break
-                            else:
-                                track.append(candidates[0])
-                                used_pos.append(candidates[0])
-                        else:
-                            track.append(candidates[0])
-                            used_pos.append(candidates[0])
-
-                    # search origin of storm
-                    while p[0]>0:
-                        p=track[0]
-                        end=True
-                        candidates=[]
-                        for p_1 in mslp_found[mslp_found[:,0]==p[0]-1,:].tolist():
-                            if ((p[1]-p_1[1])**2+(p[2]-p_1[2])**2)**0.5<self.win_step:
-                                candidates.append(p_1)
-                                end=False
-
-                        if end:
+                    candidates.remove(p)
+                    for p in track:
+                        tmp=np.array(candidates)
+                        loc_candidates=tmp[((tmp[:,0]<=p[0]+1) & (tmp[:,0]>=p[0]-1)),:].tolist()
+                        for nei in self.get_surrounding(int(p[1]),int(p[2]),4):
+                            for candi in loc_candidates:
+                                if tuple(candi[1:3])==nei:
+                                    track.append(candi)
+                                    candidates.remove(candi)
+                        if len(candidates)==0:
                             break
-                        else:
-                            track=[candidates[0]]+track
+                    for p in track:
+                        tmp=np.array(weak_candidates)
+                        loc_candidates=tmp[((tmp[:,0]<=p[0]+1) & (tmp[:,0]>=p[0]-1)),:].tolist()
+                        for nei in self.get_surrounding(int(p[1]),int(p[2]),4):
+                            for candi in loc_candidates:
+                                if tuple(candi[1:3])==nei:
+                                    track.append(candi)
+                                    weak_candidates.remove(candi)
+                        if len(weak_candidates)==0:
+                            break
 
-                    track=da.DimArray(np.array(track),axes=[np.array(track)[:,0],['t','y','x','vort','mslp','wind','ta','sst','tropical','tc_cond']],dims=['time','z'])
+
+                    track=np.array(track)
+                    track=da.DimArray(track,axes=[track[:,0],['t','y','x','vort','mslp','wind','ta','sst','tropical','tc_cond']],dims=['time','z'])
                     if track[track[:,'tc_cond']==4].shape[0]>6 or track.shape[0]>10:
                         self.tcs[self.id_]=track
                         if plot:    self.plot_track(track)
                         self.id_+=1
+
 
     def detect(self):
         detect=np.array([[np.nan]*10])
@@ -354,7 +340,7 @@ class tc_tracks(object):
 # TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
 
 found_tracks={}
-for year in range(2016,2018):
+for year in range(2008,2009):
     start = time.time()
     # read ERA interim
     wind_nc=da.read_nc('data/ERA_6hourly/atl_10mWind_'+str(year)+'.nc')
@@ -365,18 +351,16 @@ for year in range(2016,2018):
     sst=da.read_nc('data/ERA_6hourly/atl_interim_ocean_'+str(year)+'.nc')['SSTK']-273.15
     dates=[num2date(t,units = wind_nc.axes['time'].units,calendar = wind_nc.axes['time'].calendar) for t in wind.time]
     tc_sel=TC.ix[np.where((TC['season']==year) & (TC['basin'][:,0]==0))[0]]
-    elapsed = time.time() - start
-    print('Elapsed %.3f seconds.' % elapsed)
+    elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
 
     plot_dir='plots/detection/'+str(year)+'_6hourly/'
     os.system('mkdir '+plot_dir)
     found_tracks[year]=tc_tracks(wind,mslp,sst,vort,ta,dates,year,tc_sel,plot_dir=plot_dir)#,time_steps=range(360,400)
-
     found_tracks[year].set_thresholds(thr_wind=14,thr_vort=1*10**(-4),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=3,win2=5,win_step=6,neighborhood_size=4)
     found_tracks[year].detect(); saved_detect=found_tracks[year].detect
-    #found_tracks[year].detect=saved_detect
+    found_tracks[year].detect=saved_detect
+
     found_tracks[year].combine_tracks()
-    found_tracks[year].plot_season()
+
     #found_tracks[year].plot_surrounding()
-    elapsed = time.time() - start
-    print('Elapsed %.3f seconds.' % elapsed)
+    elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
