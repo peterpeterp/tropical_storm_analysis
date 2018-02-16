@@ -352,11 +352,9 @@ for year in range(2008,2009):
     found_tracks[year].set_thresholds(thr_wind=14,thr_vort=1*10**(-4),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=3,win2=5,win_step=6,neighborhood_size=4)
     #found_tracks[year].detect(); saved_detect=found_tracks[year].detect
     found_tracks[year].detect=saved_detect
-    found_tracks[year].plot_surrounding()
+    #found_tracks[year].plot_surrounding()
 
     start = time.time()
     found_tracks[year].combine_tracks()
     found_tracks[year].plot_season('plots/detection/season_'+str(year)+'.png')
-    elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
-
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
