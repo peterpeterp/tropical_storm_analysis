@@ -9,6 +9,23 @@ import scipy.ndimage as ndimage
 import scipy.ndimage.filters as filters
 import matplotlib.pyplot as plt
 
+#------------ Met stuff
+def rel_vort(U,V,x,y ):
+    """adapted from wrftools: github.com/keltonhalbert/wrftools"""
+    xx,yy = np.meshgrid(x,y)
+    xx*=np.cos(np.radians(yy))*6371000*2*np.pi/360.
+    yy*=6371000*2*np.pi/360.
+    dy=np.gradient(yy)
+    dx=np.gradient(xx)
+
+    vort=U.copy()*np.nan
+    for i in range(U.shape[0]):
+        du = np.gradient( U[i,:,:] )
+        dv = np.gradient( V[i,:,:] )
+        vort[i,:,:]= dv[-1]/dx[-1] - du[-2]/dy[-2]
+    return vort
+
+# ----------- Time conversions
 
 def toYearFraction(date):
     date=datetime(year=date.year,month=date.month,day=date.day,hour=date.hour)
