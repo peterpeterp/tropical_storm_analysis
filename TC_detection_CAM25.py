@@ -162,7 +162,7 @@ class tc_tracks(object):
             time_steps=self._time_i
 
         plt.close('all')
-        fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(10,5))
+        fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5))
         axes=axes.flatten()
         maps=[]
         for ax in axes:
@@ -174,7 +174,7 @@ class tc_tracks(object):
             mm.drawmeridians([-120,0,120],labels=[0,0,0,0],color='grey',linewidth=0.5)
             ax.invert_yaxis()
             maps.append(mm)
-        plt.tight_layout()
+        #plt.tight_layout()
 
         for t in time_steps:
             tmp,txt=[],[]
@@ -198,11 +198,11 @@ class tc_tracks(object):
                 if point[3]:
                     tmp.append(self.plot_on_map(maps[1],point[2],point[1],c='b',marker='*'))
                     stats='wind: '+str(round(self._Wind10.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max(),01))+'\nmslp: '+str(round(self._MSLP.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].min()/100.,01))
-                    txt.append(axes[3].text(self._plot_lon[point[1],point[2]],self._plot_lat[point[1],point[2]],stats,color='red',va='top',fontsize=7))
+                    txt.append(axes[3].text(self._plot_lon[point[1],point[2]],self._plot_lat[point[1],point[2]],stats,color='red',va='bottom',ha='right',fontsize=7))
                 if point[4]:
                     tmp.append(self.plot_on_map(maps[2],point[2],point[1],c='g',marker='*'))
 
-            ax=axes[3]; ax.set_title('ibtracks')
+            ax=axes[3]; ax.set_title('10m wind [m/s] and mslp [mbar]')
 
             plt.suptitle(str(dates[t]))
             plt.savefig(self._working_dir+'track_surrounding/'+str(t)+'.png', bbox_inches = 'tight')
@@ -219,11 +219,9 @@ class tc_tracks(object):
     def plot_track_path(self,track):
         t=int(track.ix[0,0])
         tmp,text=[],[]
-        print track.values
         #points=np.array(self._detecteded[:])
         #tmp.append(self._m.plot(points[:,2],points[:,1],'.g'))
         tmp.append(self.plot_on_map(self._m,track[:,'x'],track[:,'y'],c='k'))
-        tmp.append(self.plot_on_map(self._m,range(90),range(90),c='k'))
         tmp.append(self.plot_on_map(self._m,track[track[:,'tc_cond']==3,:].ix[0,2],track[track[:,'tc_cond']==3,:].ix[0,1],marker='*',c='b'))
         self._ax.set_title(str(dates[t]))
 
@@ -382,10 +380,8 @@ class tc_tracks(object):
             y_v,x_v = self.local_max(self._VO.values[t,:,:],threshold=self._thr_vort,neighborhood_size=self._neighborhood_size)
             for y,x in zip(y_v,x_v):
                 box_1=self.get_box(y,x,self._win1)
-                print y,x,box_1
                 tmp=self._MSLP.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]]
                 y,x=np.where(tmp==tmp.min()); y,x=box_1[0]+y[0],box_1[2]+x[0]
-                print y,x
                 box_2=self.get_box(y,x,self._win2)
                 # ii relative pressure min
                 if self._MSLP.ix[t,y,x]==self._MSLP.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].min():
@@ -433,11 +429,11 @@ for year in range(2017,2018):
     self=found_tracks[year]
     found_tracks[year].prepare_map(nc)
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
-    found_tracks[year].set_thresholds(thr_wind=10,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=10,neighborhood_size=8)
-    found_tracks[year].detect(overwrite=False)
-    found_tracks[year].combine_tracks(overwrite=False)
+    found_tracks[year].set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
+    found_tracks[year].detect(overwrite=True)
+    found_tracks[year].combine_tracks(overwrite=True)
     #found_tracks[year].gather_info_track(overwrite=False)
     #track_info,track=found_tracks[year].plot_track_evolution()
-    #found_tracks[year].plot_season()
-    found_tracks[year].plot_surrounding(range(150))
+    found_tracks[year].plot_season()
+    #found_tracks[year].plot_surrounding(range(94,127))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
