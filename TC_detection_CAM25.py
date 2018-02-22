@@ -31,7 +31,7 @@ sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detectio
 from TC_support import *
 
 class tc_tracks(object):
-    def __init__(self,VO,Wind10,MSLP,SST,T,nc,identifier,tc_sel,working_dir,time_steps=None):
+    def __init__(self,VO,Wind10,MSLP,SST,T,nc,identifier,working_dir,time_steps=None):
         self._identifier=identifier
         self._working_dir=working_dir
         if os.path.isdir(working_dir)==False:
@@ -429,7 +429,7 @@ for identifier in [ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_da
 
     working_dir='detection/'+str(identifier)+'_CAM25/'
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
-    found_tracks[identifier]=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,nc=nc,identifier=identifier,tc_sel=tc_sel,working_dir=working_dir)#,time_steps=range(470,520))
+    found_tracks[identifier]=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,nc=nc,identifier=identifier,working_dir=working_dir)#,time_steps=range(470,520))
     self=found_tracks[identifier]
     found_tracks[identifier].prepare_map(nc)
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
