@@ -430,7 +430,6 @@ for identifier in [ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_da
     working_dir='detection/'+str(identifier)+'_CAM25/'
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
     found_tracks[identifier]=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,nc=nc,identifier=identifier,working_dir=working_dir)#,time_steps=range(470,520))
-    self=found_tracks[identifier]
     found_tracks[identifier].prepare_map(nc)
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
     found_tracks[identifier].set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
