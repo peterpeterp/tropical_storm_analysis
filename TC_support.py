@@ -10,7 +10,7 @@ import scipy.ndimage.filters as filters
 import matplotlib.pyplot as plt
 
 #------------ Met stuff
-def rel_vort(U,V,x,y ):
+def rel_vort(U,V,y,x):
     """adapted from wrftools: github.com/keltonhalbert/wrftools"""
     xx,yy = np.meshgrid(x,y)
     xx*=np.cos(np.radians(yy))*6371000*2*np.pi/360.
@@ -24,6 +24,9 @@ def rel_vort(U,V,x,y ):
         dv = np.gradient( V[i,:,:] )
         vort[i,:,:]= dv[-1]/dx[-1] - du[-2]/dy[-2]
     return vort
+
+def wind_speed(U,V):
+    return np.sqrt(U**2+V**2)
 
 # ----------- Time conversions
 

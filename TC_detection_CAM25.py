@@ -28,7 +28,7 @@ sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_
 from TC_support import *
 
 class tc_tracks(object):
-    def __init__(self,VO,Wind10,MSLP,SST,T,dates,year,tc_sel,working_dir,time_steps=None):
+    def __init__(self,VO,Wind10,MSLP,SST,T,nc,year,tc_sel,working_dir,time_steps=None):
         self._year=year
         self._working_dir=working_dir
         if os.path.isdir(working_dir)==False:
@@ -41,50 +41,67 @@ class tc_tracks(object):
             os.system('mkdir '+working_dir+'/track_evolution')
 
         # input fields
-        self._lat=U.lat
-        self._lon=U.lon
-
-        if time_steps is None:
-            time_steps=range(len(U.time))
-        self._time_i=time_steps
-        self._time=U.time
-        self._dates=dates
-        self._yr_frac=np.array([toYearFraction(dd) for dd in self._dates])
+        self._lats=nc['global_latitude0']
+        self._lons=nc['global_longitude0']
+        self._lons[self._lons>180]-=360
 
         self._VO=VO
         self._Wind10=Wind10
-        self._T=T.mean(axis=1)
         self._MSLP=MSLP
-        self._SST=SST
 
+        self._time=MSLP.time0
+        if time_steps is None:
+            time_steps=range(len(self._time))
+        self._time_i=time_steps
+        self._dates=[num2date(t,units = nc.axes['time0'].units,calendar = nc.axes['time0'].calendar) for t in self._time]
+        self._yr_frac=np.array([toYearFraction(dd) for dd in self._dates])
+
+        if T is not None:
+            self._T=T.mean(axis=1)
+        else:
+            self._T=None
+        self._SST=SST
 
         # initialize outputs
         self._id=0
         self._tcs={}
-        # ibtracks
-        self._tc_sel=tc_sel
-        tmp_time=tc_sel['source_time'].values
-        self._tc_time=tmp_time.copy()*np.nan
-        for i in range(tmp_time.shape[0]):
-            for j in range(tmp_time.shape[1]):
-                if np.isfinite(tmp_time[i,j]):
-                    self._tc_time[i,j]=toYearFraction(num2date(tmp_time[i,j],units = 'days since 1858-11-17 00:00:00'))
-        self._tc_lat=tc_sel['lat_for_mapping'].values
-        self._tc_lon=tc_sel['lon_for_mapping'].values
-        self._tc_lon[self._tc_lon<0]+=360
-        self._tc_intens=tc_sel['source_wind']
+
+
+
+    def prepare_map(self,nc):
+        ''' adapted from https://github.com/matplotlib/basemap/blob/master/examples/test_rotpole.py'''
+
+        def normalize180(lon):
+            """Normalize lon to range [180, 180)"""
+            lower = -180.; upper = 180.
+            if lon > upper or lon == lower:
+                lon = lower + abs(lon + upper) % (abs(lower) + abs(upper))
+            if lon < lower or lon == upper:
+                lon = upper - abs(lon - lower) % (abs(lower) + abs(upper))
+            return lower if lon == upper else lon
+
+        rlats = nc.latitude0[:]
+        rlons = nc.longitude0[:]
+        rlons, rlats = np.meshgrid(rlons, rlats)
+
+        o_lon_p = nc['rotated_pole0'].attrs['grid_north_pole_longitude']
+        o_lat_p = nc['rotated_pole0'].attrs['grid_north_pole_latitude']
+        lon_0 = normalize180(o_lon_p-180.)
+
         # init map that is used for plotting
         plt.close('all')
         fig,self._ax=plt.subplots(nrows=1,ncols=1,figsize=(10,5))
-        self._m = Basemap(ax=self._ax,llcrnrlon=min(self._lon),urcrnrlon=max(self._lon),llcrnrlat=min(self._lat),urcrnrlat=max(self._lat),resolution="l",projection='cyl')
+        self._m= Basemap(ax=self._ax,projection='rotpole',lon_0=lon_0,o_lon_p=o_lon_p,o_lat_p=o_lat_p,\
+                   llcrnrlat = self._lats.ix[0,0], urcrnrlat = self._lats.ix[-1,-1],\
+                   llcrnrlon = self._lons.ix[0,0], urcrnrlon = self._lons.ix[-1,-1],resolution='c')
+        self._plot_lon,self._plot_lat = m(self._lons.values,self._lats.values)
         self._m.drawmapboundary(fill_color='1.')
         self._m.drawmapboundary(fill_color='#99ffff')
         self._m.fillcontinents(color='#cc9966',lake_color='#99ffff')
         self._m.drawcoastlines(linewidth=0.3)
         self._m.drawparallels(np.arange(-60,100,30),labels=[0,0,0,0],color='grey',linewidth=0.5)
         self._m.drawmeridians([-120,0,120],labels=[0,0,0,0],color='grey',linewidth=0.5)
-        for storm in range(len(self._tc_sel.storm)):
-            self._m.plot(self._tc_lon[storm,:],self._tc_lat[storm,:],color='gray')
+        self._ax.invert_yaxis()
 
     def set_thresholds(self,thr_wind,thr_sst,thr_vort,thr_mslp,thr_ta,win1,win2,win_step,neighborhood_size):
         self._thr_wind=thr_wind
@@ -97,14 +114,14 @@ class tc_tracks(object):
         self._win_step=win_step
         self._neighborhood_size=neighborhood_size
 
-    def plot_on_map(self,x,y,**kwargs):
-        if isinstance(x,np.ndarray) or isinstance(x,list) or isinstance(x,da.core.dimarraycls.DimArray):
-            x=self._lon[[int(xx) for xx in x]]
-            y=self._lat[[int(yy) for yy in y]]
-        elif isinstance(x,np.float64) or isinstance(x,int):
-            x=self._lon[int(x)]
-            y=self._lat[int(y)]
-        return self._m.plot(x,y,**kwargs)
+    def plot_on_map(self,m,x_in,y_in,**kwargs):
+        if isinstance(x_in,np.ndarray) or isinstance(x_in,list) or isinstance(x_in,da.core.dimarraycls.DimArray):
+            x=self._plot_lon[[int(yy) for yy in y_in],[int(xx) for xx in x_in]]
+            y=self._plot_lat[[int(yy) for yy in y_in],[int(xx) for xx in x_in]]
+        elif isinstance(x_in,np.float64) or isinstance(x_in,int) or isinstance(x_in,float):
+            x=self._plot_lon[int(y_in),int(x_in)]
+            y=self._plot_lat[int(y_in),int(x_in)]
+        return m.plot(x,y,**kwargs)
 
     def points_in_box(self,box):
         points=[]
@@ -114,10 +131,10 @@ class tc_tracks(object):
         return points
 
     def get_box(self,y,x,window):
-        y_min=max(0,y-window)
-        y_max=min(len(self._lat),y+window+1)
-        x_min=max(0,x-window)
-        x_max=min(len(self._lon),x+window+1)
+        y_min=int(max(0,y-window))
+        y_max=int(min(self._lats.shape[0],y+window+1))
+        x_min=int(max(0,x-window))
+        x_max=int(min(self._lats.shape[1],x+window+1))
         return (y_min,y_max,x_min,x_max)
 
     def local_max(self,data,threshold,neighborhood_size):
@@ -143,74 +160,72 @@ class tc_tracks(object):
     def plot_surrounding(self,time_steps=None):
         if time_steps is None:
             time_steps=self._time_i
+
+        plt.close('all')
+        fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(10,5))
+        axes=axes.flatten()
+        maps=[]
+        for ax in axes:
+            mm=Basemap(ax=ax,projection='rotpole',lon_0=lon_0,o_lon_p=o_lon_p,o_lat_p=o_lat_p,\
+                       llcrnrlat = self._lats.ix[0,0], urcrnrlat = self._lats.ix[-1,-1],\
+                       llcrnrlon = self._lons.ix[0,0], urcrnrlon = self._lons.ix[-1,-1],resolution='c')
+            mm.drawcoastlines(linewidth=0.7,color='m')
+            mm.drawparallels(np.arange(-60,100,30),labels=[0,0,0,0],color='grey',linewidth=0.5)
+            mm.drawmeridians([-120,0,120],labels=[0,0,0,0],color='grey',linewidth=0.5)
+            ax.invert_yaxis()
+            maps.append(mm)
+        plt.tight_layout()
+
         for t in time_steps:
-            plt.close('all')
-            fig,axes = plt.subplots(nrows=2,ncols=2)
-            axes=axes.flatten()
-
-            ax=axes[0]; ax.set_title('rel. Vorticity')
+            tmp,txt=[],[]
+            ax=axes[0]; ax.set_title('rel. Vorticity'); mm=maps[0]
+            im=mm.imshow(self._VO.values[t,:,:],vmin=-9.5*10**(-5),vmax=0.0002,interpolation='none')
+            im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
             y_v,x_v = self.local_max(self._VO.values[t,:,:],threshold=self._thr_vort,neighborhood_size=self._neighborhood_size)
-            ax.plot(x_v,y_v,'*r')
-            im=ax.imshow(self._VO.values[t,:,:],vmin=-9.5*10**(-5),vmax=0.0002,interpolation='none')
+            tmp.append(self.plot_on_map(mm,x_v,y_v,c='r',marker='*',linestyle=''))
+
+            ax=axes[1]; ax.set_title('mean sea level pressure'); mm=maps[1]
+            im=mm.imshow(self._MSLP.values[t,:,:],vmin=100360,vmax=103000,interpolation='none')
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
-            ax=axes[1]; ax.set_title('mean sea level pressure')
-            im=ax.imshow(self._MSLP.values[t,:,:],vmin=100360,vmax=103000,interpolation='none')
-            im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
-
-            ax=axes[2]; ax.set_title('10m wind speed')
-            im=ax.imshow(self._Wind10.values[t,:,:],vmin=0,vmax=13,interpolation='none')
+            ax=axes[2]; ax.set_title('10m wind speed'); mm=maps[2]
+            im=mm.imshow(self._Wind10.values[t,:,:],vmin=0,vmax=15,interpolation='none')
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
             for point in self._detected[self._detected[:,'t']==t].values.tolist():
+                box_1=self.get_box(point[1],point[2],self._win1)
+                box_2=self.get_box(point[1],point[2],self._win2)
                 if point[3]:
-                    axes[1].plot(point[2],point[1],'*b')
-                    axes[2].text(point[2]+2,point[1],' '.join([str(int(dd)) for dd in point[3:6]]),color='red',va='top',fontsize=7)
+                    tmp.append(self.plot_on_map(maps[1],point[2],point[1],c='b',marker='*'))
+                    stats='wind: '+str(round(self._Wind10.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max(),01))+'\nmslp: '+str(round(self._MSLP.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].min()/100.,01))
+                    txt.append(axes[3].text(self._plot_lon[point[1],point[2]],self._plot_lat[point[1],point[2]],stats,color='red',va='top',fontsize=7))
                 if point[4]:
-                    axes[2].plot(point[2],point[1],'*g')
+                    tmp.append(self.plot_on_map(maps[2],point[2],point[1],c='g',marker='*'))
 
             ax=axes[3]; ax.set_title('ibtracks')
-            # aplot showing max wind, min mslp and max vort next to tc loc
-            im=ax.imshow(self._T.values[t,:,:]*0,vmin=260,vmax=275,interpolation='none')
-            im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
-
-            # add ibtracks info
-            obs_tc=np.where(abs(self._tc_time-self._yr_frac[t])<0.0004)
-            if len(obs_tc[0])>0:
-                for storm in set(obs_tc[0]):
-                    first_day=obs_tc[1][obs_tc[0]==storm][0]
-                    print t,self._yr_frac[t],self._tc_time[storm,obs_tc[1][obs_tc[0]==storm]-2:obs_tc[1][obs_tc[0]==storm]+2]
-                    # if np.isfinite(tc_sel['source_wind'].ix[storm,first_day,0]):
-                    x_,y_=np.argmin(abs(self._lon-self._tc_lon[storm,first_day])),np.argmin(abs(self._lat-self._tc_lat[storm,first_day]))
-                    box_1=self.get_box(y_,x_,self._win1)
-                    box_2=self.get_box(y_,x_,self._win2)
-                    ax.text(x_,y_,'wind: '+str(round(self._Wind10.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max(),01))+'\nmslp: '+str(round(self._MSLP.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].min(),06))+'\nvort: '+str(self._VO.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()),color='white',va='top',fontsize=7)
-
-                for oo in range(len(obs_tc[0])):
-                    if np.isfinite(self._tc_sel['source_wind'].ix[obs_tc[0][oo],obs_tc[1][oo],0]):
-                        for ax in axes:
-                            ax.plot(np.argmin(abs(self._lon-self._tc_lon[obs_tc[0][oo],obs_tc[1][oo]])),np.argmin(abs(self._lat-self._tc_lat[obs_tc[0][oo],obs_tc[1][oo]])),color=get_tc_color(self._tc_intens.ix[obs_tc[0][oo],obs_tc[1][oo],0]),marker='.')
-
 
             plt.suptitle(str(dates[t]))
-            plt.tight_layout()
             plt.savefig(self._working_dir+'track_surrounding/'+str(t)+'.png', bbox_inches = 'tight')
+
+            # clean map
+            for ax in axes:
+                for imm in ax.images:
+                    ax.images.remove(imm)
+            for element in tmp:
+                l = element.pop(0); wl = weakref.ref(l); l.remove(); del l
+            for element in txt:
+                element.remove()
 
     def plot_track_path(self,track):
         t=int(track.ix[0,0])
         tmp,text=[],[]
+        print track.values
         #points=np.array(self._detecteded[:])
         #tmp.append(self._m.plot(points[:,2],points[:,1],'.g'))
-        tmp.append(self.plot_on_map(track[:,'x'],track[:,'y'],c='k'))
-        tmp.append(self.plot_on_map(track[track[:,'tc_cond']==3,:].ix[0,2],track[track[:,'tc_cond']==3,:].ix[0,1],marker='*',c='b'))
+        tmp.append(self.plot_on_map(self._m,track[:,'x'],track[:,'y'],c='k'))
+        tmp.append(self.plot_on_map(self._m,range(90),range(90),c='k'))
+        tmp.append(self.plot_on_map(self._m,track[track[:,'tc_cond']==3,:].ix[0,2],track[track[:,'tc_cond']==3,:].ix[0,1],marker='*',c='b'))
         self._ax.set_title(str(dates[t]))
-
-        storms=[np.where(self._tc_time==zz)[0][0] for zz in self._yr_frac[max(0,t):min(t+track.shape[0]+5,len(self._yr_frac)-1)] if zz in self._tc_time]
-        storms=np.where(abs(self._tc_time-self._yr_frac[t])<0.002)[0]
-        for storm in set(storms):
-            tmp+=tc_plot(self._m,self._tc_lon[storm,:],self._tc_lat[storm,:],self._tc_intens.ix[storm,:,0])
-            last_pos=np.where(np.isfinite(self._tc_lon[storm,:]))[0][-1]
-            text.append(self._ax.text(self._tc_lon[storm,last_pos],self._tc_lat[storm,last_pos],''.join(self._tc_sel['name'].ix[storm,:])))
 
         plt.tight_layout()
         plt.savefig(self._working_dir+'track_path/'+str(self._year)+'_'+str(t)+'_'+str(self._id)+'_.png')
@@ -226,12 +241,9 @@ class tc_tracks(object):
         if out_name is None:
             out_name=self._working_dir+'season_'+str(self._year)+'_found_tracks.png'
 
-        for storm in range(len(self._tc_sel.storm)):
-            tmp+=tc_plot(self._m,self._tc_lon[storm,:],self._tc_lat[storm,:],self._tc_intens.values[storm,:,0])
-
         for track in self._tcs.values():
             track=track[np.isfinite(track[:,'t']),:]
-            tmp.append(self.plot_on_map(track[:,'x'],track[:,'y'],marker='.'))
+            tmp.append(self.plot_on_map(self._m,track[:,'x'],track[:,'y'],marker='.'))
 
         plt.tight_layout()
         plt.savefig(out_name)
@@ -262,8 +274,6 @@ class tc_tracks(object):
 
             plt.savefig(self._working_dir+'track_evolution/'+str(self._year)+'_'+str(id_)+'_.png')
 
-
-
     def gather_info_track(self,overwrite=False):
         out_file=self._working_dir+'surrounding_info.nc'
         if overwrite and os.path.isfile(out_file):
@@ -281,8 +291,10 @@ class tc_tracks(object):
                 info[i,0,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._VO.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
                 info[i,1,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._MSLP.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
                 info[i,2,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._Wind10.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
-                info[i,3,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._T.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
-                info[i,4,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._SST.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
+                if self._T is not None:
+                    info[i,3,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._T.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
+                if self._SST is not None:
+                    info[i,4,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._SST.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
             track_info[str(id_)]=da.DimArray(info,axes=[range(len(track.time)),['VO','MSLP','Wind10','T','SST'],range(self._win2*2+1),range(self._win2*2+1)],dims=['time_id','variable','lat','lon'])
         self._track_info=da.Dataset(track_info)
         self._track_info.write_nc(out_file,mode='w')
@@ -370,8 +382,10 @@ class tc_tracks(object):
             y_v,x_v = self.local_max(self._VO.values[t,:,:],threshold=self._thr_vort,neighborhood_size=self._neighborhood_size)
             for y,x in zip(y_v,x_v):
                 box_1=self.get_box(y,x,self._win1)
-                lat,lon=self._MSLP.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].argmin()
-                y,x=np.where(self._lat==lat)[0][0],np.where(self._lon==lon)[0][0]
+                print y,x,box_1
+                tmp=self._MSLP.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]]
+                y,x=np.where(tmp==tmp.min()); y,x=box_1[0]+y[0],box_1[2]+x[0]
+                print y,x
                 box_2=self.get_box(y,x,self._win2)
                 # ii relative pressure min
                 if self._MSLP.ix[t,y,x]==self._MSLP.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].min():
@@ -382,13 +396,17 @@ class tc_tracks(object):
                     if self._Wind10.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()>self._thr_wind:
                         tmp[4]=1
                     # iv warm core
-                    if self._T.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self._T.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>self._thr_T:
+                    if self._T is None:
+                        tmp[5]=1
+                    elif self._T.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self._T.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>self._thr_T:
                         tmp[5]=1
                     # v warm sea
-                    if self._SST.ix[t,y,x]>self._thr_sst:   # or np.isnan(self._SST.ix[t,y,x])
+                    if self._SST is None:
+                        tmp[6]=1
+                    elif self._SST.ix[t,y,x]>self._thr_sst:   # or np.isnan(self._SST.ix[t,y,x])
                         tmp[6]=1
                     # vi tropical
-                    if self._lat[y]<=30:
+                    if self._lats.ix[y,x]<=30:
                         tmp[7]=1
                     tmp[8]=sum(tmp[3:6])
                     detect=np.concatenate((detect,np.array([tmp])))
@@ -397,41 +415,29 @@ class tc_tracks(object):
         da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
         return self._detected
 
-def date_(t):
-    yr=int(t/10000.)
-    mn=int((t-yr*10000)/100.)
-    day=int((t-yr*10000-mn*100))
-    hr=int((t-yr*10000-mn*100-day)*24)
-    return(datetime(yr,mn,day,hr,0))
-
 found_tracks={}
-for year in range(2016,2017):
+for year in range(2017,2018):
     start = time.time()
-    # wind_nc=da.read_nc('data/ERA5/atl_'+str(year)+'_10mWind.nc')
-    # Wind10=wind_nc['ws']
-    # MSLP=da.read_nc('data/ERA5/atl_'+str(year)+'_surface.nc')['MSL']
-    # T=da.read_nc('data/ERA5/atl_'+str(year)+'_T.nc')['T']
-    # SST=da.read_nc('data/ERA5/atl_'+str(year)+'_surface.nc')['SSTK']-273.15
-    # dates=[date_(t) for t in Wind10.time]
-    #
-    # U=da.read_nc('data/ERA5/atl_'+str(year)+'_UV.nc')['U']
-    # V=da.read_nc('data/ERA5/atl_'+str(year)+'_UV.nc')['V']
-    # VO=da.DimArray(rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon),axes=[U.time,U.lat,U.lon],dims=['time','lat','lon'])
-    #
-    # TC_season=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['season']
-    # TC_basin=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['basin']
-    # tc_sel=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc').ix[np.where((TC_season==year) & (TC_basin[:,0]==0))[0]]
-    # elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
 
-    working_dir='detection/'+str(year)+'_ERA5/'
+    #MSLP=da.read_nc('data/CAM25/item16222_daily_mean_o6uk_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:]
+    nc=da.read_nc('data/CAM25/item3225_daily_mean_o6uk_2017-06_2017-10.nc')
+    # U=da.read_nc('data/CAM25/item3225_daily_mean_o6uk_2017-06_2017-10.nc')['item3225_daily_mean'].ix[:,0,:,:]
+    # V=da.read_nc('data/CAM25/item3226_daily_mean_o6uk_2017-06_2017-10.nc')['item3226_daily_mean'].ix[:,0,:,:]
+    # VO=da.DimArray(rel_vort(U.values[:,:,:],V.values[:,:,:],lat,lon),axes=[time_,lat,lon],dims=['time','lat','lon'])
+    # Wind10=np.sqrt(U**2+V**2)
+
+
+    working_dir='detection/'+str(year)+'_CAM25/'
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
-    found_tracks[year]=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=SST,VO=VO,T=T,dates=dates,year=year,tc_sel=tc_sel,working_dir=working_dir)#,time_steps=range(470,520))
+    found_tracks[year]=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,nc=nc,year=year,tc_sel=tc_sel,working_dir=working_dir)#,time_steps=range(470,520))
+    self=found_tracks[year]
+    found_tracks[year].prepare_map(nc)
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
-    found_tracks[year].set_thresholds(thr_wind=16,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=10,neighborhood_size=8)
+    found_tracks[year].set_thresholds(thr_wind=10,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=10,neighborhood_size=8)
     found_tracks[year].detect(overwrite=False)
     found_tracks[year].combine_tracks(overwrite=False)
-    found_tracks[year].gather_info_track(overwrite=False)
-    track_info,track=found_tracks[year].plot_track_evolution()
+    #found_tracks[year].gather_info_track(overwrite=False)
+    #track_info,track=found_tracks[year].plot_track_evolution()
     #found_tracks[year].plot_season()
-    #found_tracks[year].plot_surrounding(range(470,490))
+    found_tracks[year].plot_surrounding(range(150))
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
