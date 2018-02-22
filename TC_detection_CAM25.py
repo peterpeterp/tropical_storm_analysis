@@ -22,14 +22,17 @@ import matplotlib.patches as patches
 
 try:
     os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
+    data_path='data/CAM25/'
 except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
+    data_path='/p/projects/tumble/carls/shared_folder/CPDN/data/batch_659/region/'
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
+sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
 from TC_support import *
 
 class tc_tracks(object):
-    def __init__(self,VO,Wind10,MSLP,SST,T,nc,year,tc_sel,working_dir,time_steps=None):
-        self._year=year
+    def __init__(self,VO,Wind10,MSLP,SST,T,nc,identifier,tc_sel,working_dir,time_steps=None):
+        self._identifier=identifier
         self._working_dir=working_dir
         if os.path.isdir(working_dir)==False:
             os.system('mkdir '+working_dir)
@@ -226,7 +229,7 @@ class tc_tracks(object):
         self._ax.set_title(str(dates[t]))
 
         plt.tight_layout()
-        plt.savefig(self._working_dir+'track_path/'+str(self._year)+'_'+str(t)+'_'+str(self._id)+'_.png')
+        plt.savefig(self._working_dir+'track_path/'+str(self._identifier)+'_'+str(t)+'_'+str(self._id)+'_.png')
 
         # clean map
         for element in tmp:
@@ -237,7 +240,7 @@ class tc_tracks(object):
     def plot_season(self,out_name=None):
         tmp=[]
         if out_name is None:
-            out_name=self._working_dir+'season_'+str(self._year)+'_found_tracks.png'
+            out_name=self._working_dir+'season_'+str(self._identifier)+'_found_tracks.png'
 
         for track in self._tcs.values():
             track=track[np.isfinite(track[:,'t']),:]
@@ -270,7 +273,7 @@ class tc_tracks(object):
             axes[0].plot(self._yr_frac[asa],max_wind)
             axes[0].plot(self._tc_time[storm,:],self._tc_intens.ix[storm,:,0])
 
-            plt.savefig(self._working_dir+'track_evolution/'+str(self._year)+'_'+str(id_)+'_.png')
+            plt.savefig(self._working_dir+'track_evolution/'+str(self._identifier)+'_'+str(id_)+'_.png')
 
     def gather_info_track(self,overwrite=False):
         out_file=self._working_dir+'surrounding_info.nc'
@@ -412,28 +415,29 @@ class tc_tracks(object):
         return self._detected
 
 found_tracks={}
-for year in range(2017,2018):
+
+for identifier in [ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily*')]:
     start = time.time()
 
-    #MSLP=da.read_nc('data/CAM25/item16222_daily_mean_o6uk_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:]
-    nc=da.read_nc('data/CAM25/item3225_daily_mean_o6uk_2017-06_2017-10.nc')
-    # U=da.read_nc('data/CAM25/item3225_daily_mean_o6uk_2017-06_2017-10.nc')['item3225_daily_mean'].ix[:,0,:,:]
-    # V=da.read_nc('data/CAM25/item3226_daily_mean_o6uk_2017-06_2017-10.nc')['item3226_daily_mean'].ix[:,0,:,:]
-    # VO=da.DimArray(rel_vort(U.values[:,:,:],V.values[:,:,:],lat,lon),axes=[time_,lat,lon],dims=['time','lat','lon'])
-    # Wind10=np.sqrt(U**2+V**2)
+    MSLP=da.read_nc(data_path+'item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:]
+    nc=da.read_nc(data_path+'item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')
+    U=da.read_nc(data_path+'item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3225_daily_mean'].ix[:,0,:,:]
+    V=da.read_nc(data_path+'item3226_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3226_daily_mean'].ix[:,0,:,:]
+    VO=da.DimArray(rel_vort(U.values[:,:,:],V.values[:,:,:],lat,lon),axes=[time_,lat,lon],dims=['time','lat','lon'])
+    Wind10=np.sqrt(U**2+V**2)
 
 
-    working_dir='detection/'+str(year)+'_CAM25/'
+    working_dir='detection/'+str(identifier)+'_CAM25/'
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
-    found_tracks[year]=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,nc=nc,year=year,tc_sel=tc_sel,working_dir=working_dir)#,time_steps=range(470,520))
-    self=found_tracks[year]
-    found_tracks[year].prepare_map(nc)
+    found_tracks[identifier]=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,nc=nc,identifier=identifier,tc_sel=tc_sel,working_dir=working_dir)#,time_steps=range(470,520))
+    self=found_tracks[identifier]
+    found_tracks[identifier].prepare_map(nc)
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
-    found_tracks[year].set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
-    found_tracks[year].detect(overwrite=True)
-    found_tracks[year].combine_tracks(overwrite=True)
-    #found_tracks[year].gather_info_track(overwrite=False)
-    #track_info,track=found_tracks[year].plot_track_evolution()
-    found_tracks[year].plot_season()
-    #found_tracks[year].plot_surrounding(range(94,127))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
+    found_tracks[identifier].set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
+    found_tracks[identifier].detect(overwrite=True)
+    found_tracks[identifier].combine_tracks(overwrite=True)
+    #found_tracks[identifier].gather_info_track(overwrite=False)
+    #track_info,track=found_tracks[identifier].plot_track_evolution()
+    found_tracks[identifier].plot_season()
+    #found_tracks[identifier].plot_surrounding(range(94,127))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
     elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
