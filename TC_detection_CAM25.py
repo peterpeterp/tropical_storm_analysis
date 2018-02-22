@@ -423,7 +423,7 @@ for identifier in [ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_da
     nc=da.read_nc(data_path+'item3225_daily_mean/item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')
     U=da.read_nc(data_path+'item3225_daily_mean/item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3225_daily_mean'].ix[:,0,:,:]
     V=da.read_nc(data_path+'item3226_daily_mean/item3226_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3226_daily_mean'].ix[:,0,:,:]
-    VO=da.DimArray(rel_vort(U.values[:,:,:],V.values[:,:,:],lat,lon),axes=[time_,lat,lon],dims=['time','lat','lon'])
+    VO=da.DimArray(rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0),axes=[U.time0,U.latitude0,U.longitude0],dims=['time','lat','lon'])
     Wind10=np.sqrt(U**2+V**2)
 
 
