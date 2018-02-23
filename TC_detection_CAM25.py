@@ -11,6 +11,7 @@ import webcolors
 import scipy
 import scipy.ndimage as ndimage
 import scipy.ndimage.filters as filters
+from __future__ import print_function
 
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
@@ -258,7 +259,7 @@ class tc_tracks(object):
             track=track[np.isfinite(track[:,'t']),:]
             track_info=self._track_info[id_]
             track_info=track_info[np.isfinite(track_info[:,'Wind10',12,12]),:,:,:]
-            print track_info.shape,track.shape
+            print(track_info.shape,track.shape)
 
             # find historic storm
             max_wind=track_info[:,'Wind10',:,:].values.max(axis=(-1,-2))
@@ -377,8 +378,9 @@ class tc_tracks(object):
             return self._detected
 
         detect=np.array([[np.nan]*9])
-        for t in self._time_i:
-            print '*************', t
+        print('detecting\n10------50-------100')
+        for t,progress in zip(self._time_i,np.array([['-']+['']*7]*20).flatten()[0:len(self._time_i)]):
+            sys.stdout.write(progress); sys.stdout.flush()
             # i vort max
             y_v,x_v = self.local_max(self._VO.values[t,:,:],threshold=self._thr_vort,neighborhood_size=self._neighborhood_size)
             for y,x in zip(y_v,x_v):
@@ -412,6 +414,7 @@ class tc_tracks(object):
 
         self._detected=da.DimArray(detect[1:,:],axes=[range(detect.shape[0]-1),['t','y','x','cd_mslp','cd_wind','cd_ta','cd_sst','cd_tropical','tc_cond']],dims=['ID','z'])
         da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
+        print('done')
         return self._detected
 
 found_tracks={}
@@ -433,10 +436,10 @@ for identifier in identifieres:
 
 
     working_dir='detection/'+str(identifier)+'_CAM25/'
-    elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
+    elapsed = time.time() - start;  print('Data loaded %.3f seconds.' % elapsed)
     found_tracks[identifier]=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,nc=nc,identifier=identifier,working_dir=working_dir)#,time_steps=range(470,520))
     found_tracks[identifier].prepare_map(nc)
-    elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
+    elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
     found_tracks[identifier].set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
     found_tracks[identifier].detect(overwrite=True)
     found_tracks[identifier].combine_tracks(overwrite=True)
@@ -444,4 +447,4 @@ for identifier in identifieres:
     #track_info,track=found_tracks[identifier].plot_track_evolution()
     found_tracks[identifier].plot_season()
     #found_tracks[identifier].plot_surrounding(range(94,127))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
-    elapsed = time.time() - start;  print('Elapsed %.3f seconds.' % elapsed)
+    elapsed = time.time() - start;  print('Done with plotting %.3f seconds.' % elapsed)
