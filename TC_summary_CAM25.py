@@ -28,17 +28,32 @@ try:
 except:
     identifieres=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
 
-if os.path.isfile('detection/CAM25_summary.nc')==False:
+if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
     found_tracks={}
     for identifier in identifieres:
         found_tracks.update(da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc'))
 
-    summary=da.array(np.zeros([len(found_tracks),2]),axes=[found_tracks.keys(),['category','duration']],dims=['track','stat'])
-    for id_,track in found_tracks.items():
-        summary[id_,'category']=np.nanmax(track[:,'cat'])
-        summary[id_,'duration']=len(np.where((track[:,'cat']>0) & (np.isfinite(track[:,'cat'])))[0])
 
-    da.Dataset({'summary':summary}).write_nc('detection/CAM25_summary.nc',mode='w')
-
+    da.Dataset(found_tracks).write_nc('detection/CAM25_all_tracks.nc',mode='w')
 else:
-    summary=da.read_nc('detection/CAM25_summary.nc')['summary']
+    summary=da.read_nc('detection/CAM25_all_tracks.nc')['summary']
+
+
+# plt.close('all')
+# fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(7,4))
+# ax=axes[0]
+# for i in range(1,6):
+#     ax.bar([i-0.5],len(np.where(summary[:,'category'].values==i)[0])/float(summary.shape[0]),width=1)
+# ax.set_xlim(0.5,5.5)
+# ax.set_ylabel('TCs per season')
+# ax.set_xlabel('TC Category')
+#
+# ax=axes[1]
+# tmp=np.histogram(summary[:,'duration'].values)
+# ax.hist(summary[:,'duration'].values,10,normed=True)
+# ax.set_ylabel('TCs density')
+# ax.set_xlabel('TC duration')
+#
+# plt.suptitle('Tropical cyclones detected in CAM25')
+# plt.tight_layout(rect=(0,0,1,0.95))
+# plt.savefig('detection/CAM25_summary.png')
