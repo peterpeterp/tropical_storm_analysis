@@ -416,7 +416,12 @@ class tc_tracks(object):
 
 found_tracks={}
 
-for identifier in [ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]:
+try:
+    identifiers=[sys.argv[1]]
+except:
+    identifieres=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
+
+for identifier in identifieres:
     start = time.time()
 
     MSLP=da.read_nc(data_path+'item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:]
