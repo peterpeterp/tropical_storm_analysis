@@ -42,6 +42,7 @@ for ax,filt in zip(axes.flatten(),range(6)):
     #m.contourf(x,y,data,20)
     if filt>0:
         im=m.imshow(ndimage.gaussian_filter(data,sigma=(0,filt,filt))[0,:,:],interpolation='none')
+        #im=m.imshow(ndimage.gaussian_filter(data[0,:,:],sigma=(filt,filt)),interpolation='none')
     else:
         im=m.imshow(data[0,:,:],interpolation='none')
 

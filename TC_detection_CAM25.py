@@ -216,17 +216,17 @@ class tc_tracks(object):
         for t in time_steps:
             tmp,txt=[],[]
             ax=axes[0]; ax.set_title('rel. Vorticity'); mm=maps[0]
-            im=mm.imshow(self._VO.values[t,:,:],vmin=-9.5*10**(-5),vmax=0.0002,interpolation='none')
+            im=mm.imshow(self._VO[t,:,:],vmin=-9.5*10**(-5),vmax=0.0002,interpolation='none')
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
-            y_v,x_v = self.local_max(self._VO.values[t,:,:],threshold=self._thr_vort,neighborhood_size=self._neighborhood_size)
+            y_v,x_v = self.local_max(self._VO[t,:,:],threshold=self._thr_vort,neighborhood_size=self._neighborhood_size)
             tmp.append(self.plot_on_map(mm,x_v,y_v,c='r',marker='*',linestyle=''))
 
             ax=axes[1]; ax.set_title('mean sea level pressure'); mm=maps[1]
-            im=mm.imshow(self._MSLP.values[t,:,:],vmin=100360,vmax=103000,interpolation='none')
+            im=mm.imshow(self._MSLP[t,:,:],vmin=100360,vmax=103000,interpolation='none')
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
             ax=axes[2]; ax.set_title('10m wind speed'); mm=maps[2]
-            im=mm.imshow(self._Wind10.values[t,:,:],vmin=0,vmax=15,interpolation='none')
+            im=mm.imshow(self._Wind10[t,:,:],vmin=0,vmax=15,interpolation='none')
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
             for point in self._detected[self._detected[:,'t']==t].values.tolist():
@@ -234,7 +234,7 @@ class tc_tracks(object):
                 box_2=self.get_box(point[1],point[2],self._win2)
                 if point[3]:
                     tmp.append(self.plot_on_map(maps[1],point[2],point[1],c='b',marker='*'))
-                    stats='wind: '+str(round(self._Wind10.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max(),01))+'\nmslp: '+str(round(self._MSLP.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].min()/100.,01))
+                    stats='wind: '+str(round(self._Wind10[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max(),01))+'\nmslp: '+str(round(self._MSLP[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].min()/100.,01))
                     txt.append(axes[3].text(self._plot_lon[point[1],point[2]],self._plot_lat[point[1],point[2]],stats,color='red',va='bottom',ha='right',fontsize=7))
                 if point[4]:
                     tmp.append(self.plot_on_map(maps[2],point[2],point[1],c='g',marker='*'))
@@ -283,9 +283,9 @@ class tc_tracks(object):
             track=np.array(track[np.isfinite(track[:,'t']),:],dtype=np.int)
             tmp.append(self.plot_on_map(self._m,track[0,2],track[0,1],linestyle='',marker='o',c='r'))
             tmp.append(self.plot_on_map(self._m,track[:,2],track[:,1],linestyle='-'))
-            tmp+=self.plot_on_map(self._m,track[:,2],track[:,1],z=self._MSLP.values[track[:,0],track[:,1],track[:,2]],linestyle='',marker='*')
-            print(self._MSLP.values[track[:,0],track[:,1],track[:,2]].min())
-            summary[self.tc_cat(self._MSLP.values[track[:,0],track[:,1],track[:,2]].min())].append(id_)
+            tmp+=self.plot_on_map(self._m,track[:,2],track[:,1],z=self._MSLP[track[:,0],track[:,1],track[:,2]],linestyle='',marker='*')
+            print(self._MSLP[track[:,0],track[:,1],track[:,2]].min())
+            summary[self.tc_cat(self._MSLP[track[:,0],track[:,1],track[:,2]].min())].append(id_)
 
         summary.pop('not')
         print (summary)
@@ -338,9 +338,9 @@ class tc_tracks(object):
             info=np.zeros([track.shape[0],5,self._win2*2+1,self._win2*2+1])*np.nan
             for i,p in enumerate(track.values.tolist()):
                 box_2=[int(bb) for bb in self.get_box(p[1],p[2],self._win2)]
-                info[i,0,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._VO.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
-                info[i,1,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._MSLP.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
-                info[i,2,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._Wind10.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
+                info[i,0,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._VO[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
+                info[i,1,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._MSLP[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
+                info[i,2,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._Wind10[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
                 if self._T is not None:
                     info[i,3,abs(p[1]-box_2[0]-12):box_2[1]-p[1]+12,abs(p[2]-box_2[2]-12):box_2[3]-p[2]+12]=self._T.ix[int(p[0]),box_2[0]:box_2[1],box_2[2]:box_2[3]]
                 if self._SST is not None:
@@ -430,19 +430,19 @@ class tc_tracks(object):
         for t,progress in zip(self._time_i,np.array([['-']+['']*7]*20).flatten()[0:len(self._time_i)]):
             sys.stdout.write(progress); sys.stdout.flush()
             # i vort max
-            y_v,x_v = self.local_max(self._VO.values[t,:,:],threshold=self._thr_vort,neighborhood_size=self._neighborhood_size)
+            y_v,x_v = self.local_max(self._VO[t,:,:],threshold=self._thr_vort,neighborhood_size=self._neighborhood_size)
             for y,x in zip(y_v,x_v):
                 box_1=self.get_box(y,x,self._win1)
-                tmp=self._MSLP.ix[t,box_1[0]:box_1[1],box_1[2]:box_1[3]]
+                tmp=self._MSLP[t,box_1[0]:box_1[1],box_1[2]:box_1[3]]
                 y,x=np.where(tmp==tmp.min()); y,x=box_1[0]+y[0],box_1[2]+x[0]
                 box_2=self.get_box(y,x,self._win2)
                 # ii relative pressure min
-                if self._MSLP.ix[t,y,x]==self._MSLP.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].min():
+                if self._MSLP[t,y,x]==self._MSLP[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].min():
                     box_1=self.get_box(y,x,self._win1)
                     box_2=self.get_box(y,x,self._win2)
                     tmp=[t,y,x,1,0,0,0,0,0]
                     # iii wind speed
-                    if self._Wind10.ix[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()>self._thr_wind:
+                    if self._Wind10[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()>self._thr_wind:
                         tmp[4]=1
                     # iv warm core
                     if self._T is None:
@@ -475,12 +475,12 @@ except:
 for identifier in identifieres:
     start = time.time()
     print('*** started run '+identifier+' ***')
-    MSLP=da.read_nc(data_path+'item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:]
+    MSLP=ndimage.gaussian_filter(da.read_nc(data_path+'item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:],sigma=(0,2,2))
     nc=da.read_nc(data_path+'item3225_daily_mean/item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')
     U=da.read_nc(data_path+'item3225_daily_mean/item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3225_daily_mean'].ix[:,0,:,:]
     V=da.read_nc(data_path+'item3226_daily_mean/item3226_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3226_daily_mean'].ix[:,0,:,:]
-    VO=da.DimArray(rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0),axes=[U.time0,U.latitude0,U.longitude0],dims=['time','lat','lon'])
-    Wind10=np.sqrt(U**2+V**2)
+    VO=ndimage.gaussian_filter(rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0),sigma=(0,2,2))
+    Wind10=np.array(np.sqrt(U**2+V**2))
 
 
     working_dir='detection/'+str(identifier)+'_CAM25/'
