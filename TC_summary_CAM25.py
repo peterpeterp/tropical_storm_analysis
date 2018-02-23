@@ -28,13 +28,17 @@ try:
 except:
     identifieres=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
 
-found_tracks={}
-for identifier in identifieres:
-    found_tracks.update(da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc'))
+if os.path.isfile('detection/CAM25_summary.nc')==False:
+    found_tracks={}
+    for identifier in identifieres:
+        found_tracks.update(da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc'))
 
-summary=da.array(np.zeros([len(found_tracks),2]),axes=[found_tracks.keys(),['category','duration']],dims=['track','stat'])
-for id_,track in found_tracks.items():
-    summary[id_,'category']=track[:,'cat'].max()
-    summary[id_,'duration']=len(np.where(track[:,'cat']>0)[0])
+    summary=da.array(np.zeros([len(found_tracks),2]),axes=[found_tracks.keys(),['category','duration']],dims=['track','stat'])
+    for id_,track in found_tracks.items():
+        summary[id_,'category']=np.nanmax(track[:,'cat'])
+        summary[id_,'duration']=len(np.where((track[:,'cat']>0) & (np.isfinite(track[:,'cat'])))[0])
 
-da.Dataset({'summary':summary}).write_nc('detection/CAM25_summary.nc',mode='w')
+    da.Dataset({'summary':summary}).write_nc('detection/CAM25_summary.nc',mode='w')
+
+else:
+    summary=da.read_nc('detection/CAM25_summary.nc')['summary']
