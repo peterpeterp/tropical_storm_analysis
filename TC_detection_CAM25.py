@@ -155,7 +155,7 @@ class tc_tracks(object):
             tmp=[]
             for i in range(len(x)-1):
                 if np.isfinite(x[i+1]):
-                    tmp.append(m.plot(x[i:i+2],y[i:i+2],color=self._tc_cat[self.tc_cat(z[i])]))
+                    tmp.append(m.plot(x[i:i+2],y[i:i+2],color=self._tc_cat[self.tc_cat(z[i])],**kwargs))
             return tmp
         else:
             return m.plot(x,y,**kwargs)
@@ -281,8 +281,8 @@ class tc_tracks(object):
         summary={'not':[],'Cat1':[],'Cat2':[],'Cat3':[],'Cat4':[],'Cat5':[]}
         for id_,track in self._tcs.items():
             track=np.array(track[np.isfinite(track[:,'t']),:],dtype=np.int)
-            tmp.append(self.plot_on_map(self._m,track[:,2],track[:,1],linestyle='',marker='o'))
-            tmp+=self.plot_on_map(self._m,track[:,2],track[:,1],z=self._MSLP.values[track[:,0],track[:,1],track[:,2]])
+            tmp.append(self.plot_on_map(self._m,track[:,2],track[:,1],linestyle='-'))
+            tmp+=self.plot_on_map(self._m,track[:,2],track[:,1],z=self._MSLP.values[track[:,0],track[:,1],track[:,2]],linestyle='',marker='*')
             print(self._MSLP.values[track[:,0],track[:,1],track[:,2]].min())
             summary[self.tc_cat(self._MSLP.values[track[:,0],track[:,1],track[:,2]].min())].append(id_)
 
