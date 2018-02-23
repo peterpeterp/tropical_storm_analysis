@@ -31,3 +31,10 @@ except:
 found_tracks={}
 for identifier in identifieres:
     found_tracks.update(da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc'))
+
+summary=da.array(np.zeros([len(found_tracks),2]),axes=[found_tracks.keys(),['category','duration']],dims=['track','stat'])
+for id_,track in found_tracks.items():
+    summary[id_,'category']=track[:,'cat'].max()
+    summary[id_,'duration']=len(np.where(track[:,'cat']>0)[0])
+
+da.Dataset(summary).write_nc('detection/CAM25_summary.nc','w')
