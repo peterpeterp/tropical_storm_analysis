@@ -289,8 +289,8 @@ class tc_tracks(object):
         summary.pop('not')
         print (summary)
         txt=[]
-        for cat,y in zip(summary.keys(),[1.26,1.2,1.14,1.08,1.02]):
-            txt.append(self._ax.text(0.005,y,cat+': '+str(len(summary[cat])),transform=ax.transAxes,color=self._tc_cat[cat],va='top',ha='left',fontsize=12))
+        for cat,y in zip(summary.keys(),[0.99,0.95,0.91,0.87,0.83]):
+            txt.append(self._ax.text(0.005,y,cat+': '+str(len(summary[cat])),transform=self._ax.transAxes,color=self._tc_cat[cat],va='top',ha='left',fontsize=12))
 
         plt.tight_layout()
         plt.savefig(out_name)
