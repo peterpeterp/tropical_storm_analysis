@@ -55,7 +55,7 @@ class tc_tracks(object):
         self._Wind10=Wind10
         self._MSLP=MSLP
 
-        self._time=MSLP.time0
+        self._time=nc.time0
         if time_steps is None:
             time_steps=range(len(self._time))
         self._time_i=time_steps
@@ -122,7 +122,6 @@ class tc_tracks(object):
         self._win2=win2
         self._win_step=win_step
         self._neighborhood_size=neighborhood_size
-
 
     def tc_cat(self,z,method='pressure'):
         if method=='wind':
@@ -258,8 +257,8 @@ class tc_tracks(object):
         tmp,txt=[],[]
         #points=np.array(self._detecteded[:])
         #tmp.append(self._m.plot(points[:,2],points[:,1],'.g'))
-        tmp.append(self.plot_on_map(self._m,track[:,'x'],track[:,'y'],c='k'))
-        tmp.append(self.plot_on_map(self._m,track[track[:,'tc_cond']==3,:].ix[0,2],track[track[:,'tc_cond']==3,:].ix[0,1],marker='*',c='b'))
+        tmp.append(self.plot_on_map(self._m,track[:,'x'],track[:,'y'],c='orange'))
+        tmp.append(self.plot_on_map(self._m,track[track[:,'tc_cond']==3,:].ix[:,2],track[track[:,'tc_cond']==3,:].ix[:,1],marker='*',c='m',linestyle=''))
         self._ax.set_title(str(self._dates[t]))
 
         plt.tight_layout()
@@ -479,7 +478,7 @@ for identifier in identifieres:
     nc=da.read_nc(data_path+'item3225_daily_mean/item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')
     U=da.read_nc(data_path+'item3225_daily_mean/item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3225_daily_mean'].ix[:,0,:,:]
     V=da.read_nc(data_path+'item3226_daily_mean/item3226_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3226_daily_mean'].ix[:,0,:,:]
-    VO=ndimage.gaussian_filter(rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0),sigma=(0,2,2))
+    VO=ndimage.gaussian_filter(rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0),sigma=(0,1,1))
     Wind10=np.array(np.sqrt(U**2+V**2))
 
 
@@ -489,8 +488,8 @@ for identifier in identifieres:
     found_tcs.prepare_map(nc)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
     found_tcs.set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
-    found_tcs.detect(overwrite=False)
-    found_tcs.combine_tracks(overwrite=False)
+    found_tcs.detect(overwrite=True)
+    found_tcs.combine_tracks(overwrite=True)
     #found_tcs.gather_info_track(overwrite=False)
     #track_info,track=found_tcs.plot_track_evolution()
     found_tcs.plot_season()
