@@ -1,4 +1,4 @@
-#from __future__ import print_function
+from __future__ import print_function
 import os,sys,glob,time,collections,gc,calendar,weakref
 from datetime import datetime as datetime
 from datetime import timedelta
@@ -382,7 +382,7 @@ class tc_tracks(object):
         detect=np.array([[np.nan]*9])
         print('detecting\n10------50-------100')
         for t,progress in zip(self._time_i,np.array([['-']+['']*7]*20).flatten()[0:len(self._time_i)]):
-            #sys.stdout.write(progress); sys.stdout.flush()
+            sys.stdout.write(progress); sys.stdout.flush()
             # i vort max
             y_v,x_v = self.local_max(self._VO.values[t,:,:],threshold=self._thr_vort,neighborhood_size=self._neighborhood_size)
             for y,x in zip(y_v,x_v):
