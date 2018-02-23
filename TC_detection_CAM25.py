@@ -1,7 +1,5 @@
 from __future__ import print_function
 import os,sys,glob,time,collections,gc,calendar,weakref,resource
-from datetime import datetime as datetime
-from datetime import timedelta
 from netCDF4 import Dataset,netcdftime,num2date
 import dimarray as da
 import numpy as np
@@ -10,17 +8,8 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
-import webcolors
-import scipy
 import scipy.ndimage as ndimage
-import scipy.ndimage.filters as filters
 
-from shapely.geometry import Point
-from shapely.geometry.polygon import Polygon
-
-from matplotlib.path import Path
-from matplotlib.collections import PatchCollection
-import matplotlib.patches as patches
 sns.set_palette(sns.color_palette("plasma"))
 
 try:
