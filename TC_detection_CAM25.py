@@ -207,7 +207,7 @@ class tc_tracks(object):
 
             ax=axes[3]; ax.set_title('10m wind [m/s] and mslp [mbar]')
 
-            plt.suptitle(str(dates[t]))
+            plt.suptitle(str(self._dates[t]))
             plt.savefig(self._working_dir+'track_surrounding/'+str(t)+'.png', bbox_inches = 'tight')
 
             # clean map
@@ -226,7 +226,7 @@ class tc_tracks(object):
         #tmp.append(self._m.plot(points[:,2],points[:,1],'.g'))
         tmp.append(self.plot_on_map(self._m,track[:,'x'],track[:,'y'],c='k'))
         tmp.append(self.plot_on_map(self._m,track[track[:,'tc_cond']==3,:].ix[0,2],track[track[:,'tc_cond']==3,:].ix[0,1],marker='*',c='b'))
-        self._ax.set_title(str(dates[t]))
+        self._ax.set_title(str(self._dates[t]))
 
         plt.tight_layout()
         plt.savefig(self._working_dir+'track_path/'+str(self._identifier)+'_'+str(t)+'_'+str(self._id)+'_.png')
