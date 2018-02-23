@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os,sys,glob,time,collections,gc,calendar,weakref
 from datetime import datetime as datetime
 from datetime import timedelta
@@ -11,7 +12,6 @@ import webcolors
 import scipy
 import scipy.ndimage as ndimage
 import scipy.ndimage.filters as filters
-from __future__ import print_function
 
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
