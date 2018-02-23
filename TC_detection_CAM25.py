@@ -9,7 +9,7 @@ from mpl_toolkits.basemap import Basemap
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-import seaborn as sn
+import seaborn as sns
 import webcolors
 import scipy
 import scipy.ndimage as ndimage
@@ -21,7 +21,7 @@ from shapely.geometry.polygon import Polygon
 from matplotlib.path import Path
 from matplotlib.collections import PatchCollection
 import matplotlib.patches as patches
-
+sns.set_palette(sns.color_palette("plasma"))
 
 try:
     os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
@@ -281,6 +281,7 @@ class tc_tracks(object):
         summary={'not':[],'Cat1':[],'Cat2':[],'Cat3':[],'Cat4':[],'Cat5':[]}
         for id_,track in self._tcs.items():
             track=np.array(track[np.isfinite(track[:,'t']),:],dtype=np.int)
+            tmp.append(self.plot_on_map(self._m,track[0,2],track[0,1],linestyle='',marker='o',c='r'))
             tmp.append(self.plot_on_map(self._m,track[:,2],track[:,1],linestyle='-'))
             tmp+=self.plot_on_map(self._m,track[:,2],track[:,1],z=self._MSLP.values[track[:,0],track[:,1],track[:,2]],linestyle='',marker='*')
             print(self._MSLP.values[track[:,0],track[:,1],track[:,2]].min())
