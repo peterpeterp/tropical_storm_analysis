@@ -37,4 +37,4 @@ for id_,track in found_tracks.items():
     summary[id_,'category']=track[:,'cat'].max()
     summary[id_,'duration']=len(np.where(track[:,'cat']>0)[0])
 
-da.Dataset(summary).write_nc('detection/CAM25_summary.nc','w')
+da.Dataset(summary).write_nc('detection/CAM25_summary.nc',mode='w')
