@@ -65,7 +65,7 @@ def running_mean_func(xx,N):
 
 #------------ TC stuff
 
-def get_tc_color(z, treshs=[82,95,112,136], colors=['#ffffcc','#ffe775','#ffc148','#ff8f20','#ff6060']):
+def tc_wind_color(z):
     if z<=64: color= 'lightblue'
     if z>64: color= '#ffffcc'
     if z>82: color= '#ffe775'
@@ -75,11 +75,21 @@ def get_tc_color(z, treshs=[82,95,112,136], colors=['#ffffcc','#ffe775','#ffc148
     if np.isnan(z): color= 'lightblue'
     return color
 
-def tc_plot(m, x, y, z):
+def tc_pressure_color(z):
+    if z>=1020000: color= 'lightblue'
+    if z<1020000: color= '#ffffcc'
+    if z<98000: color= '#ffe775'
+    if z<96500: color= '#ffc148'
+    if z<94500: color= '#ff8f20'
+    if z<92000: color= '#ff6060'
+    if np.isnan(z): color= 'lightblue'
+    return color
+
+def tc_plot(m, x, y, z, color_type=tc_wind_color):
     tmp=[]
     for i in range(len(x)-1):
         if np.isfinite(x[i+1]):
-            tmp.append(m.plot(x[i:i+2],y[i:i+2],color=get_tc_color(z[i])))
+            tmp.append(m.plot(x[i:i+2],y[i:i+2],color=color_type(z[i])))
     return tmp
 
 def latlon_to_meshgrid(lat,lon):

@@ -72,6 +72,9 @@ class tc_tracks(object):
         self._id=0
         self._tcs={}
 
+        # tc cat dict
+        self._tc_cat={'not':'lightblue','Cat1':'#ffffcc','Cat2':'#ffe775','Cat3':'#ffc148','Cat4':'#ff8f20','Cat5':'#ff6060'}
+
 
 
     def prepare_map(self,nc):
@@ -96,14 +99,14 @@ class tc_tracks(object):
 
         # init map that is used for plotting
         plt.close('all')
-        fig,self._ax=plt.subplots(nrows=1,ncols=1,figsize=(10,5))
+        fig,self._ax=plt.subplots(nrows=1,ncols=1,figsize=(8,5))
         self._m= Basemap(ax=self._ax,projection='rotpole',lon_0=lon_0,o_lon_p=o_lon_p,o_lat_p=o_lat_p,\
                    llcrnrlat = self._lats.ix[0,0], urcrnrlat = self._lats.ix[-1,-1],\
                    llcrnrlon = self._lons.ix[0,0], urcrnrlon = self._lons.ix[-1,-1],resolution='c')
         self._plot_lon,self._plot_lat = self._m(self._lons.values,self._lats.values)
         self._m.drawmapboundary(fill_color='1.')
-        self._m.drawmapboundary(fill_color='#99ffff')
-        self._m.fillcontinents(color='#cc9966',lake_color='#99ffff')
+        self._m.drawmapboundary(fill_color='darkblue')
+        self._m.fillcontinents(color='darkgreen',lake_color='darkblue')
         self._m.drawcoastlines(linewidth=0.3)
         self._m.drawparallels(np.arange(-60,100,30),labels=[0,0,0,0],color='grey',linewidth=0.5)
         self._m.drawmeridians([-120,0,120],labels=[0,0,0,0],color='grey',linewidth=0.5)
@@ -120,14 +123,42 @@ class tc_tracks(object):
         self._win_step=win_step
         self._neighborhood_size=neighborhood_size
 
-    def plot_on_map(self,m,x_in,y_in,**kwargs):
+
+    def tc_cat(self,z,method='pressure'):
+        if method=='wind':
+            if z<=64: cat= 'not'
+            if z>64: cat= 'Cat1'
+            if z>82: cat= 'Cat2'
+            if z>95: cat= 'Cat3'
+            if z>112: cat= 'Cat4'
+            if z>136: cat= 'Cat5'
+            if np.isnan(z): cat= 'not'
+            return cat
+        if method=='pressure':
+            if z>=1020000: cat= 'not'
+            if z<1020000: cat= 'Cat1'
+            if z<98000: cat= 'Cat2'
+            if z<96500: cat= 'Cat3'
+            if z<94500: cat= 'Cat4'
+            if z<92000: cat= 'Cat5'
+            if np.isnan(z): cat= 'not'
+            return cat
+
+    def plot_on_map(self,m,x_in,y_in,z=None,tc_cat_method='pressure',**kwargs):
         if isinstance(x_in,np.ndarray) or isinstance(x_in,list) or isinstance(x_in,da.core.dimarraycls.DimArray):
             x=self._plot_lon[[int(yy) for yy in y_in],[int(xx) for xx in x_in]]
             y=self._plot_lat[[int(yy) for yy in y_in],[int(xx) for xx in x_in]]
         elif isinstance(x_in,np.float64) or isinstance(x_in,int) or isinstance(x_in,float):
             x=self._plot_lon[int(y_in),int(x_in)]
             y=self._plot_lat[int(y_in),int(x_in)]
-        return m.plot(x,y,**kwargs)
+        if z is not None:
+            tmp=[]
+            for i in range(len(x)-1):
+                if np.isfinite(x[i+1]):
+                    tmp.append(m.plot(x[i:i+2],y[i:i+2],color=self._tc_cat[self.tc_cat(z[i])]))
+            return tmp
+        else:
+            return m.plot(x,y,**kwargs)
 
     def points_in_box(self,box):
         points=[]
@@ -224,7 +255,7 @@ class tc_tracks(object):
 
     def plot_track_path(self,track):
         t=int(track.ix[0,0])
-        tmp,text=[],[]
+        tmp,txt=[],[]
         #points=np.array(self._detecteded[:])
         #tmp.append(self._m.plot(points[:,2],points[:,1],'.g'))
         tmp.append(self.plot_on_map(self._m,track[:,'x'],track[:,'y'],c='k'))
@@ -237,7 +268,7 @@ class tc_tracks(object):
         # clean map
         for element in tmp:
             l = element.pop(0); wl = weakref.ref(l); l.remove(); del l
-        for element in text:
+        for element in txt:
             element.remove()
 
     def plot_season(self,out_name=None):
@@ -245,14 +276,28 @@ class tc_tracks(object):
         if out_name is None:
             out_name=self._working_dir+'season_'+str(self._identifier)+'_found_tracks.png'
 
-        for track in self._tcs.values():
-            track=track[np.isfinite(track[:,'t']),:]
-            tmp.append(self.plot_on_map(self._m,track[:,'x'],track[:,'y'],marker='.'))
+        self._ax.set_title('season '+self._identifier)#
+
+        summary={'not':[],'Cat1':[],'Cat2':[],'Cat3':[],'Cat4':[],'Cat5':[]}
+        for id_,track in self._tcs.items():
+            track=np.array(track[np.isfinite(track[:,'t']),:],dtype=np.int)
+            #tmp.append(self.plot_on_map(self._m,track[:,2],track[:,1],linestyle='',marker='.'))
+            tmp+=self.plot_on_map(self._m,track[:,2],track[:,1],z=self._MSLP.values[track[:,0],track[:,1],track[:,2]])
+            print(self._MSLP.values[track[:,0],track[:,1],track[:,2]].min())
+            summary[self.tc_cat(self._MSLP.values[track[:,0],track[:,1],track[:,2]].min())].append(id_)
+
+        summary.pop('not')
+        print (summary)
+        txt=[]
+        for cat,y in zip(summary.keys(),[1.26,1.2,1.14,1.08,1.02]):
+            txt.append(self._ax.text(0.005,y,cat+': '+str(len(summary[cat])),transform=ax.transAxes,color=self._tc_cat[cat],va='top',ha='left',fontsize=12))
 
         plt.tight_layout()
         plt.savefig(out_name)
 
         # clean map
+        for element in txt:
+            element.remove()
         for element in tmp:
             l = element.pop(0); wl = weakref.ref(l); l.remove(); del l
 
@@ -361,7 +406,7 @@ class tc_tracks(object):
 
                     if sum([pp in used_pos for pp in track])/float(len(track))>0.2:
                         used_pos+=track
-                        track=da.DimArray(np.array(track),axes=[np.array(track)[:,0],['t','y','x','cd_mslp','cd_wind','cd_ta','cd_sst','cd_tropical','tc_cond']],dims=['time','z'])
+                        track=da.DimArray(np.array(track,dtype=np.int),axes=[np.array(track)[:,0],['t','y','x','cd_mslp','cd_wind','cd_ta','cd_sst','cd_tropical','tc_cond']],dims=['time','z'])
                         if track[track[:,'tc_cond']==3].shape[0]>6 or track.shape[0]>10:
                             self._tcs[str(self._id)]=track
                             if plot:    self.plot_track_path(track)
@@ -414,7 +459,7 @@ class tc_tracks(object):
                     tmp[8]=sum(tmp[3:6])
                     detect=np.concatenate((detect,np.array([tmp])))
 
-        self._detected=da.DimArray(detect[1:,:],axes=[range(detect.shape[0]-1),['t','y','x','cd_mslp','cd_wind','cd_ta','cd_sst','cd_tropical','tc_cond']],dims=['ID','z'])
+        self._detected=da.DimArray(np.array(detect[1:,:],dtype=np.int),axes=[range(detect.shape[0]-1),['t','y','x','cd_mslp','cd_wind','cd_ta','cd_sst','cd_tropical','tc_cond']],dims=['ID','z'])
         da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
         print('done')
         return self._detected
@@ -443,8 +488,8 @@ for identifier in identifieres:
     found_tracks[identifier].prepare_map(nc)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
     found_tracks[identifier].set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
-    found_tracks[identifier].detect(overwrite=True)
-    found_tracks[identifier].combine_tracks(overwrite=True)
+    found_tracks[identifier].detect(overwrite=False)
+    found_tracks[identifier].combine_tracks(overwrite=False)
     #found_tracks[identifier].gather_info_track(overwrite=False)
     #track_info,track=found_tracks[identifier].plot_track_evolution()
     found_tracks[identifier].plot_season()
