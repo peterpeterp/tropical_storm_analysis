@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os,sys,glob,time,collections,gc,calendar,weakref
+import os,sys,glob,time,collections,gc,calendar,weakref,resource
 from datetime import datetime as datetime
 from datetime import timedelta
 from netCDF4 import Dataset,netcdftime,num2date
@@ -484,14 +484,15 @@ for identifier in identifieres:
 
     working_dir='detection/'+str(identifier)+'_CAM25/'
     elapsed = time.time() - start;  print('Data loaded %.3f seconds.' % elapsed)
-    found_tracks[identifier]=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,nc=nc,identifier=identifier,working_dir=working_dir)#,time_steps=range(470,520))
-    found_tracks[identifier].prepare_map(nc)
+    found_tcs=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,nc=nc,identifier=identifier,working_dir=working_dir)#,time_steps=range(470,520))
+    found_tcs.prepare_map(nc)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
-    found_tracks[identifier].set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
-    found_tracks[identifier].detect(overwrite=False)
-    found_tracks[identifier].combine_tracks(overwrite=False)
-    #found_tracks[identifier].gather_info_track(overwrite=False)
-    #track_info,track=found_tracks[identifier].plot_track_evolution()
-    found_tracks[identifier].plot_season()
-    #found_tracks[identifier].plot_surrounding(range(94,127))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
+    found_tcs.set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
+    found_tcs.detect(overwrite=False)
+    found_tcs.combine_tracks(overwrite=False)
+    #found_tcs.gather_info_track(overwrite=False)
+    #track_info,track=found_tcs.plot_track_evolution()
+    found_tcs.plot_season()
+    #found_tcs.plot_surrounding(range(94,127))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
     elapsed = time.time() - start;  print('Done with plotting %.3f seconds.' % elapsed)
+    print('memory in use: '+str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/10.**6))

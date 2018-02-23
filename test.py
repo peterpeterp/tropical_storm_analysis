@@ -4,7 +4,7 @@ from mpl_toolkits.basemap import Basemap
 import numpy as np
 import matplotlib.pyplot as plt
 
-nc = Dataset('data/CAM25/item16222_daily_mean_o6uk_2017-06_2017-10.nc')
+nc = Dataset('data/CAM25/item16222_daily_mean/item16222_daily_mean_o6uk_2017-06_2017-10.nc')
 lats = nc.variables['global_latitude0'][:]
 lons = nc.variables['global_longitude0'][:]
 rlats = nc.variables['latitude0'][:]
