@@ -6,6 +6,8 @@ from netCDF4 import Dataset,netcdftime,num2date
 import dimarray as da
 import numpy as np
 from mpl_toolkits.basemap import Basemap
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sn
 import webcolors
