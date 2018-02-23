@@ -97,7 +97,7 @@ class tc_tracks(object):
         self._m= Basemap(ax=self._ax,projection='rotpole',lon_0=lon_0,o_lon_p=o_lon_p,o_lat_p=o_lat_p,\
                    llcrnrlat = self._lats.ix[0,0], urcrnrlat = self._lats.ix[-1,-1],\
                    llcrnrlon = self._lons.ix[0,0], urcrnrlon = self._lons.ix[-1,-1],resolution='c')
-        self._plot_lon,self._plot_lat = m(self._lons.values,self._lats.values)
+        self._plot_lon,self._plot_lat = self._m(self._lons.values,self._lats.values)
         self._m.drawmapboundary(fill_color='1.')
         self._m.drawmapboundary(fill_color='#99ffff')
         self._m.fillcontinents(color='#cc9966',lake_color='#99ffff')
