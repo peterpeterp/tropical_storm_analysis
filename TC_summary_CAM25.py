@@ -48,11 +48,11 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                     used=storms[xxx.index(x_)]
                     cdo_diff=cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+data_path+'/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')
                     if len(cdo_diff)==72:
-                        print('*************',identifier,used)
+                        print('             ',identifier,used,len(cdo_diff))
                         identifiers.remove(identifier)
                         break
-                    if len(cdo_diff)==0:
-                        print('+++++++++++++',identifier,used)
+                    elif len(cdo_diff)==0:
+                        print('------------>',identifier,used,len(cdo_diff))
                         identifiers.remove(identifier)
                         if used in not_unique.keys():
                             not_unique[used].append(identifier)
@@ -61,7 +61,7 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                         break
 
 
-                    else:
+                    elif len(cdo_diff)==152:
                         xxx.append(x_)
                         storms.append(identifier)
                 else:
@@ -79,14 +79,15 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
     longest_track=0
     for identifier in identifiers:
         tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
-
+        if len(tmp.keys())>0:
+            tmp_example=tmp
         for id_,track in tmp.items():
             track=np.array(track[np.isfinite(track[:,'t']),:])
             found_tracks[id_]=track
             if track.shape[0]>longest_track:
                 longest_track=track.shape[0]
 
-    all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp.values()[0].z],dims=['ID','time','z'])
+    all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp_example.z],dims=['ID','time','z'])
     for id_,track in found_tracks.items():
         all_tracks[id_,0:track.shape[0]-1,:]=track
     da.Dataset({'all_tracks':all_tracks}).write_nc('detection/CAM25_all_tracks.nc',mode='w')
