@@ -42,7 +42,7 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
         if len(tmp.values())>0:
             print(identifier)
             # check for duplicates
-            track=tmp[tmp.keys()[0]]
+            track=tmp[sorted(tmp.keys())[0]]
             track=np.array(track[np.isfinite(track[:,'t']),:])
             x_=[int(xx) for xx in track[:,2]]
             if x_ in xxx:
