@@ -30,19 +30,17 @@ from TC_support import *
 try:
     identifiers=[sys.argv[1]]
 except:
-    identifieres=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
+    identifieres=sorted([ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')])
 
 
 if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
-    found_tracks={}
-    longest_track=0
+    # check for duplicates
     xxx=[]
     storms=[]
     not_unique={}
-    for identifier in sorted(identifieres):
+    for identifier in identifiers:
         tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
         if len(tmp.values())>0:
-            # check for duplicates
             for track in tmp.values():
                 track=np.array(track[np.isfinite(track[:,'t']),:])
                 x_=[int(xx) for xx in track[:,2]]
@@ -51,31 +49,42 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                     cdo_diff=cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+data_path+'/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')
                     if len(cdo_diff) in [0,72]:
                         print('*************',used,identifier)
-                        if used in not_unique.keys():
-                            not_unique[used].append(identifier)
-                        if used not in not_unique.keys():
-                            not_unique[used]=[identifier]
+                        identifiers.remove(identifier)
+                        if len(cdo_diff)==0:
+                            if used in not_unique.keys():
+                                not_unique[used].append(identifier)
+                            if used not in not_unique.keys():
+                                not_unique[used]=[identifier]
 
+                    else:
+                        xxx.append(x_)
+                        storms.append(identifier)
+                        break
                 else:
                     xxx.append(x_)
                     storms.append(identifier)
-                    for id_,track in tmp.items():
-                        track=np.array(track[np.isfinite(track[:,'t']),:])
-                        found_tracks[id_]=track
-                        if track.shape[0]>longest_track:
-                            longest_track=track.shape[0]
-
-    all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp.items()[0].z],dims=['ID','time','z'])
-    for id_,track in found_tracks.items():
-        all_tracks[id_,0:track.shape[0]-1,:]=track
-    da.Dataset({'all_tracks':all_tracks}).write_nc('detection/CAM25_all_tracks.nc',mode='w')
 
     not_unique_summary=open('detection/CAM25_not_unique.txt','w')
     for used,identic in not_unique.items():
         not_unique.write(used+' '+' '.join(identic)+'\n')
-
     not_unique_summary.close()
-    asdas
+
+    # collect tracks
+    found_tracks={}
+    longest_track=0
+    for identifier in identifiers:
+        tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
+
+        for id_,track in tmp.items():
+            track=np.array(track[np.isfinite(track[:,'t']),:])
+            found_tracks[id_]=track
+            if track.shape[0]>longest_track:
+                longest_track=track.shape[0]
+
+    all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp.z],dims=['ID','time','z'])
+    for id_,track in found_tracks.items():
+        all_tracks[id_,0:track.shape[0]-1,:]=track
+    da.Dataset({'all_tracks':all_tracks}).write_nc('detection/CAM25_all_tracks.nc',mode='w')
 
 else:
     all_tracks=da.read_nc('detection/CAM25_all_tracks.nc')['all_tracks']
