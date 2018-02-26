@@ -39,27 +39,27 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
     not_unique={}
     for identifier in identifieres:
         tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
+        if len(tmp.values())>0:
+            # check for duplicates
+            track=tmp.values()[0]
+            track=np.array(track[np.isfinite(track[:,'t']),:])
+            x_=[int(xx) for xx in track[:,'x']]
+            if x_ in xxx:
+                used=identifieres.ID[xxx.index(x_)]
 
-        # check for duplicates
-        track=tmp.values()[0]
-        track=np.array(track[np.isfinite(track[:,'t']),:])
-        x_=[int(xx) for xx in track[:,'x']]
-        if x_ in xxx:
-            used=identifieres.ID[xxx.index(x_)]
+                if len(cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+'data/CAM25/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc'))==0:
+                    if used in not_unique.keys():
+                        not_unique[used].append(identifier)
+                    if used not in not_unique.keys():
+                        not_unique[used]=[identifier]
 
-            if len(cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+'data/CAM25/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc'))==0:
-                if used in not_unique.keys():
-                    not_unique[used].append(identifier)
-                if used not in not_unique.keys():
-                    not_unique[used]=[identifier]
-
-        else:
-            xxx.append(x_)
-            for id_,track in tmp.items():
-                track=np.array(track[np.isfinite(track[:,'t']),:])
-                found_tracks[id_]=track
-                if track.shape[0]>longest_track:
-                    longest_track=track.shape[0]
+            else:
+                xxx.append(x_)
+                for id_,track in tmp.items():
+                    track=np.array(track[np.isfinite(track[:,'t']),:])
+                    found_tracks[id_]=track
+                    if track.shape[0]>longest_track:
+                        longest_track=track.shape[0]
 
     all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp.z],dims=['ID','time','z'])
     for id_,track in found_tracks.items():
