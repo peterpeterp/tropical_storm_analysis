@@ -63,10 +63,11 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                     elif len(cdo_diff)==152:
                         xxx.append(x_)
                         storms.append(identifier)
+                        useful_runs.append(identifier)
                 else:
                     xxx.append(x_)
                     storms.append(identifier)
-            useful_runs.append(identifier)
+                    useful_runs.append(identifier)
 
     print(not_unique)
     not_unique_summary=open('detection/CAM25_not_unique.txt','w')
@@ -169,24 +170,3 @@ plt.tight_layout()
 #     #tmp.set_linewidth(0.001)
 
 plt.savefig('detection/CAM25_summary_map.png')
-
-counts=[]
-storms=[id_.split('_')[0] for id_ in all_tracks.ID]
-for run in runs:
-    counts.append(sum([storm==run for storm in storms]))
-counts=np.array(counts)
-
-
-xxx=[]
-pairs={}
-not_unique=[]
-for id_ in all_tracks.ID:
-    track=all_tracks[id_]
-    track=track[np.isfinite(track[:,'t']),:]
-    x_=[int(xx) for xx in track[:,'x']]
-    if x_ in xxx:
-        pairs[all_tracks.ID[xxx.index(x_)]]=id_
-        not_unique+=[all_tracks.ID[xxx.index(x_)],id_]
-    xxx.append(x_)
-
-not_unique=sorted(not_unique)
