@@ -57,9 +57,9 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
             xxx.append(x_)
             for id_,track in tmp.items():
                 track=np.array(track[np.isfinite(track[:,'t']),:])
-                    found_tracks[id_]=track
-                    if track.shape[0]>longest_track:
-                        longest_track=track.shape[0]
+                found_tracks[id_]=track
+                if track.shape[0]>longest_track:
+                    longest_track=track.shape[0]
 
     all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp.z],dims=['ID','time','z'])
     for id_,track in found_tracks.items():
