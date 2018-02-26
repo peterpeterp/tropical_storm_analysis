@@ -47,7 +47,7 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
             if x_ in xxx:
                 used=identifieres[xxx.index(x_)]
 
-                if len(cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+'data/CAM25/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc'))==0:
+                if len(cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+data_path+'/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc'))==0:
                     if used in not_unique.keys():
                         not_unique[used].append(identifier)
                     if used not in not_unique.keys():
