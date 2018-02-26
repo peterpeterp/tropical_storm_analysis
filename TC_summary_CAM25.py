@@ -66,7 +66,7 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
 
     not_unique_summary=open('detection/CAM25_not_unique.txt','w')
     for used,identic in not_unique.items():
-        not_unique.write(used+' '+' '.join(identic)+'\n')
+        not_unique_summary.write(used+' '+' '.join(identic)+'\n')
     not_unique_summary.close()
 
     # collect tracks
