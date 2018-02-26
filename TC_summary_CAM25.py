@@ -48,19 +48,20 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                 if x_ in xxx:
                     used=storms[xxx.index(x_)]
                     cdo_diff=cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+data_path+'/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')
-                    if len(cdo_diff)==72:
-                        print('             ',identifier,used,len(cdo_diff))
-                        break
-                    elif len(cdo_diff)==0:
-                        print('------------>',identifier,used,len(cdo_diff))
-                        if used in not_unique.keys():
-                            not_unique[used].append(identifier)
-                        if used not in not_unique.keys():
-                            not_unique[used]=[identifier]
-                        break
+                    if len(cdo_diff)<150:
+                        if len(cdo_diff)==72:
+                            print('             ',identifier,used,len(cdo_diff))
+                            break
+                        elif len(cdo_diff)==0:
+                            print('------------>',identifier,used,len(cdo_diff))
+                            if used in not_unique.keys():
+                                not_unique[used].append(identifier)
+                            if used not in not_unique.keys():
+                                not_unique[used]=[identifier]
+                            break
 
 
-                    elif len(cdo_diff)==152:
+                    else len(cdo_diff)==152:
                         xxx.append(x_)
                         storms.append(identifier)
                         useful_runs.append(identifier)
