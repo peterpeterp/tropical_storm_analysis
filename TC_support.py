@@ -65,6 +65,15 @@ def running_mean_func(xx,N):
 
 #------------ TC stuff
 
+def normalize180(lon):
+    """Normalize lon to range [180, 180)"""
+    lower = -180.; upper = 180.
+    if lon > upper or lon == lower:
+        lon = lower + abs(lon + upper) % (abs(lower) + abs(upper))
+    if lon < lower or lon == upper:
+        lon = upper - abs(lon - lower) % (abs(lower) + abs(upper))
+    return lower if lon == upper else lon
+
 def tc_wind_color(z):
     if z<=64: color= 'lightblue'
     if z>64: color= '#ffffcc'
@@ -85,11 +94,11 @@ def tc_pressure_color(z):
     if np.isnan(z): color= 'lightblue'
     return color
 
-def tc_plot(m, x, y, z, color_type=tc_wind_color):
+def tc_plot(m, x, y, z, color_type=tc_wind_color,**kwargs):
     tmp=[]
     for i in range(len(x)-1):
         if np.isfinite(x[i+1]):
-            tmp.append(m.plot(x[i:i+2],y[i:i+2],color=color_type(z[i])))
+            tmp.append(m.plot(x[i:i+2],y[i:i+2],color=color_type(z[i]),**kwargs))
     return tmp
 
 def latlon_to_meshgrid(lat,lon):
