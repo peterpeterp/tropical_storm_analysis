@@ -32,10 +32,12 @@ try:
 except:
     identifieres=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
 
+
 if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
     found_tracks={}
     longest_track=0
     xxx=[]
+    storms=[]
     not_unique={}
     for identifier in sorted(identifieres):
         tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
@@ -46,7 +48,7 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                 track=np.array(track[np.isfinite(track[:,'t']),:])
                 x_=[int(xx) for xx in track[:,2]]
                 if x_ in xxx:
-                    used=identifieres[xxx.index(x_)]
+                    used=storms[xxx.index(x_)]
                     cdo_diff=cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+data_path+'/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')
                     print(used,identifier,len(cdo_diff))
                     if len(cdo_diff)==0:
@@ -58,6 +60,7 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
 
                 else:
                     xxx.append(x_)
+                    storms.append(identifier)
                     for id_,track in tmp.items():
                         track=np.array(track[np.isfinite(track[:,'t']),:])
                         found_tracks[id_]=track
