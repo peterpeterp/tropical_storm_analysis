@@ -30,11 +30,19 @@ except:
 
 if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
     found_tracks={}
+    longest_track=0
     for identifier in identifieres:
-        found_tracks.update(da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc'))
+        tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
+        for id_,track in tmp.items():
+            found_tracks[id_]=np.array(track[np.isfinite(track[:,'t']),:])
+            if track.shape[0]>longest_track:
+                longest_track=track.shape[0]
 
+    all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp.z],dims=['ID','time','z'])
+    for id_,track in found_tracks.items():
+        all_tracks[id_,0:track.shape[0]-1,:]=track
 
-    da.Dataset(found_tracks).write_nc('detection/CAM25_all_tracks.nc',mode='w')
+    da.Dataset({'all_tracks':all_tracks}).write_nc('detection/CAM25_all_tracks.nc',mode='w')
 else:
     found_tracks=da.read_nc('detection/CAM25_all_tracks.nc')
 
