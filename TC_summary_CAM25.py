@@ -55,15 +55,14 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                                 not_unique[used].append(identifier)
                             if used not in not_unique.keys():
                                 not_unique[used]=[identifier]
+                        break
 
                     else:
                         xxx.append(x_)
                         storms.append(identifier)
-                        break
                 else:
                     xxx.append(x_)
                     storms.append(identifier)
-                    break
 
     not_unique_summary=open('detection/CAM25_not_unique.txt','w')
     for used,identic in not_unique.items():
