@@ -48,8 +48,8 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                 x_=[int(xx) for xx in track[:,2]]
                 if x_ in xxx:
                     used=storms[xxx.index(x_)]
-                    if [int(yy) for yy in track[:,1]]==[int(yy) for yy in found_tracks[id_][:,1]]:
-                        if [int(yy) for yy in track[:,0]]==[int(yy) for yy in found_tracks[id_][:,0]]:
+                    if [int(yy) for yy in track[:,1]]==[int(yy) for yy in found_tracks[used][:,1]]:
+                        if [int(yy) for yy in track[:,0]]==[int(yy) for yy in found_tracks[used][:,0]]:
                             unique=False
 
                 if unique:
