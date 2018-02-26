@@ -30,7 +30,7 @@ from TC_support import *
 try:
     identifiers=[sys.argv[1]]
 except:
-    identifieres=sorted([ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')])
+    identifiers=sorted([ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')])
 
 
 if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
