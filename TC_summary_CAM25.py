@@ -37,9 +37,10 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
     longest_track=0
     xxx=[]
     not_unique={}
-    for identifier in identifieres:
+    for identifier in sorted(identifieres):
         tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
         if len(tmp.values())>0:
+            print(identifier)
             # check for duplicates
             track=tmp[tmp.keys()[0]]
             track=np.array(track[np.isfinite(track[:,'t']),:])
