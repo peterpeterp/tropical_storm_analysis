@@ -124,7 +124,7 @@ plt.tight_layout(rect=(0,0,1,0.95))
 plt.savefig('detection/CAM25_summary.png')
 
 # show tracks on map
-nc = Dataset('data/CAM25/item16222_daily_mean/item16222_daily_mean_o6uk_2017-06_2017-10.nc')
+nc = Dataset(data_path+'/item16222_daily_mean/item16222_daily_mean_o6uk_2017-06_2017-10.nc')
 lats = nc.variables['global_latitude0'][:]
 lons = nc.variables['global_longitude0'][:]
 rlats = nc.variables['latitude0'][:]
