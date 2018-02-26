@@ -42,7 +42,6 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
     for identifier in sorted(identifieres):
         tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
         if len(tmp.values())>0:
-            print(identifier)
             # check for duplicates
             for track in tmp.values():
                 track=np.array(track[np.isfinite(track[:,'t']),:])
@@ -50,9 +49,8 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                 if x_ in xxx:
                     used=storms[xxx.index(x_)]
                     cdo_diff=cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+data_path+'/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')
-                    print(used,identifier,len(cdo_diff))
-                    if len(cdo_diff)==0:
-                        print('*************')
+                    if len(cdo_diff) in [0,72]:
+                        print('*************',used,identifier)
                         if used in not_unique.keys():
                             not_unique[used].append(identifier)
                         if used not in not_unique.keys():
@@ -67,7 +65,7 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                         if track.shape[0]>longest_track:
                             longest_track=track.shape[0]
 
-    all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp.z],dims=['ID','time','z'])
+    all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp.items()[0].z],dims=['ID','time','z'])
     for id_,track in found_tracks.items():
         all_tracks[id_,0:track.shape[0]-1,:]=track
     da.Dataset({'all_tracks':all_tracks}).write_nc('detection/CAM25_all_tracks.nc',mode='w')
