@@ -11,17 +11,17 @@ import seaborn as sns
 import scipy.ndimage as ndimage
 
 from cdo import *   # python version
-cdo = Cdo()
-
 
 sns.set_palette(sns.color_palette("plasma"))
 
 try:
     os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
     data_path='data/CAM25/'
+    cdo = Cdo()
 except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
     data_path='/p/projects/tumble/carls/shared_folder/CPDN/data/batch_659/region/'
+    cdo = Cdo('/p/system/packages/cdo/1.8.0/gnu-threadsafe/bin/cdo')
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
 sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
 from TC_support import *
