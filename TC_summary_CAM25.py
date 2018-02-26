@@ -46,7 +46,7 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
             print(track)
             track=np.array(track[np.isfinite(track[:,'t']),:])
             print(track)
-            x_=[int(xx) for xx in track[:,'x']]
+            x_=[int(xx) for xx in track[:,2]]
             if x_ in xxx:
                 used=identifieres.ID[xxx.index(x_)]
 
