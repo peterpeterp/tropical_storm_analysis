@@ -42,13 +42,10 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
         if len(tmp.values())>0:
             # check for duplicates
             track=tmp[tmp.keys()[0]]
-            print(tmp)
-            print(track)
             track=np.array(track[np.isfinite(track[:,'t']),:])
-            print(track)
             x_=[int(xx) for xx in track[:,2]]
             if x_ in xxx:
-                used=identifieres.ID[xxx.index(x_)]
+                used=identifieres[xxx.index(x_)]
 
                 if len(cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+'data/CAM25/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc'))==0:
                     if used in not_unique.keys():
