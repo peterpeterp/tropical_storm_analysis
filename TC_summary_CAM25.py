@@ -41,7 +41,7 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
         tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
         if len(tmp.values())>0:
             # check for duplicates
-            track=tmp.values()[0]
+            track=tmp[tmp.keys()[0]]
             track=np.array(track[np.isfinite(track[:,'t']),:])
             x_=[int(xx) for xx in track[:,'x']]
             if x_ in xxx:
