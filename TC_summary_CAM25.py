@@ -35,59 +35,30 @@ except:
 
 if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
     # check for duplicates
-    xxx=[]
-    storms=[]
-    useful_runs=[]
-    not_unique={}
+    xxx,storms=[],[]
+    found_tracks={}
+    longest_track=0
     for identifier in identifiers:
         tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
         if len(tmp.values())>0:
-            for track in tmp.values():
+            tmp_example=tmp
+            for id_,track in tmp.items():
                 track=np.array(track[np.isfinite(track[:,'t']),:])
+                unique=True
                 x_=[int(xx) for xx in track[:,2]]
                 if x_ in xxx:
                     used=storms[xxx.index(x_)]
-                    cdo_diff=cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+data_path+'/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')
-                    if len(cdo_diff)<150:
-                        if len(cdo_diff)==72:
-                            print('             ',identifier,used,len(cdo_diff))
-                            break
-                        elif len(cdo_diff)==0:
-                            print('------------>',identifier,used,len(cdo_diff))
-                            if used in not_unique.keys():
-                                not_unique[used].append(identifier)
-                            if used not in not_unique.keys():
-                                not_unique[used]=[identifier]
-                            break
+                    if [int(yy) for yy in track[:,1]]==[int(yy) for yy in found_tracks[id_][:,1]]:
+                        if [int(yy) for yy in track[:,0]]==[int(yy) for yy in found_tracks[id_][:,0]]:
+                            unique=False
 
-
-                    if len(cdo_diff)>150:
-                        xxx.append(x_)
-                        storms.append(identifier)
-                        useful_runs.append(identifier)
-                if x_ not in xxx:
+                if unique:
                     xxx.append(x_)
-                    storms.append(identifier)
-                    useful_runs.append(identifier)
+                    storms.append(id_)
+                    found_tracks[id_]=track
+                    if track.shape[0]>longest_track:
+                        longest_track=track.shape[0]
 
-    print(not_unique)
-    not_unique_summary=open('detection/CAM25_not_unique.txt','w')
-    for used,identic in not_unique.items():
-        not_unique_summary.write(used+' '+' '.join(identic)+'\n')
-    not_unique_summary.close()
-
-    # collect tracks
-    found_tracks={}
-    longest_track=0
-    for identifier in useful_runs:
-        tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
-        if len(tmp.keys())>0:
-            tmp_example=tmp
-        for id_,track in tmp.items():
-            track=np.array(track[np.isfinite(track[:,'t']),:])
-            found_tracks[id_]=track
-            if track.shape[0]>longest_track:
-                longest_track=track.shape[0]
 
     all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp_example.z],dims=['ID','time','z'])
     for id_,track in found_tracks.items():
@@ -171,3 +142,52 @@ plt.tight_layout()
 #     #tmp.set_linewidth(0.001)
 
 plt.savefig('detection/CAM25_summary_map.png')
+
+
+
+
+
+############################
+# check for real duplicates
+############################
+    # # check for duplicates
+    # xxx=[]
+    # storms=[]
+    # useful_runs=[]
+    # not_unique={}
+    # for identifier in identifiers:
+    #     tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
+    #     if len(tmp.values())>0:
+    #         for track in tmp.values():
+    #             track=np.array(track[np.isfinite(track[:,'t']),:])
+    #             x_=[int(xx) for xx in track[:,2]]
+    #             if x_ in xxx:
+    #                 used=storms[xxx.index(x_)]
+    #                 cdo_diff=cdo.diff(input=data_path+'/item16222_daily_mean/item16222_daily_mean_'+used+'_2017-06_2017-10.nc'+' '+data_path+'/item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')
+    #                 if len(cdo_diff)<150:
+    #                     if len(cdo_diff)==72:
+    #                         print('             ',identifier,used,len(cdo_diff))
+    #                         break
+    #                     elif len(cdo_diff)==0:
+    #                         print('------------>',identifier,used,len(cdo_diff))
+    #                         if used in not_unique.keys():
+    #                             not_unique[used].append(identifier)
+    #                         if used not in not_unique.keys():
+    #                             not_unique[used]=[identifier]
+    #                         break
+    #
+    #
+    #                 if len(cdo_diff)>150:
+    #                     xxx.append(x_)
+    #                     storms.append(identifier)
+    #                     useful_runs.append(identifier)
+    #             if x_ not in xxx:
+    #                 xxx.append(x_)
+    #                 storms.append(identifier)
+    #                 useful_runs.append(identifier)
+    #
+    # print(not_unique)
+    # not_unique_summary=open('detection/CAM25_not_unique.txt','w')
+    # for used,identic in not_unique.items():
+    #     not_unique_summary.write(used+' '+' '.join(identic)+'\n')
+    # not_unique_summary.close()
