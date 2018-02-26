@@ -61,11 +61,11 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                             break
 
 
-                    else len(cdo_diff)==152:
+                    if len(cdo_diff)>150:
                         xxx.append(x_)
                         storms.append(identifier)
                         useful_runs.append(identifier)
-                else:
+                if x_ not in xxx:
                     xxx.append(x_)
                     storms.append(identifier)
                     useful_runs.append(identifier)
