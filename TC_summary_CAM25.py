@@ -63,6 +63,7 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
                 else:
                     xxx.append(x_)
                     storms.append(identifier)
+                    break
 
     not_unique_summary=open('detection/CAM25_not_unique.txt','w')
     for used,identic in not_unique.items():
