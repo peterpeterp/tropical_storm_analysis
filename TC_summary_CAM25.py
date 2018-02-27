@@ -81,18 +81,19 @@ plt.close('all')
 fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(7,4))
 ax=axes[0]
 for i in range(1,6):
-    ax.bar([i-0.5],len(np.where(np.array(summary['cat'])==i)[0])/float(n_runs),width=1)
+    ax.bar([i-0.5],len(np.where(np.array(summary['cat'])==i)[0])/float(len(all_tracks.ID)),width=1)
 ax.set_xlim(0.5,5.5)
-ax.set_ylabel('TCs per season')
+ax.set_ylabel('probability density')
+ax.set_yscale('log')
 ax.set_xlabel('TC Category')
 
 ax=axes[1]
 tmp=np.histogram(summary['duration'])
 ax.hist(summary['duration'],10,normed=True)
-ax.set_ylabel('TCs density')
+ax.set_ylabel('probability density')
 ax.set_xlabel('TC duration')
 
-plt.suptitle('Tropical cyclones detected in CAM25 ('+str(len(all_tracks.ID))+' TCs detected)')
+plt.suptitle(str(len(all_tracks.ID))+' Tropical cyclones detected in CAM25')
 plt.tight_layout(rect=(0,0,1,0.95))
 plt.savefig('detection/CAM25_summary.png')
 
