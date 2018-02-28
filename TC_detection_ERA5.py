@@ -518,7 +518,7 @@ try:
 except:
     sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
-    data_path='data/ERA5/'
+    data_path='../reanalysis/ERA5/'
 
 from TC_support import *
 
