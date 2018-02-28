@@ -198,7 +198,7 @@ class tc_tracks(object):
                     for oo in range(len(obs_tc[0])):
                         if np.isfinite(self._tc_sel['source_wind'].ix[obs_tc[0][oo],obs_tc[1][oo],0]):
                             for ax in axes:
-                                ax.plot(np.argmin(abs(self._lon-self._tc_lon[obs_tc[0][oo],obs_tc[1][oo]])),np.argmin(abs(self._lat-self._tc_lat[obs_tc[0][oo],obs_tc[1][oo]])),color=get_tc_color(self._tc_intens.ix[obs_tc[0][oo],obs_tc[1][oo]]),marker='.')
+                                ax.plot(np.argmin(abs(self._lon-self._tc_lon[obs_tc[0][oo],obs_tc[1][oo]])),np.argmin(abs(self._lat-self._tc_lat[obs_tc[0][oo],obs_tc[1][oo]])),color=get_tc_color(self._tc_intens[obs_tc[0][oo],obs_tc[1][oo]]),marker='.')
 
 
             plt.suptitle(str(self._dates[t]))
@@ -220,7 +220,7 @@ class tc_tracks(object):
         if self._obs_tc:
             storms=np.where(abs(self._tc_time-self._yr_frac[t])<0.002)[0]
             for storm in set(storms):
-                tmp+=self.plot_on_map(self._m,self._tc_lon[storm,:],self._tc_lat[storm,:],z=self._tc_intens.values[storm,:],tc_cat_method='wind',latlon=True)
+                tmp+=self.plot_on_map(self._m,self._tc_lon[storm,:],self._tc_lat[storm,:],z=self._tc_intens[storm,:],tc_cat_method='wind',latlon=True)
                 last_pos=np.where(np.isfinite(self._tc_lon[storm,:]))[0][-1]
                 txt.append(self._ax.text(self._tc_lon[storm,last_pos],self._tc_lat[storm,last_pos],''.join(self._tc_sel['name'].ix[storm,:])))
 
@@ -253,7 +253,7 @@ class tc_tracks(object):
 
         if self._obs_tc:
             for storm in range(len(self._tc_sel.storm)):
-                tmp+=self.plot_on_map(self._m,self._tc_lon[storm,:],self._tc_lat[storm,:],z=self._tc_intens.values[storm,:],tc_cat_method='wind',latlon=True)
+                tmp+=self.plot_on_map(self._m,self._tc_lon[storm,:],self._tc_lat[storm,:],z=self._tc_intens[storm,:],tc_cat_method='wind',latlon=True)
 
 
         summary.pop(0)
@@ -571,10 +571,10 @@ for identifier in [str(yr) for yr in range(2010,2017)]:
     found_tcs.init_obs_tcs(tc_sel)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
     found_tcs.set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=10,neighborhood_size=8)
-    found_tcs.detect(overwrite=True)
-    found_tcs.combine_tracks(overwrite=True)
-    found_tcs.obs_track_info(overwrite=True)
-    found_tcs.gather_info_track(overwrite=True)
+    found_tcs.detect(overwrite=False)
+    found_tcs.combine_tracks(overwrite=False)
+    found_tcs.obs_track_info(overwrite=False)
+    found_tcs.gather_info_track(overwrite=False)
     found_tcs.plot_track_evolution()
     found_tcs.plot_season()
     elapsed = time.time() - start;  print('Done with plotting %.3f seconds.' % elapsed)
