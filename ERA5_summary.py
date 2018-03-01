@@ -28,9 +28,16 @@ if os.path.isfile('detection/ERA5_obs_track_info.nc')==False:
     # check for duplicates
     obs_tracks={}
     for identifier in [str(yr) for yr in range(2010,2017)]:
+        print obs_track
         obs_tracks.update(da.read_nc('detection/'+str(identifier)+'_ERA5/obs_track_info.nc'))
 
     da.Dataset({'obs_tracks':obs_tracks}).write_nc('detection/ERA5_obs_track_info.nc',mode='w')
 
 else:
-    obs_tracks=da.read_nc('detection/ERA5_obs_track_info.nc')['obs_tracks']
+    obs_tracks=da.read_nc('detection/ERA5_obs_track_info.nc')['obs_tracks']['obs_track_info']
+
+
+categories={}
+for cat in range(6):
+    pos=np.where(obs_tracks==cat)
+    categories[cat]=obs_tracks.ix[pos[0],pos[1],:]
