@@ -479,7 +479,7 @@ for identifier in identifieres:
     Wind10=np.array(np.sqrt(U**2+V**2))
 
 
-    working_dir='detection/'+str(identifier)+'_CAM25/'
+    working_dir='detection/CAM25/'+str(identifier)+'_CAM25/'
     elapsed = time.time() - start;  print('Data loaded %.3f seconds.' % elapsed)
     found_tcs=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,nc=nc,identifier=identifier,working_dir=working_dir)#,time_steps=range(470,520))
     found_tcs.prepare_map(nc)

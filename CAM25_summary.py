@@ -33,13 +33,13 @@ except:
     identifiers=sorted([ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')])
 
 
-if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
+if os.path.isfile('detection/CAM25/CAM25_all_tracks.nc')==False:
     # check for duplicates
     xxx,storms=[],[]
     found_tracks={}
     longest_track=0
     for identifier in identifiers:
-        tmp=da.read_nc('detection/'+str(identifier)+'_CAM25/track_info.nc')
+        tmp=da.read_nc('detection/CAM25/'+str(identifier)+'_CAM25/track_info.nc')
         if len(tmp.values())>0:
             tmp_example=tmp
             for id_,track in tmp.items():
@@ -63,10 +63,10 @@ if os.path.isfile('detection/CAM25_all_tracks.nc')==False:
     all_tracks=da.DimArray(np.zeros([len(found_tracks.keys()),longest_track,13])*np.nan,axes=[found_tracks.keys(),range(longest_track),tmp_example.z],dims=['ID','time','z'])
     for id_,track in found_tracks.items():
         all_tracks[id_,0:track.shape[0]-1,:]=track
-    da.Dataset({'all_tracks':all_tracks}).write_nc('detection/CAM25_all_tracks.nc',mode='w')
+    da.Dataset({'all_tracks':all_tracks}).write_nc('detection/CAM25/CAM25_all_tracks.nc',mode='w')
 
 else:
-    all_tracks=da.read_nc('detection/CAM25_all_tracks.nc')['all_tracks']
+    all_tracks=da.read_nc('detection/CAM25/CAM25_all_tracks.nc')['all_tracks']
 
 summary={'cat':[],'duration':[]}
 for id_ in all_tracks.ID:
@@ -95,7 +95,7 @@ ax.set_xlabel('TC duration')
 
 plt.suptitle(str(len(all_tracks.ID))+' Tropical cyclones detected in CAM25')
 plt.tight_layout(rect=(0,0,1,0.95))
-plt.savefig('detection/CAM25_summary.png')
+plt.savefig('detection/CAM25/CAM25_summary.png')
 
 # show tracks on map
 nc = Dataset(data_path+'/item16222_daily_mean/item16222_daily_mean_o6uk_2017-06_2017-10.nc')
@@ -142,7 +142,7 @@ plt.tight_layout()
 #     storm[0].set_alpha(0.1)
 #     #tmp.set_linewidth(0.001)
 
-plt.savefig('detection/CAM25_summary_map.png')
+plt.savefig('detection/CAM25/CAM25_summary_map.png')
 
 
 

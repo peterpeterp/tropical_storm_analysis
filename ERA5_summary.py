@@ -29,17 +29,29 @@ if os.path.isfile('detection/ERA5_obs_track_info.nc')==False:
     obs_tracks={}
     for identifier in [str(yr) for yr in range(2010,2017)]:
         print(obs_tracks)
-        tmp=da.read_nc('detection/'+str(identifier)+'_ERA5/obs_track_info.nc')['obs_track_info']
+        tmp=da.read_nc('detection/ERA5/'+str(identifier)+'_ERA5/obs_track_info.nc')['obs_track_info']
         for storm in tmp.storm:
             obs_tracks[storm]=tmp[storm,:,:]
 
-    da.Dataset({'obs_tracks':obs_tracks}).write_nc('detection/ERA5_obs_track_info.nc',mode='w')
+    da.Dataset({'obs_tracks':obs_tracks}).write_nc('detection/ERA5/ERA5_obs_track_info.nc',mode='w')
 
 else:
-    obs_tracks=da.read_nc('detection/ERA5_obs_track_info.nc')['obs_tracks']['obs_track_info']
+    obs_tracks=da.read_nc('detection/ERA5/ERA5_obs_track_info.nc')['obs_tracks']
 
 
 categories={}
 for cat in range(6):
     pos=np.where(obs_tracks==cat)
     categories[cat]=obs_tracks.ix[pos[0],pos[1],:]
+
+tc_colors={0:'lightblue',1:'#ffffcc',2:'#ffe775',3:'#ffc148',4:'#ff8f20',5:'#ff6060'}
+fig,axes=plt.subplots(nrows=2,ncols=2)
+for ax,vari in zip(axes.flatten(),['MSLP','VO','SST','T500']):
+    for cat in range(5):
+        tmp=categories[cat][:,:,vari].values
+        tmp=tmp[np.isfinite(tmp)]
+        hist=np.histogram(tmp,bins=20,density=True)
+        ax.plot(hist[1][:-1],hist[0],color=tc_colors[cat])
+
+plt.tight_layout()
+plt.savefig('detection/ERA5/obs_hists.png')
