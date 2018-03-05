@@ -31,7 +31,7 @@ def date_(t):
     hr=int((t-yr*10000-mn*100-day)*24)
     return(datetime(yr,mn,day,hr,0))
 
-for identifier in ['2016']:
+for identifier in ['2010']:
     start = time.time()
     print('*** started run '+identifier+' ***')
 

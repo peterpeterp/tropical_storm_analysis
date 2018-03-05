@@ -21,7 +21,6 @@ try:
 except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
     data_path='/p/projects/tumble/carls/shared_folder/CPDN/data/batch_659/region/'
-    cdo = Cdo(cdo_path='/p/system/packages/cdo/1.8.0/gnu-threadsafe/bin/cdo')
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
 sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
 from TC_support import *
@@ -75,6 +74,22 @@ for id_ in all_tracks.ID:
 
 runs=set([id_.split('_')[0] for id_ in all_tracks.ID])
 n_runs=len(runs)
+
+# intensity relations
+fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(7,4))
+ax=axes[0]
+for id_ in all_tracks.ID:
+    track=all_tracks[id_]
+    ax.plot(track.time,track[:,'MSLP'])
+
+ax=axes[1]
+for id_ in all_tracks.ID:
+    track=all_tracks[id_]
+    ax.plot(track.time,track[:,'Wind10'])
+
+plt.tight_layout(rect=(0,0,1,0.95))
+plt.savefig('detection/CAM25/CAM25_intensities.png')
+
 
 # show summary plots
 plt.close('all')
