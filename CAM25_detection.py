@@ -508,6 +508,6 @@ for identifier in identifiers:
     #found_tcs.gather_info_track(overwrite=False)
     #track_info,track=found_tcs.plot_track_evolution()
     found_tcs.plot_season()
-    found_tcs.plot_surrounding(range(100,130))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
+    found_tcs.plot_surrounding(range(100,150))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
     elapsed = time.time() - start;  print('Done with plotting %.3f seconds.' % elapsed)
     print('memory in use: '+str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/10.**6))
