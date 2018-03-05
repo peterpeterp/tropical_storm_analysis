@@ -185,6 +185,24 @@ class tc_tracks(object):
         if time_steps is None:
             time_steps=self._time_i
 
+        def normalize180(lon):
+            """Normalize lon to range [180, 180)"""
+            lower = -180.; upper = 180.
+            if lon > upper or lon == lower:
+                lon = lower + abs(lon + upper) % (abs(lower) + abs(upper))
+            if lon < lower or lon == upper:
+                lon = upper - abs(lon - lower) % (abs(lower) + abs(upper))
+            return lower if lon == upper else lon
+
+        rlats = nc.latitude0[:]
+        rlons = nc.longitude0[:]
+        rlons, rlats = np.meshgrid(rlons, rlats)
+
+        o_lon_p = nc['rotated_pole0'].attrs['grid_north_pole_longitude']
+        o_lat_p = nc['rotated_pole0'].attrs['grid_north_pole_latitude']
+        lon_0 = normalize180(o_lon_p-180.)
+
+
         plt.close('all')
         fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5))
         axes=axes.flatten()
