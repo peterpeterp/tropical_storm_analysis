@@ -466,9 +466,9 @@ class tc_tracks(object):
 try:
     identifiers=[sys.argv[1]]
 except:
-    identifieres=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
+    identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
 
-for identifier in identifieres:
+for identifier in identifiers:
     start = time.time()
     print('*** started run '+identifier+' ***')
     MSLP=ndimage.gaussian_filter(da.read_nc(data_path+'item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:],sigma=(0,2,2))
