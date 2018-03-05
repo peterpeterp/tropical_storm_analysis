@@ -486,10 +486,10 @@ for identifier in identifieres:
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
     found_tcs.set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
     found_tcs.detect(overwrite=False)
-    found_tcs.combine_tracks(overwrite=True)
+    found_tcs.combine_tracks(overwrite=False)
     #found_tcs.gather_info_track(overwrite=False)
     #track_info,track=found_tcs.plot_track_evolution()
     found_tcs.plot_season()
-    #found_tcs.plot_surrounding(range(94,127))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
+    found_tcs.plot_surrounding(range(100,130))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
     elapsed = time.time() - start;  print('Done with plotting %.3f seconds.' % elapsed)
     print('memory in use: '+str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/10.**6))
