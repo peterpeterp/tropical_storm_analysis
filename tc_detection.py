@@ -451,10 +451,12 @@ class tc_tracks(object):
                         # add info
                         info=np.zeros([len(track),4])*np.nan
                         for i,p in enumerate(track):
-                            info[i,0]=self._VO[int(p[0]),int(p[1]),int(p[2])]
-                            info[i,1]=self._MSLP[int(p[0]),int(p[1]),int(p[2])]
-                            info[i,2]=self._Wind10[int(p[0]),int(p[1]),int(p[2])]
-                            info[i,3]=self.tc_cat(self._MSLP[int(p[0]),int(p[1]),int(p[2])])
+                            box_1=[int(bb) for bb in self.get_box(p[1],p[2],self._win1)]
+                            box_2=[int(bb) for bb in self.get_box(p[1],p[2],self._win2)]
+                            info[i,0]=self._VO[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()
+                            info[i,1]=self._MSLP[t,box_1[0]:box_1[1],box_1[2]:box_1[3]].min()
+                            info[i,2]=self._Wind10[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()
+                            info[i,3]=self.tc_cat(info[i,1])
 
                         track=np.hstack((np.array(track),info))
                         track=da.DimArray(track,axes=[np.array(track)[:,0],['t','y','x','cd_mslp','cd_wind','cd_ta','cd_sst','cd_tropical','tc_cond','VO','MSLP','Wind10','cat']],dims=['time','z'])

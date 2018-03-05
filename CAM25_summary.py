@@ -76,18 +76,29 @@ runs=set([id_.split('_')[0] for id_ in all_tracks.ID])
 n_runs=len(runs)
 
 # intensity relations
-fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(7,4))
-ax=axes[0]
+plt.close('all')
+fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(6,2.5))
+tmp=[]
 for id_ in all_tracks.ID:
     track=all_tracks[id_]
-    ax.plot(track.time,track[:,'MSLP'])
+    track=track[np.isfinite(track[:,'t']),:]
+    track=track[track[:,'tc_cond']==3]
+    tmp+=[axes[0].plot(range(track.shape[0]),track[:,'MSLP'],c='k')]
+    tmp+=[axes[1].plot(range(track.shape[0]),track[:,'Wind10'],c='k')]
 
-ax=axes[1]
-for id_ in all_tracks.ID:
-    track=all_tracks[id_]
-    ax.plot(track.time,track[:,'Wind10'])
+
+axes[0].set_ylim((91000,101000))
+axes[1].set_ylim((5,55))
+
+axes[0].set_xlim((0,8))
+axes[1].set_xlim((0,8))
 
 plt.tight_layout(rect=(0,0,1,0.95))
+
+for storm in tmp:
+    storm[0].set_alpha(0.1)
+    storm[0].set_linewidth(1)
+
 plt.savefig('detection/CAM25/CAM25_intensities.png')
 
 
