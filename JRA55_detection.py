@@ -21,35 +21,28 @@ except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
     data_path='../reanalysis/JRA55/'
 
-from TC_support import * ; reload(sys.modules['TC_support'])
-from tc_detection import * ; reload(sys.modules['tc_detection'])
-
-def date_(t):
-    yr=int(t/10000.)
-    mn=int((t-yr*10000)/100.)
-    day=int((t-yr*10000-mn*100))
-    hr=int((t-yr*10000-mn*100-day)*24)
-    return(datetime(yr,mn,day,hr,0))
+import TC_support; TC_support=reload(TC_support)
+import tc_detection; tc_detection=reload(tc_detection)
 
 for identifier in ['2010']:
     start = time.time()
     print('*** started run '+identifier+' ***')
 
-    U10=da.read_nc(data_path+'atl_'+identifier+'_U10.nc')
-    Wind10=wind_nc['ws'].values
-    time_=wind_nc.time
-    MSLP=da.read_nc(data_path+'atl_'+identifier+'_surface.nc')['MSL'].values
-    T=da.read_nc(data_path+'atl_'+identifier+'_T.nc')['T'].values
-    SST=da.read_nc(data_path+'atl_'+identifier+'_surface.nc')['SSTK'].values-273.15
-    dates=[date_(t) for t in time_]
+    U10=da.read_nc(data_path+'atl_'+identifier+'_U10.nc')['var33'].values.squeeze()
+    V10=da.read_nc(data_path+'atl_'+identifier+'_V10.nc')['var34'].values.squeeze()
+    T=da.read_nc(data_path+'atl_'+identifier+'_T.nc')['var11'].values
 
-    U=da.read_nc(data_path+'atl_'+identifier+'_UV.nc')['U']
-    V=da.read_nc(data_path+'atl_'+identifier+'_UV.nc')['V']
-    VO=rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
+    Wind10=(U10**2+V10**2)**0.5
+    nc=da.read_nc(data_path+'atl_'+identifier+'_MSLP.nc')
+    MSLP=nc['psl'].values
+    time_=nc.time
+    dates=[num2date(t,units = nc.axes['time'].units,calendar = nc.axes['time'].calendar) for t in time_]
 
-    asdasd
+    U=da.read_nc(data_path+'atl_'+identifier+'_U.nc')['var33']
+    V=da.read_nc(data_path+'atl_'+identifier+'_V.nc')['var34']
+    VO=TC_support.rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
 
-    lons,lats=np.meshgrid(wind_nc.lon,wind_nc.lat)
+    lons,lats=np.meshgrid(nc.lon,nc.lat)
     lons[lons>180]-=360
 
     plt.close('all')
@@ -70,13 +63,13 @@ for identifier in ['2010']:
 
     working_dir='detection/JRA55/'+str(identifier)+'_JRA55/'
     elapsed = time.time() - start;  print('Data loaded %.3f seconds.' % elapsed)
-    found_tcs=tc_tracks.tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=SST,VO=VO,T=T,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
+    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=T,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
     found_tcs.init_map(m=m,ax=ax,plot_lat=plot_lat,plot_lon=plot_lon)
     found_tcs.init_obs_tcs(tc_sel)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
-    found_tcs.set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=10,neighborhood_size=8)
+    found_tcs.set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=10,neighborhood_size=8,min_time_steps=6)
     found_tcs.detect(overwrite=False)
-    found_tcs.combine_tracks(overwrite=False)
+    found_tcs.combine_tracks(overwrite=True)
     found_tcs.obs_track_info(overwrite=False)
     #found_tcs.gather_info_track(overwrite=False)
     #found_tcs.plot_track_evolution()

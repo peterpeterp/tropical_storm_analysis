@@ -78,7 +78,7 @@ class tc_tracks(object):
         self._tc_intens=np.nanmean(tc_sel['source_wind'],axis=-1)
         self._obs_tc=True
 
-    def set_thresholds(self,thr_wind,thr_sst,thr_vort,thr_mslp,thr_ta,win1,win2,win_step,neighborhood_size):
+    def set_thresholds(self,thr_wind,thr_sst,thr_vort,thr_mslp,thr_ta,win1,win2,win_step,neighborhood_size,min_time_steps):
         self._thr_wind=thr_wind
         self._thr_sst=thr_sst
         self._thr_vort=thr_vort
@@ -88,6 +88,7 @@ class tc_tracks(object):
         self._win2=win2
         self._win_step=win_step
         self._neighborhood_size=neighborhood_size
+        self._min_time_steps=min_time_steps
 
     def tc_cat(self,z,method='pressure'):
         if method=='wind':
@@ -252,7 +253,7 @@ class tc_tracks(object):
             tmp.append(self.plot_on_map(self._m,track.ix[0,2],track.ix[0,1],linestyle='',marker='o',c='r'))
             tmp.append(self.plot_on_map(self._m,track[:,'x'],track[:,'y'],linestyle='-',linewidth=0.5,c='r'))
             tmp+=self.plot_on_map(self._m,track[:,'x'],track[:,'y'],z=track[:,'MSLP'].values,marker='.',linestyle='')
-            summary[self.tc_cat(track[:,'MSLP'].values.min())].append(id_)
+            summary[track[:,'cat'].max()].append(id_)
 
         if self._obs_tc:
             for storm in range(len(self._tc_sel.storm)):
@@ -344,7 +345,8 @@ class tc_tracks(object):
                     obs_summary[i,t,3]=self._Wind10[t_,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()
                     obs_summary[i,t,4]=self._T[t_,0,y,x]
                     obs_summary[i,t,5]=self._T[t_,1,y,x]
-                    obs_summary[i,t,6]=self._SST[t_,y,x]
+                    if self._SST is not None:
+                        obs_summary[i,t,6]=self._SST[t_,y,x]
 
         obs_summary=obs_summary[:,np.isfinite(np.nanmean(obs_summary,axis=(0,-1))),:]
         self._obs_track_info=da.DimArray(obs_summary,axes=[self._tc_sel.storm,range(obs_summary.shape[1]),['cat','VO','MSLP','Wind10','T850','T500','SST']],dims=['storm','time','variable'])
@@ -456,7 +458,7 @@ class tc_tracks(object):
 
                         track=np.hstack((np.array(track),info))
                         track=da.DimArray(track,axes=[np.array(track)[:,0],['t','y','x','cd_mslp','cd_wind','cd_ta','cd_sst','cd_tropical','tc_cond','VO','MSLP','Wind10','cat']],dims=['time','z'])
-                        if track[track[:,'tc_cond']==3].shape[0]>6 or track.shape[0]>10:
+                        if track[track[:,'tc_cond']==3].shape[0]>self._min_time_steps or track.shape[0]>self._min_time_steps*1.5:
                             self._tcs[self._identifier+'_'+str(self._id)]=track
                             if plot:    self.plot_track_path(track)
                             self._id+=1

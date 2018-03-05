@@ -71,7 +71,7 @@ for identifier in identifiers:
     found_tcs=tc_tracks(Wind10=Wind10,MSLP=MSLP,SST=None,VO=VO,T=None,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
     found_tcs.init_map(m=m,ax=ax,plot_lat=plot_lat,plot_lon=plot_lon)
 
-    found_tcs.set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8)
+    found_tcs.set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8,min_time_steps=2)
     found_tcs.detect(overwrite=False)
     found_tcs.combine_tracks(overwrite=True)
     #found_tcs.gather_info_track(overwrite=False)
