@@ -24,6 +24,12 @@ except:
 import TC_support; TC_support=reload(TC_support)
 import tc_detection; tc_detection=reload(tc_detection)
 
+try:
+    identifiers=[sys.argv[1]]
+except:
+    identifiers=[ff.split('_')[1] for ff in glob.glob(data_path+'atl_*_MSLP.nc')]
+
+
 for identifier in ['2010']:
     start = time.time()
     print('*** started run '+identifier+' ***')
