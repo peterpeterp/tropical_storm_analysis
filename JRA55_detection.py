@@ -30,7 +30,7 @@ except:
     identifiers=[ff.split('_')[1] for ff in glob.glob(data_path+'atl_*_MSLP.nc')]
 
 
-for identifier in ['2010']:
+for identifier in identifiers:
     start = time.time()
     print('*** started run '+identifier+' ***')
 
