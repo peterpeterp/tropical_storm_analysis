@@ -26,15 +26,15 @@ from tc_detection import * ; reload(sys.modules['tc_detection'])
 
 
 identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
-portion=len(identifiers)/10
+portion=int(len(identifiers)/10)
 print(len(identifiers),portion)
-print(identifiers=identifiers[sys.argv[1]*portion:len(identifiers)-1])
-print(identifiers[sys.argv[1]*portion:(sys.argv[1]+1)*portion])
+print(identifiers=identifiers[int(sys.argv[1])*portion:len(identifiers)-1])
+print(identifiers[int(sys.argv[1])*portion:(int(sys.argv[1])+1)*portion])
 try:
-    if (sys.argv[1]+1)*portion>=len(identifiers):
-        identifiers=identifiers[sys.argv[1]*portion:len(identifiers)-1]
+    if (int(sys.argv[1])+1)*portion>=len(identifiers):
+        identifiers=identifiers[int(sys.argv[1])*portion:len(identifiers)-1]
     else:
-        identifiers=identifiers[sys.argv[1]*portion:(sys.argv[1]+1)*portion]
+        identifiers=identifiers[int(sys.argv[1])*portion:(int(sys.argv[1])+1)*portion]
 except:
     identifiers=identifiers
 #print(identifiers)
