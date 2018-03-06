@@ -23,6 +23,8 @@ sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detectio
 
 from TC_support import * ; reload(sys.modules['TC_support'])
 from tc_detection import * ; reload(sys.modules['tc_detection'])
+
+
 try:
     identifiers=[sys.argv[1]]
 except:
@@ -33,11 +35,11 @@ except:
 for identifier in identifiers:
     start = time.time()
     print('*** started run '+identifier+' ***')
-    MSLP=ndimage.gaussian_filter(da.read_nc(data_path+'item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:])
+    MSLP=da.read_nc(data_path+'item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:]
     nc=da.read_nc(data_path+'item3225_daily_mean/item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')
     U=da.read_nc(data_path+'item3225_daily_mean/item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3225_daily_mean'].ix[:,0,:,:]
     V=da.read_nc(data_path+'item3226_daily_mean/item3226_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3226_daily_mean'].ix[:,0,:,:]
-    VO=ndimage.gaussian_filter(rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0))
+    VO=rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0)
     Wind10=np.array(np.sqrt(U**2+V**2))
 
     time_=nc.time0
