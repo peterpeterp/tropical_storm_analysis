@@ -24,16 +24,28 @@ sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detectio
 from TC_support import * ; reload(sys.modules['TC_support'])
 from tc_detection import * ; reload(sys.modules['tc_detection'])
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--verbosity",'-v', help="increase output verbosity",action="store_true")
+parser.add_argument("--overwrite",'-o', help="overwrite output files",action="store_true")
+parser.add_argument('--portion','-p',help='tenth of the available files to treat',required=False)
+parser.add_argument('--surrounding', ,help='time_steps for which the surroundings are plotted',nargs='+',required=False, type=int)
+args = parser.parse_args()
+
+if args.overwrite:
+    overwrite=True
+else:
+    overwrite=False
 
 identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
 portion=int(len(identifiers)/10)
-try:
+
+if args.portion i not None:
     if (int(sys.argv[1])+1)*portion>=len(identifiers):
         identifiers=identifiers[int(sys.argv[1])*portion:len(identifiers)-1]
     else:
         identifiers=identifiers[int(sys.argv[1])*portion:(int(sys.argv[1])+1)*portion]
-except:
-    identifiers=identifiers
+
 print(identifiers)
 
 for identifier in identifiers:
@@ -78,25 +90,26 @@ for identifier in identifiers:
     found_tcs.init_map(m=m,ax=ax,plot_lat=plot_lat,plot_lon=plot_lon)
 
     found_tcs.set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8,min_time_steps=2)
-    found_tcs.detect(overwrite=True)
-    found_tcs.combine_tracks(overwrite=True)
+    found_tcs.detect(overwrite=overwrite)
+    found_tcs.combine_tracks(overwrite=overwrite)
     #found_tcs.gather_info_track(overwrite=False)
     #track_info,track=found_tcs.plot_track_evolution()
     #found_tcs.plot_season()
 
-    # plt.close('all')
-    # fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5))
-    # axes=axes.flatten()
-    # maps=[]
-    # for ax in axes:
-    #     mm=Basemap(ax=ax,projection='rotpole',lon_0=lon_0,o_lon_p=o_lon_p,o_lat_p=o_lat_p,\
-    #                llcrnrlat = lats[0,0], urcrnrlat = lats[-1,-1],\
-    #                llcrnrlon = lons[0,0], urcrnrlon = lons[-1,-1],resolution='c')
-    #     mm.drawcoastlines(linewidth=0.7,color='m')
-    #     mm.drawparallels(np.arange(-60,100,30),labels=[0,0,0,0],color='grey',linewidth=0.5)
-    #     mm.drawmeridians([-120,0,120],labels=[0,0,0,0],color='grey',linewidth=0.5)
-    #     ax.invert_yaxis()
-    #     maps.append(mm)
-    # found_tcs.plot_surrounding(maps=maps,axes=axes,time_steps=range(100,150))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
-    # elapsed = time.time() - start;  print('Done with plotting %.3f seconds.' % elapsed)
+    if args.surrounding is not None:
+        plt.close('all')
+        fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5))
+        axes=axes.flatten()
+        maps=[]
+        for ax in axes:
+            mm=Basemap(ax=ax,projection='rotpole',lon_0=lon_0,o_lon_p=o_lon_p,o_lat_p=o_lat_p,\
+                       llcrnrlat = lats[0,0], urcrnrlat = lats[-1,-1],\
+                       llcrnrlon = lons[0,0], urcrnrlon = lons[-1,-1],resolution='c')
+            mm.drawcoastlines(linewidth=0.7,color='m')
+            mm.drawparallels(np.arange(-60,100,30),labels=[0,0,0,0],color='grey',linewidth=0.5)
+            mm.drawmeridians([-120,0,120],labels=[0,0,0,0],color='grey',linewidth=0.5)
+            ax.invert_yaxis()
+            maps.append(mm)
+        found_tcs.plot_surrounding(maps=maps,axes=axes,time_steps=args.surrounding)#; convert -delay 50 track_surrounding/{94..127}* TC.gif
+        elapsed = time.time() - start;  print('Done with plotting %.3f seconds.' % elapsed)
     print('memory in use: '+str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/10.**6))
