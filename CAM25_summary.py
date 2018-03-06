@@ -43,6 +43,9 @@ if args.plot:
 else:
     plot=False
 
+identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
+
+
 if overwrite:
     # check for duplicates
     xxx,storms=[],[]
