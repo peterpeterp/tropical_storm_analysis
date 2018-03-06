@@ -27,14 +27,15 @@ from tc_detection import * ; reload(sys.modules['tc_detection'])
 
 identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
 portion=len(identifiers)/10
-
+print(len(identidiers),portion)
 try:
     if (sys.argv[1]+1)*portion>=len(identidiers):
-        identifiers=identifiers[sys.argv[1]*portion:]
+        identifiers=identifiers[sys.argv[1]*portion:len(identidiers)-1]
     else:
         identifiers=identifiers[sys.argv[1]*portion:(sys.argv[1]+1)*portion]
 except:
     identifiers=identifiers
+print(identidiers)
 
 for identifier in identifiers:
     start = time.time()
