@@ -27,12 +27,12 @@ from TC_support import *
 
 
 try:
-    identifiers=[sys.argv[1]]
+    overwrite=[sys.argv[1]]
 except:
-    identifiers=sorted([ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')])
+    overwrite=False
 
 
-if os.path.isfile('detection/CAM25/CAM25_all_tracks.nc')==False:
+if overwrite:
     # check for duplicates
     xxx,storms=[],[]
     found_tracks={}
@@ -82,16 +82,15 @@ tmp=[]
 for id_ in all_tracks.ID:
     track=all_tracks[id_]
     track=track[np.isfinite(track[:,'t']),:]
-    track=track[track[:,'tc_cond']==3]
     tmp+=[axes[0].plot(range(track.shape[0]),track[:,'MSLP'],c='k')]
     tmp+=[axes[1].plot(range(track.shape[0]),track[:,'Wind10'],c='k')]
 
 
 axes[0].set_ylim((91000,101000))
 axes[1].set_ylim((5,55))
-
-axes[0].set_xlim((0,8))
-axes[1].set_xlim((0,8))
+#
+axes[0].set_xlim((0,14))
+axes[1].set_xlim((0,14))
 
 plt.tight_layout(rect=(0,0,1,0.95))
 

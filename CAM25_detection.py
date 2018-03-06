@@ -33,11 +33,11 @@ except:
 for identifier in identifiers:
     start = time.time()
     print('*** started run '+identifier+' ***')
-    MSLP=ndimage.gaussian_filter(da.read_nc(data_path+'item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:],sigma=(0,2,2))
+    MSLP=ndimage.gaussian_filter(da.read_nc(data_path+'item16222_daily_mean/item16222_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item16222_daily_mean'].ix[:,0,1:,:])
     nc=da.read_nc(data_path+'item3225_daily_mean/item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')
     U=da.read_nc(data_path+'item3225_daily_mean/item3225_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3225_daily_mean'].ix[:,0,:,:]
     V=da.read_nc(data_path+'item3226_daily_mean/item3226_daily_mean_'+identifier+'_2017-06_2017-10.nc')['item3226_daily_mean'].ix[:,0,:,:]
-    VO=ndimage.gaussian_filter(rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0),sigma=(0,1,1))
+    VO=ndimage.gaussian_filter(rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0))
     Wind10=np.array(np.sqrt(U**2+V**2))
 
     time_=nc.time0
@@ -72,7 +72,7 @@ for identifier in identifiers:
     found_tcs.init_map(m=m,ax=ax,plot_lat=plot_lat,plot_lon=plot_lon)
 
     found_tcs.set_thresholds(thr_wind=15,thr_vort=5*10**(-5),thr_mslp=101500,thr_ta=0,thr_sst=26.5,win1=7,win2=12,win_step=20,neighborhood_size=8,min_time_steps=2)
-    found_tcs.detect(overwrite=False)
+    found_tcs.detect(overwrite=True)
     found_tcs.combine_tracks(overwrite=True)
     #found_tcs.gather_info_track(overwrite=False)
     #track_info,track=found_tcs.plot_track_evolution()
