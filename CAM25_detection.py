@@ -35,7 +35,7 @@ try:
         identifiers=identifiers[sys.argv[1]*portion:(sys.argv[1]+1)*portion]
 except:
     identifiers=identifiers
-print(identidiers)
+print(identifiers)
 
 for identifier in identifiers:
     start = time.time()
