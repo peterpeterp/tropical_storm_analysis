@@ -29,8 +29,8 @@ identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_me
 portion=len(identifiers)/10
 print(len(identifiers),portion)
 try:
-    if (sys.argv[1]+1)*portion>=len(identidiers):
-        identifiers=identifiers[sys.argv[1]*portion:len(identidiers)-1]
+    if (sys.argv[1]+1)*portion>=len(identifiers):
+        identifiers=identifiers[sys.argv[1]*portion:len(identifiers)-1]
     else:
         identifiers=identifiers[sys.argv[1]*portion:(sys.argv[1]+1)*portion]
 except:
