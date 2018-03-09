@@ -40,7 +40,7 @@ else:
 identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item3225_daily_mean/item3225_daily*')]
 portion=int(len(identifiers)/10)
 
-if args.portion i not None:
+if args.portion is not None:
     if (int(sys.argv[1])+1)*portion>=len(identifiers):
         identifiers=identifiers[int(sys.argv[1])*portion:len(identifiers)-1]
     else:
