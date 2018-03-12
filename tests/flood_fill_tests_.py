@@ -1,9 +1,5 @@
 
 
-# import cv2
-# os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
-# mslp=da.read_nc('data/ERA5/atl_2016_surface.nc')['MSL'].values[483,:,:]
-# ta=da.read_nc('data/ERA5/atl_2016_T.nc')['T'].values[483,1,:,:]
 
 def find_closed_contours(field,y,x,step=2,search_radius=30,n_contours=None):
     '''
@@ -109,6 +105,11 @@ def find_closed_contours_opencv(field,y,x,step=2,search_radius=30,n_contours=Non
 # plt.savefig('plots/contour_test.png')
 # #
 
+
+# import cv2
+# os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
+# mslp=da.read_nc('data/ERA5/atl_2016_surface.nc')['MSL'].values[483,:,:]
+# ta=da.read_nc('data/ERA5/atl_2016_T.nc')['T'].values[483,1,:,:]
 
 mslp=MSLP[708,:,:]
 

@@ -400,7 +400,7 @@ class tc_tracks(object):
                     else:
                         track=[candidates[0]]+track
 
-                if sum([pp in used_pos for pp in track])/float(len(track))>0.2 or True:
+                if sum([pp in used_pos for pp in track])/float(len(track))>0.2:
                     used_pos+=track
 
                     track=da.DimArray(track,axes=[np.array(track)[:,0],['t','y','x','pressure_low','warm_core','MSLP','Wind10']],dims=['time','z'])
@@ -485,33 +485,33 @@ identifier='2016'
 print('*** started run '+identifier+' ***')
 os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
 data_path='data/ERA5/'
-wind_nc=da.read_nc(data_path+'atl_'+identifier+'_10mWind.nc')
-Wind10=wind_nc['ws'].values
-time_=wind_nc.time
-MSLP=da.read_nc(data_path+'atl_'+identifier+'_surface.nc')['MSL'].values/100.
-T=da.read_nc(data_path+'atl_'+identifier+'_T.nc')['T'].values
-SST=da.read_nc(data_path+'atl_'+identifier+'_surface.nc')['SSTK'].values-273.15
-dates=[date_(t) for t in time_]
-
-U=da.read_nc(data_path+'atl_'+identifier+'_UV.nc')['U']
-V=da.read_nc(data_path+'atl_'+identifier+'_UV.nc')['V']
-VO=rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
-
-lons,lats=np.meshgrid(wind_nc.lon,wind_nc.lat)
-lons[lons>180]-=360
-
-
-TC_season=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['season']
-TC_basin=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['basin']
-tc_sel=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc').ix[np.where((TC_season==int(identifier)) & (TC_basin[:,0]==0))[0]]
-
+# wind_nc=da.read_nc(data_path+'atl_'+identifier+'_10mWind.nc')
+# Wind10=wind_nc['ws'].values
+# time_=wind_nc.time
+# MSLP=da.read_nc(data_path+'atl_'+identifier+'_surface.nc')['MSL'].values/100.
+# T=da.read_nc(data_path+'atl_'+identifier+'_T.nc')['T'].values
+# SST=da.read_nc(data_path+'atl_'+identifier+'_surface.nc')['SSTK'].values-273.15
+# dates=[date_(t) for t in time_]
+#
+# U=da.read_nc(data_path+'atl_'+identifier+'_UV.nc')['U']
+# V=da.read_nc(data_path+'atl_'+identifier+'_UV.nc')['V']
+# VO=rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
+#
+# lons,lats=np.meshgrid(wind_nc.lon,wind_nc.lat)
+# lons[lons>180]-=360
+#
+#
+# TC_season=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['season']
+# TC_basin=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['basin']
+# tc_sel=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc').ix[np.where((TC_season==int(identifier)) & (TC_basin[:,0]==0))[0]]
+#
 
 plt.close('all')
 fig,ax=plt.subplots(nrows=1,ncols=1,figsize=(10,5))
 m = Basemap(ax=ax,llcrnrlon=np.min(lons),urcrnrlon=np.max(lons),llcrnrlat=np.min(lats),urcrnrlat=np.max(lats),resolution="l",projection='cyl')
 m.drawmapboundary(fill_color='1.')
 m.drawmapboundary(fill_color='darkblue')
-#m.fillcontinents(color='darkgreen',lake_color='darkblue')
+m.fillcontinents(color='darkgreen',lake_color='darkblue')
 m.drawcoastlines(linewidth=0.3)
 m.drawparallels(np.arange(-60,100,30),labels=[0,0,0,0],color='grey',linewidth=0.5)
 m.drawmeridians([-120,0,120],labels=[0,0,0,0],color='grey',linewidth=0.5)
@@ -524,21 +524,21 @@ found_tcs=tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filte
 found_tcs.init_map(m=m,ax=ax,plot_lat=plot_lat,plot_lon=plot_lon)
 found_tcs.init_obs_tcs(tc_sel)
 elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
-found_tcs.set_thresholds(thr_wind=17.5,thr_mslp=101500,p_radius=27,neighborhood_size=5,warm_core_size=3,cores_distance=1,search_radius=9,min_time_steps=10)
-found_tcs.detect(overwrite=True)
+found_tcs.set_thresholds(thr_wind=17.5,thr_mslp=101500,p_radius=27,neighborhood_size=2,warm_core_size=3,cores_distance=1,search_radius=9,min_time_steps=10)
+found_tcs.detect(overwrite=False)
 found_tcs.plot_detect_summary()
-found_tcs.combine_tracks(overwrite=False)
+found_tcs.combine_tracks(overwrite=True)
 found_tcs.plot_season()
 
-plt.close('all')
-fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5))
-axes=axes.flatten()
-maps=[]
-for ax in axes:
-    mm = Basemap(ax=ax,llcrnrlon=np.min(lons),urcrnrlon=np.max(lons),llcrnrlat=np.min(lats),urcrnrlat=np.max(lats),resolution="l",projection='cyl')
-    mm.drawcoastlines(linewidth=0.7,color='m')
-    mm.drawparallels(np.arange(-60,100,30),labels=[0,0,0,0],color='grey',linewidth=0.5)
-    mm.drawmeridians([-120,0,120],labels=[0,0,0,0],color='grey',linewidth=0.5)
-    maps.append(mm)
-
-found_tcs.plot_surrounding(maps=maps,axes=axes,time_steps=range(700,715))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
+# plt.close('all')
+# fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5))
+# axes=axes.flatten()
+# maps=[]
+# for ax in axes:
+#     mm = Basemap(ax=ax,llcrnrlon=np.min(lons),urcrnrlon=np.max(lons),llcrnrlat=np.min(lats),urcrnrlat=np.max(lats),resolution="l",projection='cyl')
+#     mm.drawcoastlines(linewidth=0.7,color='m')
+#     mm.drawparallels(np.arange(-60,100,30),labels=[0,0,0,0],color='grey',linewidth=0.5)
+#     mm.drawmeridians([-120,0,120],labels=[0,0,0,0],color='grey',linewidth=0.5)
+#     maps.append(mm)
+#
+# found_tcs.plot_surrounding(maps=maps,axes=axes,time_steps=range(700,715))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
