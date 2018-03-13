@@ -197,7 +197,7 @@ class tc_tracks(object):
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
             ax=axes[1]; ax.set_title('temperature')
-            im=ax.pcolormesh(self._lons,self._lats,self._T[t,1,:,:],transform=self._transform)
+            im=ax.pcolormesh(self._lons,self._lats,self._T[t,:,:],transform=self._transform)
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
             ax=axes[2]; ax.set_title('10m wind speed')
@@ -452,11 +452,11 @@ class tc_tracks(object):
                     start_pos=track.values[0,1:3]
                     if track.shape[0]<total_steps:
                         save_track=False
-                    if track[track[:,'warm_core']==1].shape[0]<warm_steps:
+                    if track[track[:,'warm_core']==1].shape[0]<=warm_steps:
                         save_track=False
                     else:
                         start_pos=track[track[:,'warm_core']==1].values[0,1:3]
-                    if track[track[:,'Wind10']>=thr_wind].shape[0]<strong_steps:
+                    if track[track[:,'Wind10']>=thr_wind].shape[0]<=strong_steps:
                         save_track=False
                     else:
                         start_pos=track[track[:,'Wind10']>=thr_wind].values[0,1:3]
@@ -468,7 +468,8 @@ class tc_tracks(object):
                             save_track=False
                         else:
                             first_of_consec=consec_info[np.argmax(consec_info[:,1]),0]
-                            start_pos=warm_strong.ix[first_of_consec,1:3]
+                            start_pos=warm_strong.values[first_of_consec,1:3]
+
 
                     if self._lats[int(start_pos[0]),int(start_pos[1])]>=40:
                         save_track=False
@@ -509,9 +510,9 @@ class tc_tracks(object):
                     tmp=[t,y_p,x_p,1,0,0,0]
                     # have to check boundary issues here
                     box=self.get_box(y_p,x_p,cores_distance)
-                    y_,x_=np.where(self._T[t,1,box[0]:box[1],box[2]:box[3]]==self._T[t,1,box[0]:box[1],box[2]:box[3]].max())
+                    y_,x_=np.where(self._T[t,box[0]:box[1],box[2]:box[3]]==self._T[t,box[0]:box[1],box[2]:box[3]].max())
                     y_t,x_t=box[0]+y_[0],box[2]+x_[0]
-                    warm_core_area,ncont=self.find_closed_contours(self._T[t,1,:,:],y_t,x_t,step=1,search_radius=p_radius,n_contours=1,method='max')
+                    warm_core_area,ncont=self.find_closed_contours(self._T[t,:,:],y_t,x_t,step=1,search_radius=p_radius,n_contours=1,method='max')
                     yy,xx=np.where(warm_core_area==1)
                     if len(np.where(warm_core_area==1)[0])<warm_core_size and ncont==1:
                         tmp[4]=1
@@ -557,7 +558,7 @@ class tc_tracks(object):
         for t,progress in zip(self._time_i,np.array([['-']+['']*(len(self._time_i)/20+1)]*20).flatten()[0:len(self._time_i)]):
             sys.stdout.write(progress); sys.stdout.flush()
             # i vort max
-            vo_=self._VO[t,:,:]
+            vo_=self._VO[t,:,:].copy()
             vo_[vo_<thr_vort]=0
             coords = peak_local_max(vo_, min_distance=int(dis_vort_max))
             if coords.shape[0]>0:
@@ -617,7 +618,7 @@ class tc_tracks(object):
         for t,progress in zip(self._time_i,np.array([['-']+['']*(len(self._time_i)/20+1)]*20).flatten()[0:len(self._time_i)]):
             sys.stdout.write(progress); sys.stdout.flush()
             # i vort max
-            vo_=self._VO[t,:,:]
+            vo_=self._VO[t,:,:].copy()
             vo_[vo_<thr_vort]=0
             coords = peak_local_max(vo_, min_distance=int(dis_vort_max))
             if coords.shape[0]>0:

@@ -42,7 +42,7 @@ else:
 if args.year is not None:
     identifiers=[args.year]
 else:
-    identifiers=[str(yr) for yr in range(1979,2018)]
+    identifiers=[str(yr) for yr in range(2010,2018)]
 
 
 print(identifiers)
@@ -80,36 +80,39 @@ for identifier in identifiers:
     ax.coastlines()
     ax.add_feature(cartopy.feature.LAND, facecolor='darkgreen')
     ax.add_feature(cartopy.feature.OCEAN,facecolor='darkblue')
-    ax.set_extent([np.min(lons),np.max(lons),np.min(lats),np.max(lats)],crs=plate_carree)
+    ax.set_xlim(np.min(lons),np.max(lons))
+    ax.set_ylim(np.min(lats),np.max(lats))
 
     working_dir='detection/JRA55/'+str(identifier)+'_JRA55/'
-    found_tcs=tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,3,3)),SST=None,VO=VO,T=T[:,:,:],lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
+    found_tcs=tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,0,0)),SST=None,VO=VO,T=T[:,:,:],lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
     found_tcs.init_map(ax=ax,transform=plate_carree)
     found_tcs.init_obs_tcs(tc_sel)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
-    # thresholds method
-    found_tcs.detect_knutson2007(overwrite=True)
-    found_tcs.plot_detect_summary(thr_wind=0)
-    found_tcs.combine_tracks(overwrite=True,thr_wind=0,search_radius=6,total_steps=5,warm_steps=3,consecutive_warm_strong_steps=0,plot=False)
-    found_tcs.plot_season()
-
     # contours method
-    found_tcs.detect_contours(overwrite=False,p_radius=27,neighborhood_size=3,warm_core_size=3,cores_distance=1)
-    found_tcs.plot_detect_summary(thr_wind=17.5)
-    found_tcs.combine_tracks(overwrite=True,thr_wind=17.5,search_radius=6,total_steps=12,warm_steps=8,consecutive_warm_strong_steps=6)
+    found_tcs.detect_contours(overwrite=True,p_radius=27,neighborhood_size=3,warm_core_size=3,cores_distance=1)
+    found_tcs.plot_detect_summary(thr_wind=10)
+    found_tcs.combine_tracks(overwrite=True,thr_wind=17.5,search_radius=6,total_steps=12,warm_steps=0,consecutive_warm_strong_steps=0)
     found_tcs.plot_season()
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
-    # plt.close('all')
-    # fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5),subplot_kw={'projection': plate_carree})
-    # axes=axes.flatten()
-    # for ax in axes:
-    #     ax.set_global()
-    #     ax.coastlines(edgecolor='magenta')
-    #     #ax.stock_img()
-    #     ax.add_feature(cartopy.feature.LAND, facecolor='darkgreen')
-    #     ax.add_feature(cartopy.feature.OCEAN,facecolor='darkblue')
-    #     ax.set_extent([np.min(lons),np.max(lons),np.min(lats),np.max(lats)],crs=plate_carree)
-    #
-    # found_tcs.plot_surrounding(axes=axes,time_steps=range(600,640))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
+
+    # thresholds method
+    found_tcs.detect_knutson2007(overwrite=True)
+    #found_tcs.plot_detect_summary(thr_wind=0)
+    found_tcs.combine_tracks(overwrite=True,thr_wind=0,search_radius=6,total_steps=5,warm_steps=3,consecutive_warm_strong_steps=0,plot=False)
+    found_tcs.plot_season()
+
+
+    plt.close('all')
+    fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5),subplot_kw={'projection': plate_carree})
+    axes=axes.flatten()
+    for ax in axes:
+        ax.set_global()
+        ax.coastlines(edgecolor='magenta')
+        #ax.stock_img()
+        ax.add_feature(cartopy.feature.LAND, facecolor='darkgreen')
+        ax.add_feature(cartopy.feature.OCEAN,facecolor='darkblue')
+        ax.set_extent([np.min(lons),np.max(lons),np.min(lats),np.max(lats)],crs=plate_carree)
+
+    found_tcs.plot_surrounding(axes=axes,time_steps=range(600,640))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
