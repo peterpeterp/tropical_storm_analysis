@@ -65,6 +65,31 @@ def running_mean_func(xx,N):
 
 #------------ TC stuff
 
+def tc_cat(z,method='pressure'):
+    def cat__(zz):
+        if method=='wind':
+            if zz<=64: cat= 0
+            if zz>64: cat= 1
+            if zz>82: cat= 2
+            if zz>95: cat= 3
+            if zz>112: cat= 4
+            if zz>136: cat= 5
+            if np.isnan(zz): cat= 0
+            return cat
+        if method=='pressure':
+            if zz>=1020: cat= 0
+            if zz<1020: cat= 1
+            if zz<980: cat= 2
+            if zz<965: cat= 3
+            if zz<945: cat= 4
+            if zz<920: cat= 5
+            if np.isnan(zz): cat= 0
+            return cat
+    if isinstance(z,np.ndarray) or isinstance(z,list) or isinstance(z,da.core.dimarraycls.DimArray):
+        return [cat__(zz) for zz in z]
+    else:
+        return cat__(z)
+
 def normalize180(lon):
     """Normalize lon to range [180, 180)"""
     lower = -180.; upper = 180.

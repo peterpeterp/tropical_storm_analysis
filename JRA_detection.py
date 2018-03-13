@@ -40,7 +40,7 @@ else:
     overwrite=False
 
 if args.year is not None:
-    identifiers=[year]
+    identifiers=[args.year]
 else:
     identifiers=[str(yr) for yr in range(1979,2018)]
 
