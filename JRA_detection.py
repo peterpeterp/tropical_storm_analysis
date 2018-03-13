@@ -68,6 +68,10 @@ for identifier in identifiers:
     lons,lats=np.meshgrid(nc.lon,nc.lat)
     lons[lons>180]-=360
 
+    TC_season=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['season']
+    TC_basin=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['basin']
+    tc_sel=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc').ix[np.where((TC_season==int(identifier)) & (TC_basin[:,0]==0))[0]]
+
     plt.close('all')
     plate_carree = ccrs.PlateCarree()
     fig,ax=plt.subplots(nrows=1,ncols=1,figsize=(10,5))
