@@ -602,7 +602,6 @@ class tc_tracks(object):
         thr_vort:       float [1/s]:    threshold for relative vorticity maxima
         dis_vort_max:   float [deg]:    minimal distance between vorticity maxima
         dis_cores:      float [deg]:    maximal distances between vort max and mslp min (mslp min and warm core)
-        thr_MSLP_inc:   float [hPa]:    increase in MSLP from center over dis_MSLP_inc
         dis_MSLP_inc:   float [deg]:    distance over which MSLP should increase by thr_MSLP_inc
         thr_T_drop:     float [K]:      temperature drop from warm core center over dis_T_decrease
         dis_T_drop:     float [deg]:    distance over which T should decrease by thr_T_decrease
@@ -623,19 +622,19 @@ class tc_tracks(object):
             coords = peak_local_max(vo_, min_distance=int(dis_vort_max))
             if coords.shape[0]>0:
                 for y_v,x_v in zip(coords[:,0],coords[:,1]):
-                    box_1=self.get_box(y_v,x_v,dis_cores)
-                    tmp=self._MSLP[t,box_1[0]:box_1[1],box_1[2]:box_1[3]]
-                    y,x=np.where(tmp==tmp.min()); y_p,x_p=box_1[0]+y[0],box_1[2]+x[0]
-                    box_2=self.get_box(y_p,x_p,dis_MSLP_inc)
+                    y_circ,x_circ=self.area_around(y_v,x_v,dis_cores)
+                    p_window=self._MSLP[t,y_circ,x_circ].flatten()
+                    i=np.where(p_window==p_window.min())[0][0]; y_p,x_p=y_circ[i],x_circ[i]
+                    y_area,x_area=self.area_around(y_p,x_p,dis_MSLP_inc)
                     # ii relative pressure min
-                    if self._MSLP[t,y_p,x_p]==self._MSLP[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].min():
+                    if self._MSLP[t,y_p,x_p]==self._MSLP[t,y_area,x_area].min():
                         box_1=self.get_box(y_p,x_p,cores_distance)
                         box_2=self.get_box(y_p,x_p,tc_size)
                         tmp=[t,y_p,x_p,1,0,0,0]
                         # iv warm core
                         if self._T is None:
                             tmp[4]=1
-                        elif self._T[t,1,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self._T[t,1,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>thr_T_decrease:
+                        elif self._T[t,1,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self._T[t,1,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>thr_T_drop:
                             tmp[4]=1
                         # iii wind speed
                         tmp[5]=self._MSLP[t,y_p,x_p]

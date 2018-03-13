@@ -75,7 +75,6 @@ found_tcs.init_map(ax=ax,transform=plate_carree)
 found_tcs.init_obs_tcs(tc_sel)
 elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
-
 # thresholds method
 found_tcs.detect_knutson2007(overwrite=True)
 found_tcs.plot_detect_summary(thr_wind=0)
