@@ -57,7 +57,7 @@ for identifier in identifiers:
 
     Wind10=(U10**2+V10**2)**0.5
     nc=da.read_nc(data_path+'atl_'+identifier+'_MSLP.nc')
-    MSLP=nc['psl'].values
+    MSLP=nc['psl'].values/100.
     time_=nc.time
     dates=[num2date(t,units = nc.axes['time'].units,calendar = nc.axes['time'].calendar) for t in time_]
 
