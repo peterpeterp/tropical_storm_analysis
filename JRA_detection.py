@@ -63,7 +63,7 @@ for identifier in identifiers:
 
     U=da.read_nc(data_path+'atl_'+identifier+'_U.nc')['var33']
     V=da.read_nc(data_path+'atl_'+identifier+'_V.nc')['var34']
-    VO=TC_support.rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
+    VO=rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
 
     lons,lats=np.meshgrid(nc.lon,nc.lat)
     lons[lons>180]-=360
