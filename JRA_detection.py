@@ -48,7 +48,6 @@ if args.year is not None:
 else:
     identifiers=[str(yr) for yr in range(1979,2018)]
 
-
 print(identifiers)
 
 for identifier in identifiers:
