@@ -3,7 +3,6 @@ import os,sys,glob,time,collections,gc,calendar,weakref,resource
 from netCDF4 import Dataset,netcdftime,num2date
 import dimarray as da
 import numpy as np
-from mpl_toolkits.basemap import Basemap
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
@@ -24,19 +23,19 @@ sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detectio
 from TC_support import *
 
 
-if os.path.isfile('detection/ERA5_obs_track_info.nc')==False:
+if os.path.isfile('detection/JRA55_obs_track_info.nc')==False:
     # check for duplicates
     obs_tracks={}
     for identifier in [str(yr) for yr in range(1979,2017)]:
         print(obs_tracks)
-        tmp=da.read_nc('detection/ERA5/'+str(identifier)+'_ERA5/obs_track_info.nc')['obs_track_info']
+        tmp=da.read_nc('detection/JRA55/'+str(identifier)+'_JRA55/obs_track_info.nc')['obs_track_info']
         for storm in tmp.storm:
             obs_tracks[storm]=tmp[storm,:,:]
 
-    da.Dataset({'obs_tracks':obs_tracks}).write_nc('detection/ERA5/ERA5_obs_track_info.nc',mode='w')
+    da.Dataset({'obs_tracks':obs_tracks}).write_nc('detection/JRA55/JRA55_obs_track_info.nc',mode='w')
 
 else:
-    obs_tracks=da.read_nc('detection/ERA5/ERA5_obs_track_info.nc')['obs_tracks']
+    obs_tracks=da.read_nc('detection/JRA55/JRA55_obs_track_info.nc')['obs_tracks']
 
 
 categories={}
