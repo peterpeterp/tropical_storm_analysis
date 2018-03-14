@@ -23,8 +23,12 @@ except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
     data_path='../reanalysis/JRA55/'
 
-from TC_support import * ; reload(sys.modules['TC_support'])
-from tc_detection import * ; reload(sys.modules['tc_detection'])
+import TC_support ;  TC_support = reload(TC_support)
+import tc_detection;    tc_detection = reload(tc_detection)
+# import tc_detection;    if is_changed(tc_detection): foo = reload(tc_detection)
+# import TC_support;    if is_changed(TC_support): foo = reload(TC_support)
+
+
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -42,7 +46,7 @@ else:
 if args.year is not None:
     identifiers=[args.year]
 else:
-    identifiers=[str(yr) for yr in range(2010,2018)]
+    identifiers=[str(yr) for yr in range(1979,2018)]
 
 
 print(identifiers)
@@ -63,7 +67,8 @@ for identifier in identifiers:
 
     U=da.read_nc(data_path+'atl_'+identifier+'_U.nc')['var33']
     V=da.read_nc(data_path+'atl_'+identifier+'_V.nc')['var34']
-    VO=rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
+    VO=TC_support.rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
+    VO[np.isnan(VO)]=-999
 
     lons,lats=np.meshgrid(nc.lon,nc.lat)
     lons[lons>180]-=360
@@ -84,35 +89,35 @@ for identifier in identifiers:
     ax.set_ylim(np.min(lats),np.max(lats))
 
     working_dir='detection/JRA55/'+str(identifier)+'_JRA55/'
-    found_tcs=tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,0,0)),SST=None,VO=VO,T=T[:,:,:],lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
+    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,2,2)),SST=None,VO=VO,T=T,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
     found_tcs.init_map(ax=ax,transform=plate_carree)
     found_tcs.init_obs_tcs(tc_sel)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
     # contours method
-    found_tcs.detect_contours(overwrite=True,p_radius=27,neighborhood_size=3,warm_core_size=3,cores_distance=1)
+    found_tcs.detect_contours(overwrite=True,p_radius=27,dis_mslp_min=3,warm_core_size=3,dis_cores=1)
     found_tcs.plot_detect_summary(thr_wind=10)
-    found_tcs.combine_tracks(overwrite=True,thr_wind=17.5,search_radius=6,total_steps=12,warm_steps=0,consecutive_warm_strong_steps=0)
+    found_tcs.combine_tracks(overwrite=True,thr_wind=17.5,search_radius=6,total_steps=12,warm_steps=8,consecutive_warm_strong_steps=4,plot=False)
     found_tcs.plot_season()
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
-
     # thresholds method
-    found_tcs.detect_knutson2007(overwrite=True)
-    #found_tcs.plot_detect_summary(thr_wind=0)
-    found_tcs.combine_tracks(overwrite=True,thr_wind=0,search_radius=6,total_steps=5,warm_steps=3,consecutive_warm_strong_steps=0,plot=False)
+    found_tcs.detect_knutson2007(overwrite=True,thr_vort=3.5*10**(-5),dis_vort_max=4,dis_cores=2,thr_MSLP_inc=2,dis_MSLP_inc=5,thr_T_drop=0.8,dis_T_drop=5,tc_size=7)
+    found_tcs.plot_detect_summary(thr_wind=15)
+    found_tcs.combine_tracks(overwrite=True,thr_wind=15,search_radius=6,total_steps=8,strong_steps=8,warm_steps=8,consecutive_warm_strong_steps=0,plot=False)
     found_tcs.plot_season()
 
+    found_tcs.obs_track_info()
 
-    plt.close('all')
-    fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5),subplot_kw={'projection': plate_carree})
-    axes=axes.flatten()
-    for ax in axes:
-        ax.set_global()
-        ax.coastlines(edgecolor='magenta')
-        #ax.stock_img()
-        ax.add_feature(cartopy.feature.LAND, facecolor='darkgreen')
-        ax.add_feature(cartopy.feature.OCEAN,facecolor='darkblue')
-        ax.set_extent([np.min(lons),np.max(lons),np.min(lats),np.max(lats)],crs=plate_carree)
-
-    found_tcs.plot_surrounding(axes=axes,time_steps=range(600,640))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
+    # plt.close('all')
+    # fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5),subplot_kw={'projection': plate_carree})
+    # axes=axes.flatten()
+    # for ax in axes:
+    #     ax.set_global()
+    #     ax.coastlines(edgecolor='magenta')
+    #     #ax.stock_img()
+    #     ax.add_feature(cartopy.feature.LAND, facecolor='darkgreen')
+    #     ax.add_feature(cartopy.feature.OCEAN,facecolor='darkblue')
+    #     ax.set_extent([np.min(lons),np.max(lons),np.min(lats),np.max(lats)],crs=plate_carree)
+    #
+    # found_tcs.plot_surrounding(axes=axes,time_steps=range(600,640))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
