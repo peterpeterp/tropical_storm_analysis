@@ -47,6 +47,7 @@ if args.year is not None:
     identifiers=[args.year]
 else:
     identifiers=[str(yr) for yr in range(1979,2018)]
+    identifiers=['2010']
 
 print(identifiers)
 
@@ -56,7 +57,7 @@ for identifier in identifiers:
 
     U10=da.read_nc(data_path+'atl_'+identifier+'_U10.nc')['var33'].values.squeeze()
     V10=da.read_nc(data_path+'atl_'+identifier+'_V10.nc')['var34'].values.squeeze()
-    T=da.read_nc(data_path+'atl_'+identifier+'_T.nc')['var11'].values[:,1:3,:,:].mean(axis=1)
+    T=da.read_nc(data_path+'atl_'+identifier+'_T_ana.nc')['var11'].values[:,1:3,:,:].mean(axis=1)
 
     Wind10=(U10**2+V10**2)**0.5
     nc=da.read_nc(data_path+'atl_'+identifier+'_MSLP.nc')
@@ -106,7 +107,7 @@ for identifier in identifiers:
     found_tcs.combine_tracks(overwrite=True,thr_wind=15,search_radius=6,total_steps=8,strong_steps=8,warm_steps=8,consecutive_warm_strong_steps=0,plot=False)
     found_tcs.plot_season()
 
-    found_tcs.obs_track_info()
+    found_tcs.obs_track_info(core_radius=3,full_radius=7)
 
     # plt.close('all')
     # fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5),subplot_kw={'projection': plate_carree})

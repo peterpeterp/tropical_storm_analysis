@@ -120,7 +120,7 @@ class tc_tracks(object):
         self._tc_intens=np.nanmean(tc_sel['source_wind'],axis=-1)
         self._obs_tc=True
 
-    def obs_track_info(self,overwrite=False):
+    def obs_track_info(self,core_radius=3,full_radius=7,overwrite=False):
         out_file=self._working_dir+'obs_track_info.nc'
         if overwrite and os.path.isfile(out_file):
             os.system('rm '+out_file)
@@ -128,6 +128,10 @@ class tc_tracks(object):
             self._obs_track_info=da.read_nc(out_file)
             return self._obs_track_info
 
+
+        # convert distances from degrees into grid-cells
+        core_radius=int(self.degree_to_step(core_radius))
+        full_radius=int(self.degree_to_step(full_radius))
 
         obs_summary=np.zeros([len(self._tc_sel.storm),200,7])*np.nan
         for i,storm in enumerate(self._tc_sel.storm):
@@ -140,13 +144,13 @@ class tc_tracks(object):
                 if len(t_)!=0:
                     t_=t_[0]
                     y,x=np.argmin(abs(self._lats[:,0]-self._tc_lat[i,t])),np.argmin(abs(self._lons[0,:]-self._tc_lon[i,t]))
-                    box_1=[int(bb) for bb in self.get_box(y,x,self._win1)]
-                    box_2=[int(bb) for bb in self.get_box(y,x,self._win2)]
-                    obs_summary[i,t,1]=self._VO[t_,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()
-                    obs_summary[i,t,2]=self._MSLP[t_,box_1[0]:box_1[1],box_1[2]:box_1[3]].min()
-                    obs_summary[i,t,3]=self._Wind10[t_,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()
-                    obs_summary[i,t,4]=self._T[t_,0,y,x]
-                    obs_summary[i,t,5]=self._T[t_,1,y,x]
+                    y_core,x_core=self.area_around(y,x,core_radius)
+                    y_full,x_full=self.area_around(y,x,full_radius)
+                    obs_summary[i,t,1]=self._VO[t_,y_core,x_core].max()
+                    obs_summary[i,t,2]=self._MSLP[t_,y_core,x_core].min()
+                    obs_summary[i,t,3]=self._Wind10[t_,y_full,x_full].max()
+                    obs_summary[i,t,4]=self._T[t_,y_core,x_core].max()
+                    obs_summary[i,t,5]=self._T[t_,y_core,x_core].max()
                     if self._SST is not None:
                         obs_summary[i,t,6]=self._SST[t_,y,x]
 
