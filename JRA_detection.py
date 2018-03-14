@@ -107,7 +107,7 @@ for identifier in identifiers:
     found_tcs.combine_tracks(overwrite=True,thr_wind=15,search_radius=6,total_steps=8,strong_steps=8,warm_steps=8,consecutive_warm_strong_steps=0,plot=False)
     found_tcs.plot_season()
 
-    found_tcs.obs_track_info(core_radius=3,full_radius=7)
+    found_tcs.obs_track_info(overwrite=True,core_radius=3,full_radius=7)
 
     # plt.close('all')
     # fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(8,5),subplot_kw={'projection': plate_carree})
