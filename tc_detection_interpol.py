@@ -12,6 +12,8 @@ import cv2
 from skimage.feature import peak_local_max
 import cartopy.crs as ccrs
 import cartopy
+from scipy import interpolate
+
 sns.set_palette(sns.color_palette("plasma"))
 
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
@@ -120,7 +122,7 @@ class tc_tracks(object):
         self._tc_intens=np.nanmean(tc_sel['source_wind'],axis=-1)
         self._obs_tc=True
 
-    def obs_track_info(self,core_radius=3,full_radius=7,overwrite=False):
+    def obs_track_info(self,overwrite=False):
         out_file=self._working_dir+'obs_track_info.nc'
         if overwrite and os.path.isfile(out_file):
             os.system('rm '+out_file)
@@ -128,10 +130,6 @@ class tc_tracks(object):
             self._obs_track_info=da.read_nc(out_file)
             return self._obs_track_info
 
-
-        # convert distances from degrees into grid-cells
-        core_radius=int(self.degree_to_step(core_radius))
-        full_radius=int(self.degree_to_step(full_radius))
 
         obs_summary=np.zeros([len(self._tc_sel.storm),200,7])*np.nan
         for i,storm in enumerate(self._tc_sel.storm):
@@ -144,13 +142,13 @@ class tc_tracks(object):
                 if len(t_)!=0:
                     t_=t_[0]
                     y,x=np.argmin(abs(self._lats[:,0]-self._tc_lat[i,t])),np.argmin(abs(self._lons[0,:]-self._tc_lon[i,t]))
-                    y_core,x_core=self.area_around(y,x,core_radius)
-                    y_full,x_full=self.area_around(y,x,full_radius)
-                    obs_summary[i,t,1]=self._VO[t_,y_core,x_core].max()
-                    obs_summary[i,t,2]=self._MSLP[t_,y_core,x_core].min()
-                    obs_summary[i,t,3]=self._Wind10[t_,y_full,x_full].max()
-                    obs_summary[i,t,4]=self._T[t_,y_core,x_core].max()
-                    obs_summary[i,t,5]=self._T[t_,y_core,x_core].max()
+                    box_1=[int(bb) for bb in self.get_box(y,x,self._win1)]
+                    box_2=[int(bb) for bb in self.get_box(y,x,self._win2)]
+                    obs_summary[i,t,1]=self._VO[t_,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()
+                    obs_summary[i,t,2]=self._MSLP[t_,box_1[0]:box_1[1],box_1[2]:box_1[3]].min()
+                    obs_summary[i,t,3]=self._Wind10[t_,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()
+                    obs_summary[i,t,4]=self._T[t_,0,y,x]
+                    obs_summary[i,t,5]=self._T[t_,1,y,x]
                     if self._SST is not None:
                         obs_summary[i,t,6]=self._SST[t_,y,x]
 
@@ -317,11 +315,15 @@ class tc_tracks(object):
             l = element.pop(0); wl = weakref.ref(l); l.remove(); del l
 
     # analyze fields
-    def get_box(self,y,x,window):
+    def get_box(self,y,x,window,zoomed=False):
+        if zoomed:
+            YY=self._lats_zoom
+        else:
+            YY=self._lats
         y_min=int(max(0,y-window))
-        y_max=int(min(self._lats.shape[0],y+window+1))
+        y_max=int(min(YY.shape[0],y+window+1))
         x_min=int(max(0,x-window))
-        x_max=int(min(self._lats.shape[1],x+window+1))
+        x_max=int(min(YY.shape[1],x+window+1))
         return (y_min,y_max,x_min,x_max)
 
     def area_around(self,y,x,radius):
@@ -368,7 +370,10 @@ class tc_tracks(object):
         while n_contours is None or ncont<n_contours:
             threshold-=step
             th, im_floodfill = cv2.threshold(im, threshold, 255, cv2.THRESH_BINARY_INV);
+            print(im_floodfill.shape)
             mask = np.zeros((ny+2, nx+2), np.uint8)
+            print(mask.shape)
+            print(y,x)
             cv2.floodFill(im_floodfill, mask, (x,y), 1);
             y_,x_=np.where(mask[1:-1,1:-1]==1)
             if y_min in y_ or x_min in x_ or y_max-1 in y_ or x_max-1 in x_:
@@ -511,7 +516,7 @@ class tc_tracks(object):
         return self._tcs
 
     # detect positions
-    def detect_contours(self,overwrite=False,p_radius=27,p_inc_step=1,warm_core_size=3,T_drop_step=1,dis_cores=1,dis_mslp_min=3):
+    def detect_contours(self,overwrite=False,p_radius=27,p_inc_step=1,warm_core_size=3,T_drop_step=1,dis_cores=1,dis_mslp_min=3,zoom_factor=4):
         self._add_name='contours'
         out_file=self._working_dir+'detected_positions_'+self._add_name+'.nc'
         if overwrite and os.path.isfile(out_file):
@@ -531,31 +536,62 @@ class tc_tracks(object):
         '''
 
         # convert distances from degrees into grid-cells
-        dis_mslp_min=self.degree_to_step(dis_mslp_min)
-        p_radius=self.degree_to_step(p_radius)
-        dis_cores=self.degree_to_step(dis_cores)
-        warm_core_size=self.degree_to_step(warm_core_size)**2*2*np.pi
+        dis_mslp_min=int(self.degree_to_step(dis_mslp_min)*zoom_factor)
+        p_radius=int(self.degree_to_step(p_radius)*zoom_factor)
+        dis_cores=int(self.degree_to_step(dis_cores)*zoom_factor)
+        warm_core_size=int((self.degree_to_step(warm_core_size)*zoom_factor)**2*2*np.pi)
 
+        # zoom factors
+        # zoomed_lat_spacing=np.diff(self._lats[:,0],1)[0]/float(zoom_factor)
+        # zoomed_lon_spacing=np.diff(self._lons[0,:],1)[0]/float(zoom_factor)
+        # y_interpol,x_interpol=self._lats.mean(axis=1), self._lons.mean(axis=0)
+        # y_zoomed,x_zoomed=np.arange(self._lats.mean(axis=1)[0],self._lats.mean(axis=1)[-1], zoomed_lat_spacing),np.arange(self._lons.mean(axis=0)[0],self._lons.mean(axis=0)[-1], zoomed_lon_spacing)
+        zoomed_lat_spacing=abs(np.diff(self._lats.mean(axis=1),1)[0]/float(zoom_factor))
+        zoomed_lon_spacing=abs(np.diff(self._lons.mean(axis=0),1)[0]/float(zoom_factor))
+        y_interpol=self._lats.mean(axis=1)
+        x_interpol=self._lons.mean(axis=0)
+        y_zoomed=np.arange(self._lats.mean(axis=1).min(),self._lats.mean(axis=1).max(), zoomed_lat_spacing)
+        x_zoomed=np.arange(self._lons.mean(axis=0).min(),self._lons.mean(axis=0).max(), zoomed_lon_spacing)
+
+
+        print(y_interpol)
+        print(y_zoomed)
+        print(x_interpol)
+        print(x_zoomed)
         detect=np.array([[np.nan]*7])
         print('detecting\n10------50-------100')
         for t,progress in zip(self._time_i,np.array([['-']+['']*(len(self._time_i)/20+1)]*20).flatten()[0:len(self._time_i)]):
             sys.stdout.write(progress); sys.stdout.flush()
-            coords=peak_local_max(-self._MSLP_smoothed[t,:,:], min_distance=int(dis_mslp_min))
+            plt.close('all')
+            fig,axes=plt.subplots(nrows=2,ncols=2)
+            MSLP_zoomed = np.array(interpolate.interp2d(x_interpol,y_interpol,self._MSLP[t,:,:], kind='cubic')(x_zoomed,y_zoomed), dtype=np.float32)
+            T_zoomed = np.array(interpolate.interp2d(x_interpol,y_interpol,self._T[t,:,:], kind='cubic')(x_zoomed,y_zoomed), dtype=np.float32)
+            Wind10_zoomed = np.array(interpolate.interp2d(x_interpol,y_interpol,self._Wind10[t,:,:], kind='cubic')(x_zoomed,y_zoomed), dtype=np.float32)
+
+            axes[0,0].pcolormesh(self._lons,self._lats,self._MSLP[t,:,:])
+            axes[0,1].pcolormesh(x_zoomed,y_zoomed,MSLP_zoomed)
+            axes[1,0].pcolormesh(self._lons,self._lats,self._T[t,:,:])
+            axes[1,1].pcolormesh(x_zoomed,y_zoomed,T_zoomed)
+            plt.savefig('plots/detect_test_zoom.png')
+            coords=peak_local_max(-MSLP_zoomed, min_distance=int(dis_mslp_min))
             for y_p,x_p in zip(coords[:,0],coords[:,1]):
-                tc_area,ncont=self.find_closed_contours(self._MSLP_smoothed[t,:,:],y_p,x_p,step=p_inc_step,search_radius=p_radius,method='min')
+                print(MSLP_zoomed)
+                print(self._MSLP[t,:,:])
+                print(y_p,x_p,MSLP_zoomed.shape,p_radius,p_inc_step)
+                tc_area,ncont=self.find_closed_contours(MSLP_zoomed,y_p,x_p,step=p_inc_step,search_radius=p_radius,method='min')
                 if ncont>0:
                     tmp=[t,y_p,x_p,1,0,0,0]
                     # have to check boundary issues here
                     box=self.get_box(y_p,x_p,dis_cores)
-                    y_,x_=np.where(self._T[t,box[0]:box[1],box[2]:box[3]]==self._T[t,box[0]:box[1],box[2]:box[3]].max())
+                    y_,x_=np.where(T_zoomed[box[0]:box[1],box[2]:box[3]]==T_zoomed[box[0]:box[1],box[2]:box[3]].max())
                     y_t,x_t=box[0]+y_[0],box[2]+x_[0]
-                    warm_core_area,ncont=self.find_closed_contours(self._T[t,:,:],y_t,x_t,step=T_drop_step,search_radius=p_radius,n_contours=1,method='max')
+                    warm_core_area,ncont=self.find_closed_contours(T_zoomed,y_t,x_t,step=T_drop_step,search_radius=p_radius,n_contours=1,method='max')
                     yy,xx=np.where(warm_core_area==1)
                     if len(np.where(warm_core_area==1)[0])<warm_core_size and ncont==1:
                         tmp[4]=1
 
-                    tmp[5]=self._MSLP[t,y_p,x_p]
-                    tmp[6]=np.nanmax(tc_area*self._Wind10[t,:,:])
+                    tmp[5]=MSLP_zoomed[y_p,x_p]
+                    tmp[6]=np.nanmax(tc_area*Wind10_zoomed)
                     if np.isnan(tmp[6]):
                         print(ncont)
                     detect=np.concatenate((detect,np.array([tmp])))
@@ -587,11 +623,8 @@ class tc_tracks(object):
         '''
 
         # convert distances from degrees into grid-cells
-        dis_vort_max=int(self.degree_to_step(dis_vort_max))
-        dis_cores=int(self.degree_to_step(dis_cores))
-        dis_MSLP_inc=int(self.degree_to_step(dis_MSLP_inc))
-        dis_T_drop=int(self.degree_to_step(dis_T_drop))
-        tc_size=int(self.degree_to_step(tc_size))
+        for distance in [dis_vort_max,dis_cores,dis_MSLP_inc,dis_T_drop,tc_size]:
+            distance=self.degree_to_step(distance)
 
         detect=np.array([[np.nan]*7])
         print('detecting\n10------50-------100')
@@ -622,7 +655,7 @@ class tc_tracks(object):
                                     tmp[4]=1
                             # iii wind speed
                             tmp[5]=self._MSLP[t,y_p,x_p]
-                            y_circ,x_circ=self.area_around(y_p,x_p,tc_size)
+                            y_circ,x_circ=self.circle_around(y_p,x_p,tc_size)
                             tmp[6]=self._Wind10[t,y_circ,x_circ].max()
                             detect=np.concatenate((detect,np.array([tmp])))
                             break
