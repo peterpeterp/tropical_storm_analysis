@@ -31,7 +31,8 @@ if os.path.isfile('detection/JRA55_obs_track_info.nc')==False:
         for storm in tmp.storm:
             obs_tracks[storm]=tmp[storm,:,:]
 
-    da.Dataset({'obs_tracks':obs_tracks}).write_nc('detection/JRA55/JRA55_obs_track_info.nc',mode='w')
+    obs_tracks=da.Dataset({'obs_tracks':obs_tracks})
+    obs_tracks.write_nc('detection/JRA55/JRA55_obs_track_info.nc',mode='w')
 
 else:
     obs_tracks=da.read_nc('detection/JRA55/JRA55_obs_track_info.nc')['obs_tracks']
