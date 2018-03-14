@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.ndimage as ndimage
 
-from cdo import *   # python version
 
 sns.set_palette(sns.color_palette("plasma"))
 
