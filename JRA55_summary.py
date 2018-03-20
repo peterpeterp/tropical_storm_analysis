@@ -14,7 +14,6 @@ sns.set_palette(sns.color_palette("plasma"))
 
 try:
     os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
-    cdo = Cdo()
 except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
@@ -22,7 +21,7 @@ sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detectio
 from TC_support import *
 
 
-if os.path.isfile('detection/JRA55_obs_track_info.nc')==False:
+if os.path.isfile('detection/JRA55/JRA55_obs_track_info.nc')==False:
     # check for duplicates
     obs_tracks={}
     for identifier in [str(yr) for yr in range(1979,2017)]:
@@ -43,14 +42,16 @@ for cat in range(6):
     pos=np.where(obs_tracks==cat)
     categories[cat]=obs_tracks.ix[pos[0],pos[1],:]
 
+
 tc_colors={0:'lightblue',1:'#ffffcc',2:'#ffe775',3:'#ffc148',4:'#ff8f20',5:'#ff6060'}
 fig,axes=plt.subplots(nrows=2,ncols=2)
-for ax,vari in zip(axes.flatten(),['MSLP','VO','SST','T500']):
+for ax,vari in zip(axes.flatten(),['MSLP','VO','Wind10','T500']):
     for cat in range(5):
         tmp=categories[cat][:,:,vari].values
         tmp=tmp[np.isfinite(tmp)]
         hist=np.histogram(tmp,bins=20,density=True)
         ax.plot(hist[1][:-1],hist[0],color=tc_colors[cat])
+    ax.set_xlabel(vari)
 
 plt.tight_layout()
-plt.savefig('plots/JRA55/JRA55_obs_hists.png')
+plt.savefig('detection/JRA55/JRA55_obs_hists.png')
