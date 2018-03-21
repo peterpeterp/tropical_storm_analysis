@@ -145,6 +145,6 @@ for identifier in identifiers:
             ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
             ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
         found_tcs.plot_surrounding(axes=axes,time_steps=task_surrounding)
-        os.system('convert -delay 50 track_surrounding/{'+str(task_surrounding[0])+'..'+str(task_surrounding[-1])+'}* TC.gif')
+        os.system('convert -delay 50 '+working_dir+'track_surrounding/*{'+str(task_surrounding[0])+'..'+str(task_surrounding[-1])+'}* '+working_dir+'TC.gif')
         elapsed = time.time() - start;  print('Done with plotting %.3f seconds.' % elapsed)
     print('memory in use: '+str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/10.**6))
