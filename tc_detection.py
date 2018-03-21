@@ -212,7 +212,7 @@ class tc_tracks(object):
                 if point[3]==1:
                     tmp.append(self.plot_on_map(axes[0],int(point[2]),int(point[1]),c='b',marker='.'))
                     stats='wind: '+str(round(point[6],01))+'\nmslp: '+str(round(point[5],01))
-                    txt.append(axes[3].text(self._lons[int(point[1]),int(point[2])],self._lats[int(point[1]),int(point[2])],stats,color='red',va='bottom',ha='right',fontsize=7))
+                    txt.append(axes[3].text(self._lons[int(point[1]),int(point[2])],self._lats[int(point[1]),int(point[2])],stats,color='red',va='bottom',ha='right',fontsize=7,transform=self._transform))
                 if point[4]==1:
                     tmp.append(self.plot_on_map(axes[1],int(point[2]),int(point[1]),c='g',marker='*'))
 
@@ -247,7 +247,7 @@ class tc_tracks(object):
             for storm in set(storms):
                 tmp+=self.plot_on_map(self._ax,self._tc_lon[storm,:],self._tc_lat[storm,:],cat=self.tc_cat(self._tc_intens[storm,:],method='wind'),latlon=True)
                 last_pos=np.where(np.isfinite(self._tc_lon[storm,:]))[0][-1]
-                txt.append(self._ax.text(self._tc_lon[storm,last_pos],self._tc_lat[storm,last_pos],''.join(self._tc_sel['name'].ix[storm,:])))
+                txt.append(self._ax.text(self._tc_lon[storm,last_pos],self._tc_lat[storm,last_pos],''.join(self._tc_sel['name'].ix[storm,:]),transform=self._transform))
 
         tmp.append(self.plot_on_map(self._ax,track[:,'x'],track[:,'y'],c='orange'))
         tmp+=self.plot_on_map(self._ax,track[:,'x'],track[:,'y'],cat=self.tc_cat(track[:,'MSLP'].values),marker='.',linestyle='')
@@ -264,7 +264,7 @@ class tc_tracks(object):
             element.remove()
 
     def plot_season(self,out_name=None):
-        tmp=[]
+        tmp,txt=[],[]
         if out_name is None:
             out_name=self._working_dir+'season_'+str(self._identifier)+'_found_tracks_'+self._add_name+'.png'
 
@@ -274,6 +274,7 @@ class tc_tracks(object):
         for id_,track in self._tcs.items():
             track=track[np.isfinite(track[:,'t']),:]
             tmp.append(self.plot_on_map(self._ax,track.ix[0,2],track.ix[0,1],linestyle='',marker='o',c='r'))
+            txt.append(self._ax.text(self._lons[int(track.ix[0,1]),int(track.ix[0,2])]-1,self._lats[int(track.ix[0,1]),int(track.ix[0,2])],str(track.ix[0,0]),color='red',va='bottom',ha='right',fontsize=7,transform=self._transform))
             tmp.append(self.plot_on_map(self._ax,track[:,'x'],track[:,'y'],linestyle='-',linewidth=0.5,c='r'))
             tmp+=self.plot_on_map(self._ax,track[:,'x'],track[:,'y'],cat=self.tc_cat(track[:,'MSLP'].values),marker='.',linestyle='')
             summary[max(self.tc_cat(track[:,'MSLP'].values))].append(id_)
@@ -284,7 +285,6 @@ class tc_tracks(object):
 
 
         summary.pop(0)
-        txt=[]
         for cat,y in zip(summary.keys(),[0.99,0.95,0.91,0.87,0.83]):
             txt.append(self._ax.text(0.005,y,self._cat_names[cat]+': '+''.join(['X']*len(summary[cat])),transform=self._ax.transAxes,color=self._cat_colors[cat],va='top',ha='left',fontsize=12))
         plt.tight_layout()
@@ -381,7 +381,7 @@ class tc_tracks(object):
         return cont,ncont
 
     # combine detected positions
-    def combine_tracks(self,plot=True,search_radius=6,thr_wind=17.5,total_steps=12,warm_steps=8,strong_steps=0,consecutive_warm_strong_steps=6,smooth_path_angle=np.pi*2,velocity_jump=3.,overwrite=False):
+    def combine_tracks(self,plot=True,search_radius=6,thr_wind=17.5,total_steps=12,warm_steps=8,strong_steps=0,consecutive_warm_strong_steps=6,smooth_path_angle=np.pi*2,velocity_jump=3.,lat_formation_cutoff=40,overwrite=False):
         out_file=self._working_dir+'track_info_'+self._add_name+'.nc'
         if overwrite and os.path.isfile(out_file):
             os.system('rm '+out_file)
@@ -497,8 +497,7 @@ class tc_tracks(object):
                             first_of_consec=consec_info[np.argmax(consec_info[:,1]),0]
                             start_pos=warm_strong.values[first_of_consec,1:3]
 
-
-                    if self._lats[int(start_pos[0]),int(start_pos[1])]>=40:
+                    if self._lats[int(start_pos[0]),int(start_pos[1])]>=lat_formation_cutoff:
                         save_track=False
 
                     if save_track:
