@@ -43,7 +43,7 @@ if local==False:
         overwrite=False
 
     if args.surrounding is not None:
-        task_surrounding=range(args.surrounding[0],args.surrounding[1])
+        task_surrounding=range(args.surrounding[0],args.surrounding[1]+1)
 
     if args.identifiers is not None:
         identifiers=args.identifiers
@@ -151,20 +151,21 @@ for identifier in identifiers:
 
 
     if task_surrounding is not None:
-        plt.close('all')
-        fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(11.5,5),subplot_kw={'projection': rot_pole})
-        axes=axes.flatten()
-        for ax in axes:
-            ax.set_global()
-            ax.coastlines(color='magenta')
-            gl=ax.gridlines(color='palegreen',linewidth=1)
-            gl.ylocator = mticker.FixedLocator(np.arange(-10,60,10))
-            gl.xlocator = mticker.FixedLocator(np.arange(-110,0,10))
-            for yy in np.arange(0,40,10):   ax.text(-35,yy,str(yy),color='palegreen',transform=plate_carree)
-            for xx in np.arange(-90,-20,10):   ax.text(xx,8,str(xx),color='palegreen',transform=plate_carree)
-            ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
-            ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
-        found_tcs.plot_surrounding(axes=axes,time_steps=task_surrounding)
+        for t in task_surrounding:
+            plt.close('all')
+            fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(11.5,5),subplot_kw={'projection': rot_pole})
+            axes=axes.flatten()
+            for ax in axes:
+                ax.set_global()
+                ax.coastlines(color='magenta')
+                gl=ax.gridlines(color='palegreen',linewidth=1)
+                gl.ylocator = mticker.FixedLocator(np.arange(-10,60,10))
+                gl.xlocator = mticker.FixedLocator(np.arange(-110,0,10))
+                for yy in np.arange(0,40,10):   ax.text(-35,yy,str(yy),color='palegreen',transform=plate_carree)
+                for xx in np.arange(-90,-20,10):   ax.text(xx,8,str(xx),color='palegreen',transform=plate_carree)
+                ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
+                ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
+            found_tcs.plot_surrounding(axes=axes,time_steps=[t])
         os.system('convert -delay 50 '+working_dir+'track_surrounding/*{'+str(task_surrounding[0])+'..'+str(task_surrounding[-1])+'}* '+working_dir+'TC.gif')
         elapsed = time.time() - start;  print('Done with plotting %.3f seconds.' % elapsed)
     print('memory in use: '+str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/10.**6))
