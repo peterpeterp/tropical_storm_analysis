@@ -49,6 +49,7 @@ if args.portion is not None:
 
 
 # identifiers=['p014']
+# overwrite=False
 
 print(identifiers)
 
@@ -101,26 +102,26 @@ for identifier in identifiers:
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
     # contours method
-    found_tcs.detect_contours(overwrite=False,p_radius=27,dis_mslp_min=3,warm_core_size=3,dis_cores=1)
+    found_tcs.detect_contours(overwrite=overwrite,p_radius=27,dis_mslp_min=3,warm_core_size=3,dis_cores=1)
     found_tcs.plot_detect_summary(thr_wind=15)
-    found_tcs.combine_tracks(overwrite=True,thr_wind=17.5,search_radius=6,total_steps=12,warm_steps=8,consecutive_warm_strong_steps=4,lat_formation_cutoff=30,plot=False)
+    found_tcs.combine_tracks(overwrite=overwrite,thr_wind=17.5,search_radius=6,total_steps=12,warm_steps=8,consecutive_warm_strong_steps=4,lat_formation_cutoff=30,plot=False)
     found_tcs.plot_season()
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
     # thresholds method
-    found_tcs.detect_knutson2007(overwrite=False,thr_vort=3.5*10**(-5),dis_vort_max=4,dis_cores=2,thr_MSLP_inc=2,dis_MSLP_inc=5,thr_T_drop=0.8,dis_T_drop=5,tc_size=7)
+    found_tcs.detect_knutson2007(overwrite=overwrite,thr_vort=3.5*10**(-5),dis_vort_max=4,dis_cores=2,thr_MSLP_inc=2,dis_MSLP_inc=5,thr_T_drop=0.8,dis_T_drop=5,tc_size=7)
     found_tcs.plot_detect_summary(thr_wind=15)
-    found_tcs.combine_tracks(overwrite=True,thr_wind=15,search_radius=6,total_steps=8,strong_steps=8,warm_steps=8,consecutive_warm_strong_steps=0,lat_formation_cutoff=30,plot=False)
+    found_tcs.combine_tracks(overwrite=overwrite,thr_wind=15,search_radius=6,total_steps=8,strong_steps=8,warm_steps=8,consecutive_warm_strong_steps=0,lat_formation_cutoff=30,plot=False)
     found_tcs.plot_season()
 
 
-    plt.close('all')
-    fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(10,5),subplot_kw={'projection': rot_pole})
-    axes=axes.flatten()
-    for ax in axes:
-        ax.set_global()
-        ax.coastlines(color='magenta')
-        ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
-        ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
-
-    found_tcs.plot_surrounding(axes=axes,time_steps=range(500,540))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
+    # plt.close('all')
+    # fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(10,5),subplot_kw={'projection': rot_pole})
+    # axes=axes.flatten()
+    # for ax in axes:
+    #     ax.set_global()
+    #     ax.coastlines(color='magenta')
+    #     ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
+    #     ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
+    #
+    # found_tcs.plot_surrounding(axes=axes,time_steps=range(500,540))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
