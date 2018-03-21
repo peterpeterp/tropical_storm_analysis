@@ -271,7 +271,7 @@ class tc_tracks(object):
         for element in txt:
             element.remove()
 
-    def plot_season(self,out_name=None):
+    def plot_season(self,out_name=None,start_point=True):
         tmp,txt=[],[]
         if out_name is None:
             out_name=self._working_dir+'season_'+str(self._identifier)+'_found_tracks_'+self._add_name+'.png'
@@ -281,8 +281,9 @@ class tc_tracks(object):
         summary={0:[],1:[],2:[],3:[],4:[],5:[]}
         for id_,track in self._tcs.items():
             track=track[np.isfinite(track[:,'t']),:]
-            tmp.append(self.plot_on_map(self._ax,track.ix[0,2],track.ix[0,1],linestyle='',marker='o',c='r'))
-            txt.append(self._ax.text(self._lons[int(track.ix[0,1]),int(track.ix[0,2])]-1,self._lats[int(track.ix[0,1]),int(track.ix[0,2])],str(track.ix[0,0]),color='red',va='bottom',ha='right',fontsize=7,transform=self._transform))
+            if start_point:
+                tmp.append(self.plot_on_map(self._ax,track.ix[0,2],track.ix[0,1],linestyle='',marker='o',c='r'))
+                txt.append(self._ax.text(self._lons[int(track.ix[0,1]),int(track.ix[0,2])]-1,self._lats[int(track.ix[0,1]),int(track.ix[0,2])],str(track.ix[0,0]),color='red',va='bottom',ha='right',fontsize=7,transform=self._transform))
             tmp.append(self.plot_on_map(self._ax,track[:,'x'],track[:,'y'],linestyle='-',linewidth=0.5,c='r'))
             tmp+=self.plot_on_map(self._ax,track[:,'x'],track[:,'y'],cat=self.tc_cat(track[:,'MSLP'].values),marker='.',linestyle='')
             summary[max(self.tc_cat(track[:,'MSLP'].values))].append(id_)

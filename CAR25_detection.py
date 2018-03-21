@@ -60,7 +60,7 @@ if local==False:
 if local:
     identifiers=['p014']
     overwrite=False
-    task_surrounding=range(510,540)
+    task_surrounding=None #range(510,540)
 
 
 print(identifiers)
@@ -107,21 +107,6 @@ for identifier in identifiers:
     ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
     ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
 
-    # plt.close('all')
-    # plt.figure(figsize=(10,5))
-    # ax = plt.axes(projection=plate_carree)
-    # ax.set_global()
-    # ax.coastlines()
-    # gl=ax.gridlines(color='lightblue',linewidth=1,draw_labels=True)
-    # # gl.ylocator = mticker.FixedLocator(np.arange(-10,60,10))
-    # # gl.xlocator = mticker.FixedLocator(np.arange(-110,0,10))
-    # # for yy in np.arange(0,40,10):   ax.text(-35,yy,str(yy),color='lightblue',transform=plate_carree)
-    # # for xx in np.arange(-90,-20,10):   ax.text(xx,8,str(xx),color='lightblue',transform=plate_carree)
-    # ax.add_feature(cartopy.feature.LAND, facecolor='darkgreen')
-    # ax.add_feature(cartopy.feature.OCEAN,facecolor='darkblue')
-    # ax.set_xlim(np.min(lons),np.max(lons))
-    # ax.set_ylim(np.min(lats),np.max(lats))
-
     # #ax.pcolormesh(lons,lats,MSLP[0,:,:],transform=plate_carree)
     # ax.plot(lons[50,50],lats[50,50],'og',transform=plate_carree)
     # plt.savefig('test.png')
@@ -129,7 +114,7 @@ for identifier in identifiers:
     working_dir='detection/CAR25/'+str(identifier)+'_CAR25/'
     elapsed = time.time() - start;  print('Data loaded %.3f seconds.' % elapsed)
     found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=None,SST=None,VO=VO,T=T,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
-    found_tcs.init_map(ax=ax,transform=rot_pole)
+    found_tcs.init_map(ax=ax,transform=plate_carree)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
     # contours method
@@ -144,6 +129,25 @@ for identifier in identifiers:
     found_tcs.plot_detect_summary(thr_wind=15)
     found_tcs.combine_tracks(overwrite=overwrite,thr_wind=15,search_radius=6,total_steps=8,strong_steps=8,warm_steps=8,consecutive_warm_strong_steps=0,lat_formation_cutoff=30,plot=False)
     found_tcs.plot_season()
+    found_tcs.plot_season(out_name=working_dir+'season_tracks_clean.png',start_point=False)
+
+    plt.close('all')
+    plt.figure(figsize=(5,5))
+    ax = plt.axes(projection=globe)
+    ax.set_global()
+    ax.coastlines()
+    # gl=ax.gridlines(color='lightblue',linewidth=1)
+    # gl.ylocator = mticker.FixedLocator(np.arange(-10,60,10))
+    # gl.xlocator = mticker.FixedLocator(np.arange(-110,0,10))
+    # for yy in np.arange(0,40,10):   ax.text(-35,yy,str(yy),color='lightblue',transform=plate_carree)
+    # for xx in np.arange(-90,-20,10):   ax.text(xx,8,str(xx),color='lightblue',transform=plate_carree)
+    ax.add_feature(cartopy.feature.LAND, facecolor='darkgreen')
+    ax.add_feature(cartopy.feature.OCEAN,facecolor='darkblue')
+    # ax.set_xlim(np.min(lons),np.max(lons))
+    # ax.set_ylim(np.min(lats),np.max(lats))
+    found_tcs.init_map(ax=ax,transform=plate_carree)
+    found_tcs.plot_season(out_name=working_dir+'season_tracks_globe.png',start_point=False)
+
 
     if task_surrounding is not None:
         plt.close('all')
