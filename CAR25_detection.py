@@ -132,7 +132,7 @@ for identifier in identifiers:
     found_tcs.plot_season(out_name=working_dir+'season_tracks_clean.png',start_point=False)
 
     plt.close('all')
-    plt.figure(figsize=(5,5))
+    plt.figure(figsize=(6,6))
     ax = plt.axes(projection=globe)
     ax.set_global()
     ax.coastlines()
@@ -146,7 +146,7 @@ for identifier in identifiers:
     # ax.set_xlim(np.min(lons),np.max(lons))
     # ax.set_ylim(np.min(lats),np.max(lats))
     found_tcs.init_map(ax=ax,transform=plate_carree)
-    found_tcs.plot_season(out_name=working_dir+'season_tracks_globe.png',start_point=False)
+    found_tcs.plot_season(out_name=working_dir+'season_tracks_globe.png',start_point=False,facecolor='black')
 
 
     if task_surrounding is not None:

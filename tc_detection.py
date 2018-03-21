@@ -271,7 +271,7 @@ class tc_tracks(object):
         for element in txt:
             element.remove()
 
-    def plot_season(self,out_name=None,start_point=True):
+    def plot_season(self,out_name=None,start_point=True,facecolor='none'):
         tmp,txt=[],[]
         if out_name is None:
             out_name=self._working_dir+'season_'+str(self._identifier)+'_found_tracks_'+self._add_name+'.png'
@@ -297,7 +297,7 @@ class tc_tracks(object):
         for cat,y in zip(summary.keys(),[0.99,0.95,0.91,0.87,0.83]):
             txt.append(self._ax.text(0.005,y,self._cat_names[cat]+': '+''.join(['X']*len(summary[cat])),transform=self._ax.transAxes,color=self._cat_colors[cat],va='top',ha='left',fontsize=12))
         plt.tight_layout()
-        plt.savefig(out_name)
+        plt.savefig(out_name,facecolor=facecolor)
 
         # clean map
         for element in txt:
