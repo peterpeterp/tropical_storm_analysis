@@ -4,6 +4,7 @@ from netCDF4 import Dataset,netcdftime,num2date
 import dimarray as da
 import numpy as np
 import matplotlib as mpl
+import matplotlib.ticker as mticker
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -85,14 +86,18 @@ for identifier in identifiers:
     ax = plt.axes(projection=rot_pole)
     ax.set_global()
     ax.coastlines()
+    gl=ax.gridlines(color='lightblue',linewidth=1)
+    gl.ylocator = mticker.FixedLocator(np.arange(-10,60,10))
+    gl.xlocator = mticker.FixedLocator(np.arange(-110,0,10))
+    for yy in np.arange(0,40,10):   ax.text(-35,yy,str(yy),color='lightblue',transform=plate_carree)
+    for xx in np.arange(-90,-20,10):   ax.text(xx,8,str(xx),color='lightblue',transform=plate_carree)
     ax.add_feature(cartopy.feature.LAND, facecolor='darkgreen')
     ax.add_feature(cartopy.feature.OCEAN,facecolor='darkblue')
     ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
     ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
 
-    # ax.pcolormesh(lons,lats,MSLP[0,:,:],transform=plate_carree)
+    # #ax.pcolormesh(lons,lats,MSLP[0,:,:],transform=plate_carree)
     # ax.plot(lons[50,50],lats[50,50],'og',transform=plate_carree)
-    # ax.plot(grid_lons[50,50],grid_lats[50,50],'*r',transform=rot_pole)
     # plt.savefig('test.png')
 
     working_dir='detection/CAR25/'+str(identifier)+'_CAR25/'
