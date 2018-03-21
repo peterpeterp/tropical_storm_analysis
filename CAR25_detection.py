@@ -18,7 +18,7 @@ try:
     data_path='data/CAR25/'
 except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
-    data_path='/p/projects/tumble/carls/shared_folder/CPDN/data/batch_659/region/'
+    data_path='/p/projects/tumble/carls/shared_folder/CPDN/data/batch_717/region/'
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
 sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
 
@@ -57,14 +57,14 @@ for identifier in identifiers:
     start = time.time()
     print('*** started run '+identifier+' ***')
     MSLP=da.read_nc(data_path+'item16222_6hrly_inst/item16222_6hrly_inst_'+identifier+'_2017-06_2017-10.nc')['item16222_6hrly_inst'].values[:,0,1:,:]/100.
-    # nc=da.read_nc(data_path+'item15201_6hrly_inst/item15201_6hrly_inst_'+identifier+'_2017-06_2017-10.nc')
-    # U=da.read_nc(data_path+'item15201_6hrly_inst/item15201_6hrly_inst_'+identifier+'_2017-06_2017-10.nc')['item15201_6hrly_inst'].ix[:,0,:,:]
-    # V=da.read_nc(data_path+'item15202_6hrly_inst/item15202_6hrly_inst_'+identifier+'_2017-06_2017-10.nc')['item15202_6hrly_inst'].ix[:,0,:,:]
-    # VO=TC_support.rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0)
-    # Wind10=np.array(np.sqrt(U**2+V**2))
-    # T=da.read_nc(data_path+'item16203_6hrly_inst/item16203_6hrly_inst_'+identifier+'_2017-06_2017-10.nc')['item16203_6hrly_inst'].ix[:,1:3,1:,:].values.mean(axis=1)
-    # time_=nc.time0
-    # dates=[num2date(t,units = nc.axes['time0'].units,calendar = nc.axes['time0'].calendar) for t in time_]
+    nc=da.read_nc(data_path+'item15201_6hrly_inst/item15201_6hrly_inst_'+identifier+'_2017-06_2017-10.nc')
+    U=da.read_nc(data_path+'item15201_6hrly_inst/item15201_6hrly_inst_'+identifier+'_2017-06_2017-10.nc')['item15201_6hrly_inst'].ix[:,0,:,:]
+    V=da.read_nc(data_path+'item15202_6hrly_inst/item15202_6hrly_inst_'+identifier+'_2017-06_2017-10.nc')['item15202_6hrly_inst'].ix[:,0,:,:]
+    VO=TC_support.rel_vort(U.values[:,:,:],V.values[:,:,:],U.latitude0,U.longitude0)
+    Wind10=np.array(np.sqrt(U**2+V**2))
+    T=da.read_nc(data_path+'item16203_6hrly_inst/item16203_6hrly_inst_'+identifier+'_2017-06_2017-10.nc')['item16203_6hrly_inst'].ix[:,1:3,1:,:].values.mean(axis=1)
+    time_=nc.time0
+    dates=[num2date(t,units = nc.axes['time0'].units,calendar = nc.axes['time0'].calendar) for t in time_]
 
     # prepare map
     lats = nc['global_latitude0'].values
