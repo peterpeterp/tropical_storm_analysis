@@ -34,21 +34,28 @@ if local==False:
     parser.add_argument("--verbosity",'-v', help="increase output verbosity",action="store_true")
     parser.add_argument("--overwrite",'-o', help="overwrite output files",action="store_true")
     parser.add_argument('--portion','-p',help='tenth of the available files to treat',required=False)
+    parser.add_argument('--identifiers','-id',help='identifiers to be analyzed',nargs='+',type=str,required=False)
     parser.add_argument('--surrounding','-s',help='time_steps for which the surroundings are plotted',nargs='+',required=False, type=int)
     args = parser.parse_args()
     if args.overwrite:
         overwrite=True
     else:
         overwrite=False
-    task_surrounding=args.surrounding
-    identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item16222_6hrly_inst/item16222_6hrly_inst*')]
-    portion=int(len(identifiers)/10)
 
-    if args.portion is not None:
-        if (int(sys.argv[1])+1)*portion>=len(identifiers):
-            identifiers=identifiers[int(sys.argv[1])*portion:len(identifiers)-1]
-        else:
-            identifiers=identifiers[int(sys.argv[1])*portion:(int(sys.argv[1])+1)*portion]
+    task_surrounding=args.surrounding
+
+    if args.identifiers is not None:
+        identifiers=args.identifiers
+
+    else:
+
+        identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item16222_6hrly_inst/item16222_6hrly_inst*')]
+        portion=int(len(identifiers)/10)
+        if args.portion is not None:
+            if (int(sys.argv[1])+1)*portion>=len(identifiers):
+                identifiers=identifiers[int(sys.argv[1])*portion:len(identifiers)-1]
+            else:
+                identifiers=identifiers[int(sys.argv[1])*portion:(int(sys.argv[1])+1)*portion]
 
 if local:
     identifiers=['p014']
