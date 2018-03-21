@@ -150,12 +150,11 @@ class tc_tracks(object):
                     obs_summary[i,t,2]=self._MSLP[t_,y_core,x_core].min()
                     obs_summary[i,t,3]=self._Wind10[t_,y_full,x_full].max()
                     obs_summary[i,t,4]=self._T[t_,y_core,x_core].max()
-                    obs_summary[i,t,5]=self._T[t_,y_core,x_core].max()
                     if self._SST is not None:
                         obs_summary[i,t,6]=self._SST[t_,y,x]
 
         obs_summary=obs_summary[:,np.isfinite(np.nanmean(obs_summary,axis=(0,-1))),:]
-        self._obs_track_info=da.DimArray(obs_summary,axes=[self._tc_sel.storm,range(obs_summary.shape[1]),['cat','VO','MSLP','Wind10','T850','T500','SST']],dims=['storm','time','variable'])
+        self._obs_track_info=da.DimArray(obs_summary,axes=[self._tc_sel.storm,range(obs_summary.shape[1]),['cat','VO','MSLP','Wind10','T','SST']],dims=['storm','time','variable'])
 
         da.Dataset({'obs_track_info':self._obs_track_info}).write_nc(out_file)
 

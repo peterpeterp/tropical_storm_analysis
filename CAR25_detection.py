@@ -137,15 +137,10 @@ for identifier in identifiers:
     ax = plt.axes(projection=globe)
     ax.set_global()
     ax.coastlines()
-    # gl=ax.gridlines(color='lightblue',linewidth=1)
-    # gl.ylocator = mticker.FixedLocator(np.arange(-10,60,10))
-    # gl.xlocator = mticker.FixedLocator(np.arange(-110,0,10))
-    # for yy in np.arange(0,40,10):   ax.text(-35,yy,str(yy),color='lightblue',transform=plate_carree)
-    # for xx in np.arange(-90,-20,10):   ax.text(xx,8,str(xx),color='lightblue',transform=plate_carree)
+    gl=ax.gridlines(color='lightblue',linewidth=1)
+    gl.xlines = False
     ax.add_feature(cartopy.feature.LAND, facecolor='darkgreen')
     ax.add_feature(cartopy.feature.OCEAN,facecolor='darkblue')
-    # ax.set_xlim(np.min(lons),np.max(lons))
-    # ax.set_ylim(np.min(lats),np.max(lats))
     found_tcs.init_map(ax=ax,transform=plate_carree)
     found_tcs.plot_season(out_name=working_dir+'season_tracks_globe.png',start_point=False,facecolor='black')
 
