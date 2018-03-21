@@ -35,14 +35,14 @@ if local==False:
     parser.add_argument("--overwrite",'-o', help="overwrite output files",action="store_true")
     parser.add_argument('--portion','-p',help='tenth of the available files to treat',required=False)
     parser.add_argument('--identifiers','-id',help='identifiers to be analyzed',nargs='+',type=str,required=False)
-    parser.add_argument('--surrounding','-s',help='time_steps for which the surroundings are plotted',nargs='+',required=False, type=int)
+    parser.add_argument('--surrounding','-s',help='first and last step in series of time_steps for which the surroundings are plotted',nargs='+',required=False, type=int)
     args = parser.parse_args()
     if args.overwrite:
         overwrite=True
     else:
         overwrite=False
 
-    task_surrounding=args.surrounding
+    task_surrounding=range(args.surrounding[0],args.surrounding[1])
 
     if args.identifiers is not None:
         identifiers=args.identifiers
@@ -107,6 +107,21 @@ for identifier in identifiers:
     ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
     ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
 
+    # plt.close('all')
+    # plt.figure(figsize=(10,5))
+    # ax = plt.axes(projection=plate_carree)
+    # ax.set_global()
+    # ax.coastlines()
+    # gl=ax.gridlines(color='lightblue',linewidth=1,draw_labels=True)
+    # # gl.ylocator = mticker.FixedLocator(np.arange(-10,60,10))
+    # # gl.xlocator = mticker.FixedLocator(np.arange(-110,0,10))
+    # # for yy in np.arange(0,40,10):   ax.text(-35,yy,str(yy),color='lightblue',transform=plate_carree)
+    # # for xx in np.arange(-90,-20,10):   ax.text(xx,8,str(xx),color='lightblue',transform=plate_carree)
+    # ax.add_feature(cartopy.feature.LAND, facecolor='darkgreen')
+    # ax.add_feature(cartopy.feature.OCEAN,facecolor='darkblue')
+    # ax.set_xlim(np.min(lons),np.max(lons))
+    # ax.set_ylim(np.min(lats),np.max(lats))
+
     # #ax.pcolormesh(lons,lats,MSLP[0,:,:],transform=plate_carree)
     # ax.plot(lons[50,50],lats[50,50],'og',transform=plate_carree)
     # plt.savefig('test.png')
@@ -114,7 +129,7 @@ for identifier in identifiers:
     working_dir='detection/CAR25/'+str(identifier)+'_CAR25/'
     elapsed = time.time() - start;  print('Data loaded %.3f seconds.' % elapsed)
     found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=None,SST=None,VO=VO,T=T,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
-    found_tcs.init_map(ax=ax,transform=plate_carree)
+    found_tcs.init_map(ax=ax,transform=rot_pole)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
     # contours method
