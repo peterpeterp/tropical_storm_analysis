@@ -17,40 +17,44 @@ sns.set_palette(sns.color_palette("plasma"))
 try:
     os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
     data_path='data/CAR25/'
+    local=True
 except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
     data_path='/p/projects/tumble/carls/shared_folder/CPDN/data/batch_717/region/'
+    local=False
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
 sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
 
 import TC_support ;  TC_support = reload(TC_support)
 import tc_detection;    tc_detection = reload(tc_detection)
 
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument("--verbosity",'-v', help="increase output verbosity",action="store_true")
-parser.add_argument("--overwrite",'-o', help="overwrite output files",action="store_true")
-parser.add_argument('--portion','-p',help='tenth of the available files to treat',required=False)
-parser.add_argument('--surrounding','-s',help='time_steps for which the surroundings are plotted',nargs='+',required=False, type=int)
-args = parser.parse_args()
-
-if args.overwrite:
-    overwrite=True
-else:
-    overwrite=False
-
-identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item16222_6hrly_inst/item16222_6hrly_inst*')]
-portion=int(len(identifiers)/10)
-
-if args.portion is not None:
-    if (int(sys.argv[1])+1)*portion>=len(identifiers):
-        identifiers=identifiers[int(sys.argv[1])*portion:len(identifiers)-1]
+if local==False:
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--verbosity",'-v', help="increase output verbosity",action="store_true")
+    parser.add_argument("--overwrite",'-o', help="overwrite output files",action="store_true")
+    parser.add_argument('--portion','-p',help='tenth of the available files to treat',required=False)
+    parser.add_argument('--surrounding','-s',help='time_steps for which the surroundings are plotted',nargs='+',required=False, type=int)
+    args = parser.parse_args()
+    if args.overwrite:
+        overwrite=True
     else:
-        identifiers=identifiers[int(sys.argv[1])*portion:(int(sys.argv[1])+1)*portion]
+        overwrite=False
+    task_surrounding=args.surrounding
+    identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item16222_6hrly_inst/item16222_6hrly_inst*')]
+    portion=int(len(identifiers)/10)
 
+    if args.portion is not None:
+        if (int(sys.argv[1])+1)*portion>=len(identifiers):
+            identifiers=identifiers[int(sys.argv[1])*portion:len(identifiers)-1]
+        else:
+            identifiers=identifiers[int(sys.argv[1])*portion:(int(sys.argv[1])+1)*portion]
 
-# identifiers=['p014']
-# overwrite=False
+if local:
+    identifiers=['p014']
+    overwrite=False
+    task_surrounding=range(510,540)
+
 
 print(identifiers)
 
@@ -119,14 +123,21 @@ for identifier in identifiers:
     found_tcs.combine_tracks(overwrite=overwrite,thr_wind=15,search_radius=6,total_steps=8,strong_steps=8,warm_steps=8,consecutive_warm_strong_steps=0,lat_formation_cutoff=30,plot=False)
     found_tcs.plot_season()
 
-
-    # plt.close('all')
-    # fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(10,5),subplot_kw={'projection': rot_pole})
-    # axes=axes.flatten()
-    # for ax in axes:
-    #     ax.set_global()
-    #     ax.coastlines(color='magenta')
-    #     ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
-    #     ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
-    #
-    # found_tcs.plot_surrounding(axes=axes,time_steps=range(500,540))#; convert -delay 50 track_surrounding/{94..127}* TC.gif
+    if task_surrounding is not None:
+        plt.close('all')
+        fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(11.5,5),subplot_kw={'projection': rot_pole})
+        axes=axes.flatten()
+        for ax in axes:
+            ax.set_global()
+            ax.coastlines(color='magenta')
+            gl=ax.gridlines(color='palegreen',linewidth=1)
+            gl.ylocator = mticker.FixedLocator(np.arange(-10,60,10))
+            gl.xlocator = mticker.FixedLocator(np.arange(-110,0,10))
+            for yy in np.arange(0,40,10):   ax.text(-35,yy,str(yy),color='palegreen',transform=plate_carree)
+            for xx in np.arange(-90,-20,10):   ax.text(xx,8,str(xx),color='palegreen',transform=plate_carree)
+            ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
+            ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
+        found_tcs.plot_surrounding(axes=axes,time_steps=task_surrounding)
+        os.system('convert -delay 50 track_surrounding/{'+str(task_surrounding[0])+'..'+str(task_surrounding[-1])+'}* TC.gif')
+        elapsed = time.time() - start;  print('Done with plotting %.3f seconds.' % elapsed)
+    print('memory in use: '+str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/10.**6))

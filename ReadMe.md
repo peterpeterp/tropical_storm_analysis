@@ -26,3 +26,6 @@ the two packages pycountry and dimarray are not found by conda, install them usi
 conda install -c conda-forge cartopy
 pip install dimarray
 ```
+
+# Todo
+check out windspharm

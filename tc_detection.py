@@ -197,26 +197,34 @@ class tc_tracks(object):
         for t in time_steps:
             tmp,txt=[],[]
             ax=axes[0]; ax.set_title('mean sea level pressure')
-            im=ax.pcolormesh(self._lons,self._lats,self._MSLP[t,:,:],transform=self._transform)
+            im=ax.pcolormesh(self._lons,self._lats,self._MSLP[t,:,:],vmin=980,vmax=1020,transform=self._transform)
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
             ax=axes[1]; ax.set_title('temperature')
             im=ax.pcolormesh(self._lons,self._lats,self._T[t,:,:],transform=self._transform)
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
-            ax=axes[2]; ax.set_title('10m wind speed')
-            im=ax.pcolormesh(self._lons,self._lats,self._Wind10[t,:,:],vmin=0,vmax=15,transform=self._transform)
+            ax=axes[2]; ax.set_title('wind speed')
+            im=ax.pcolormesh(self._lons,self._lats,self._Wind10[t,:,:],vmin=0,vmax=30,transform=self._transform)
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
+
+            if self._VO is not None:
+                ax=axes[3]; ax.set_title('rel. Vorticity')
+                im=ax.pcolormesh(self._lons,self._lats,self._VO[t,:,:],vmin=-9.5*10**(-5),vmax=0.0002,transform=self._transform)
+                im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
+            else:
+                ax=axes[3]; ax.set_title('wind speed [m/s] and mslp [mbar]')
 
             for point in self._detected[self._detected[:,'t']==t].values.tolist():
                 if point[3]==1:
                     tmp.append(self.plot_on_map(axes[0],int(point[2]),int(point[1]),c='b',marker='.'))
                     stats='wind: '+str(round(point[6],01))+'\nmslp: '+str(round(point[5],01))
-                    txt.append(axes[3].text(self._lons[int(point[1]),int(point[2])],self._lats[int(point[1]),int(point[2])],stats,color='red',va='bottom',ha='right',fontsize=7,transform=self._transform))
+                    cat=self.tc_cat(point[5])
+                    if cat>0:
+                        txt.append(axes[3].text(self._lons[int(point[1]),int(point[2])],self._lats[int(point[1]),int(point[2])],stats,color=self._cat_colors[cat],va='bottom',ha='right',fontsize=8,transform=self._transform))
                 if point[4]==1:
                     tmp.append(self.plot_on_map(axes[1],int(point[2]),int(point[1]),c='g',marker='*'))
 
-            ax=axes[3]; ax.set_title('10m wind [m/s] and mslp [mbar]')
 
             if self._obs_tc:
                 obs_tc=np.where(abs(self._tc_time-self._yr_frac[t])<0.0004)
