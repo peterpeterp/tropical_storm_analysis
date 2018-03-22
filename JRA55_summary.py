@@ -20,8 +20,17 @@ sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_
 sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
 from TC_support import *
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--overwrite",'-o', help="overwrite output files",action="store_true")
+args = parser.parse_args()
 
-if os.path.isfile('detection/JRA55/JRA55_obs_track_info.nc')==False:
+if args.overwrite:
+    overwrite=True
+else:
+    overwrite=False
+
+if os.path.isfile('detection/JRA55/JRA55_obs_track_info.nc')==False or overwrite:
     # check for duplicates
     obs_tracks={}
     for identifier in [str(yr) for yr in range(1979,2017)]:
@@ -33,9 +42,7 @@ if os.path.isfile('detection/JRA55/JRA55_obs_track_info.nc')==False:
     obs_tracks=da.Dataset({'obs_tracks':obs_tracks})
     obs_tracks.write_nc('detection/JRA55/JRA55_obs_track_info.nc',mode='w')
 
-else:
-    obs_tracks=da.read_nc('detection/JRA55/JRA55_obs_track_info.nc')['obs_tracks']
-
+obs_tracks=da.read_nc('detection/JRA55/JRA55_obs_track_info.nc')['obs_tracks']
 
 categories={}
 for cat in range(6):
