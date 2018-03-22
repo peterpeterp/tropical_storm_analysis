@@ -52,7 +52,7 @@ for cat in range(6):
 
 tc_colors={0:'lightblue',1:'#ffffcc',2:'#ffe775',3:'#ffc148',4:'#ff8f20',5:'#ff6060'}
 fig,axes=plt.subplots(nrows=2,ncols=2)
-for ax,vari in zip(axes.flatten(),['MSLP','VO','Wind10','T500']):
+for ax,vari in zip(axes.flatten(),['MSLP','VO','Wind10','T']):
     for cat in range(5):
         tmp=categories[cat][:,:,vari].values
         tmp=tmp[np.isfinite(tmp)]
