@@ -138,11 +138,13 @@ class tc_tracks(object):
         core_radius=int(self.degree_to_step(core_radius))
         full_radius=int(self.degree_to_step(full_radius))
 
-        obs_summary=np.zeros([len(self._tc_sel.storm),200,7])*np.nan
+        obs_summary=np.zeros([len(self._tc_sel.storm),200,9])*np.nan
         for i,storm in enumerate(self._tc_sel.storm):
             tmp_t=self._tc_time[i,:]
             last_val=len(np.where(np.isfinite(tmp_t))[0])
             obs_summary[i,0:last_val,0]=[self.tc_cat(z,method='wind') for z in np.nanmean(self._tc_sel['source_wind'].values[i,0:last_val,:],axis=-1)]
+            obs_summary[i,0:last_val,1]=np.nanmean(self._tc_sel['source_wind'].values[i,0:last_val,:],axis=-1)
+            obs_summary[i,0:last_val,2]=np.nanmean(self._tc_sel['source_pres'].values[i,0:last_val,:],axis=-1)
 
             for t in range(last_val):
                 t_=np.where(abs(self._yr_frac-self._tc_time[i,t])<0.0004)[0]
@@ -151,16 +153,16 @@ class tc_tracks(object):
                     y,x=np.argmin(abs(self._lats[:,0]-self._tc_lat[i,t])),np.argmin(abs(self._lons[0,:]-self._tc_lon[i,t]))
                     y_core,x_core=self.area_around(y,x,core_radius)
                     y_full,x_full=self.area_around(y,x,full_radius)
-                    obs_summary[i,t,1]=self._VO[t_,y_core,x_core].max()
-                    obs_summary[i,t,2]=self._MSLP[t_,y_core,x_core].min()
-                    obs_summary[i,t,3]=self._Wind10[t_,y_full,x_full].max()
-                    obs_summary[i,t,4]=self._T[t_,y_core,x_core].max()
+                    obs_summary[i,t,3]=self._VO[t_,y_core,x_core].max()
+                    obs_summary[i,t,4]=self._MSLP[t_,y_core,x_core].min()
+                    obs_summary[i,t,5]=self._Wind10[t_,y_full,x_full].max()
+                    obs_summary[i,t,6]=self._T[t_,y_core,x_core].max()
                     if self._SST is not None:
-                        obs_summary[i,t,5]=self._SST[t_,y,x]
-                    obs_summary[i,t,6]=self._land_mask[y,x]
+                        obs_summary[i,t,7]=self._SST[t_,y,x]
+                    obs_summary[i,t,8]=self._land_mask[y,x]
 
         obs_summary=obs_summary[:,np.isfinite(np.nanmean(obs_summary,axis=(0,-1))),:]
-        self._obs_track_info=da.DimArray(obs_summary,axes=[self._tc_sel.storm,range(obs_summary.shape[1]),['cat','VO','MSLP','Wind10','T','SST','land']],dims=['storm','time','variable'])
+        self._obs_track_info=da.DimArray(obs_summary,axes=[self._tc_sel.storm,range(obs_summary.shape[1]),['cat','obs_wind','obs_pres','VO','MSLP','Wind10','T','SST','land']],dims=['storm','time','variable'])
 
         da.Dataset({'obs_track_info':self._obs_track_info}).write_nc(out_file)
 
