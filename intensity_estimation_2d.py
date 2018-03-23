@@ -143,7 +143,7 @@ for var_obs,var_primitiv in zip(['obs_pres'],['MSLP']):
         ax=axes[1,2];   ax.clear(); ax.axis('off')
         for cat in range(1,6):
             ax.bar([cat],[np.sum(yyy[(cat_thr[var_obs][cat+1]<x) & (x<cat_thr[var_obs][cat])])/np.sum(yyy)],color='m')
-        ax.plot(track[t,'cat']+1,0.8,'*g')
+        ax.plot(track[t,'cat'],0.8,'*g')
         ax.plot(np.where([track[t,var_primitiv]<cat_thr[var_obs][ccc] for ccc in range(1,6)])[0][-1]+1,0.7,'^b')
         ax.set_xlim((0,6))
         ax.set_ylim((0,1))
