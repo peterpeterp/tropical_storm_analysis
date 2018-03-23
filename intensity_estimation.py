@@ -97,7 +97,7 @@ for ax_j,var_obs in zip(range(2),['obs_wind','obs_pres']):
 
         if (vari=='MSLP' and var_obs=='obs_pres') or (vari=='Wind10' and var_obs=='obs_wind'):
             print('***')
-            ax.plot([0,0],[99999,99999],'k')
+            ax.plot([0,99999],[0,99999],'k')
 
         ax.set_ylabel(vari)
         ax.set_xlabel(var_obs)
