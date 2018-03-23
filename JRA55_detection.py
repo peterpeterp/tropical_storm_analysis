@@ -72,6 +72,8 @@ for identifier in identifiers:
     VO=TC_support.rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
     VO[np.isnan(VO)]=-999
 
+    land_mask=da.read_nc(data_path+'atl_land_mask.nc')['data'].values.squeeze()[::-1]
+
     lons,lats=np.meshgrid(nc.lon,nc.lat)
     lons[lons>180]-=360
 
@@ -91,7 +93,7 @@ for identifier in identifiers:
     ax.set_ylim(np.min(lats),np.max(lats))
 
     working_dir='detection/JRA55/'+str(identifier)+'_JRA55/'
-    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,2,2)),SST=None,VO=VO,T=T,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
+    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,2,2)),land_mask=land_mask,SST=None,VO=VO,T=T,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
     found_tcs.init_map(ax=ax,transform=plate_carree)
     found_tcs.init_obs_tcs(tc_sel)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)

@@ -42,6 +42,11 @@ class tc_tracks(object):
         else:
             self._MSLP_smoothed=MSLP
 
+        if land_mask is not None:
+            self._land_mask=land_mask
+        else:
+            self._land_mask=self._MSLP[0,:,:].copy()*0+1
+
         self._time=time_
         if time_steps is None:
             time_steps=range(len(self._time))
@@ -133,7 +138,7 @@ class tc_tracks(object):
         core_radius=int(self.degree_to_step(core_radius))
         full_radius=int(self.degree_to_step(full_radius))
 
-        obs_summary=np.zeros([len(self._tc_sel.storm),200,6])*np.nan
+        obs_summary=np.zeros([len(self._tc_sel.storm),200,7])*np.nan
         for i,storm in enumerate(self._tc_sel.storm):
             tmp_t=self._tc_time[i,:]
             last_val=len(np.where(np.isfinite(tmp_t))[0])
@@ -152,9 +157,10 @@ class tc_tracks(object):
                     obs_summary[i,t,4]=self._T[t_,y_core,x_core].max()
                     if self._SST is not None:
                         obs_summary[i,t,5]=self._SST[t_,y,x]
+                    obs_summary[i,t,6]=self._land_mask[y,x]
 
         obs_summary=obs_summary[:,np.isfinite(np.nanmean(obs_summary,axis=(0,-1))),:]
-        self._obs_track_info=da.DimArray(obs_summary,axes=[self._tc_sel.storm,range(obs_summary.shape[1]),['cat','VO','MSLP','Wind10','T','SST']],dims=['storm','time','variable'])
+        self._obs_track_info=da.DimArray(obs_summary,axes=[self._tc_sel.storm,range(obs_summary.shape[1]),['cat','VO','MSLP','Wind10','T','SST','land']],dims=['storm','time','variable'])
 
         da.Dataset({'obs_track_info':self._obs_track_info}).write_nc(out_file)
 
@@ -443,7 +449,7 @@ class tc_tracks(object):
                     candidates=[]
                     for p_1 in postions[postions[:,0]==p[0]-1,:].tolist():
                         new_step=np.array((p_1[1]-p[1],p_1[2]-p[2],0))
-                        if v_len(new_step-prev_step)<search_radius:
+                        if v_len(new_step-prev_step)<search_radius and self._land_mask[p_1[1],p_1[2]]:
                             # # exclude strong direction changes if TC isn't extremely slow
                             # if v_len(prev_step)/v_len(new_step-prev_step)<1/velocity_jump and angle_between(new_step,prev_step)>smooth_path_angle:
                             #     # strange movement

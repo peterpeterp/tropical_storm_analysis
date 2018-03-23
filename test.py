@@ -1,66 +1,97 @@
-from scipy import interpolate
-x = np.arange(-5.01, 5.01, 0.25)
-y = np.arange(-5.01, 5.01, 0.25)
-xx, yy = np.meshgrid(x, y)
-z = np.sin(xx**2+yy**2)
-f = interpolate.interp2d(x, y, z, kind='cubic')
+
+from __future__ import print_function
+import os,sys,glob,time,collections,gc,calendar,weakref,resource
+from netCDF4 import Dataset,netcdftime,num2date
+import dimarray as da
+import numpy as np
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+import seaborn as sns
+import scipy.ndimage as ndimage
+os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
+
+obs_tracks=da.read_nc('detection/JRA55/JRA55_obs_track_info.nc')['obs_tracks']
+
+
+categories={}
+obs_stats=obs_tracks.values.reshape((obs_tracks.shape[0]*obs_tracks.shape[1],obs_tracks.shape[2]))
+obs_stats[np.isfinite(obs_stats[:,0]),:]
+
+obs_stats=da.DimArray(obs_stats,axes=[range(obs_stats.shape[0]),obs_tracks.variable],dims=['id','variable'])
+
+from scipy import stats
 
 
 
 plt.close('all')
-data=MSLP[3,20:40,20:40]
+tc_colors={0:'lightblue',1:'#ffffcc',2:'#ffe775',3:'#ffc148',4:'#ff8f20',5:'#ff6060'}
+fig,axes=plt.subplots(nrows=2,ncols=2)
+axes=axes.flatten()
+pdfs={}
+for ax,vari in zip(axes,['MSLP','VO','Wind10','T500']):
+    pdfs[vari]={}
+    tmp=obs_stats[obs_stats[:,'cat']>0,vari]
+    tmp=tmp[np.isfinite(tmp)]
+    kde = stats.gaussian_kde(tmp)
+    start,stop=np.percentile(tmp,[10,90])
+    x=np.linspace(start,stop,1000)
+    y=kde.evaluate(x)/np.sum(kde.evaluate(x))
+    pdfs[vari]['all']={'pd':y,'x':x,'dx':np.diff(x,1)[0]}
+    #ax.plot(x,y,color='green')
+    for cat in range(1,6):
+        tmp=obs_stats[obs_stats[:,'cat']==cat,vari]
+        tmp=tmp[np.isfinite(tmp)]
+        kde = stats.gaussian_kde(tmp,bw_method=1)#'silverman'
+        start,stop=np.percentile(tmp,[0,100])
+        x=np.linspace(start,stop,10)
+        y=kde.evaluate(x)#/np.sum(kde.evaluate(x))
+        pdfs[vari][cat]={'pd':y,'x':x,'dx':np.diff(x,1)[0]}
+        hist=np.histogram(tmp,bins=10,density=True)
+        ax.plot(hist[1][:-1],hist[0],color=tc_colors[cat])
+        ax.plot(x,y,color=tc_colors[cat])
+    ax.set_xlabel(vari)
+    ax.set_facecolor('xkcd:black')
 
-X=lons[20:40,20:40]
-Y=lats[20:40,20:40]
-
-y_zoom=np.arange(0,100,1)
-x_zoom=np.arange(0,100,1)
-yy,xx=np.meshgrid(y_zoom,x_zoom)
-
-
-new_grid=scipy.interpolate.griddata((X.flatten(),Y.flatten()),data.flatten() , (xx,yy),method='cubic')
-plt.close('all')
-fig,axes=plt.subplots(nrows=1,ncols=2)
-
-axes[0].imshow(data)
-
-
-plt.savefig('plots/test_bicubic.png')
-
-
-
-
-
-
-from scipy import interpolate
-
-y_i=range(60,80)
-x_i=range(80,100)
-data=MSLP[613,65:85,65:85]
-
-X=lons[65:85,65:85]
-Y=lats[65:85,65:85]
-
-f = interpolate.interp2d(X[0,:], Y[:,0], data, kind='cubic')
-
-xnew = np.arange(X.min(),X.max(), 1e-2)
-ynew = np.arange(Y.min(),Y.max(), 1e-2)
-znew = f(xnew, ynew)
-
-
-plt.close('all')
-fig,axes=plt.subplots(nrows=1,ncols=2)
-axes[0].pcolormesh(X,Y,data)
-axes[1].pcolormesh(xnew,ynew,znew)
-#axes[1].plot(X[0,:], data[0, :], 'ro-', xnew, znew[0, :], 'b-')
-
-print(data.min(),znew.min())
-
-plt.savefig('plots/test_bicubic.png')
+plt.tight_layout()
+plt.savefig('detection/JRA55/JRA55_obs_hists__.png')
 
 
 
+cat4_tracks=np.where(np.nanmax(obs_tracks[:,:,'cat'],axis=1)==4)[0]
+track=obs_tracks.ix[cat4_tracks[0],:,:]
+track=track[np.isfinite(track[:,'VO']),:]
 
+fcat=np.array([0.2]*6)
 
-
+plot_tmp=[]
+for t in track.time:
+    vo_=np.argmin(abs(pdfs['VO'][cat]['pd']-track[t,'VO']))
+    mslp_=np.argmin(abs(pdfs['MSLP'][cat]['pd']-track[t,'MSLP']))
+    plot_tmp.append(axes[0].axvline(x=track[t,'MSLP'],color='cyan'))
+    plot_tmp.append(axes[1].axvline(x=track[t,'VO'],color='cyan'))
+    for cat in range(1,6):
+        p_vo_cat = pdfs['VO'][cat]['pd'][vo_] * pdfs['MSLP'][cat]['pd'][mslp_]
+        normalize = sum([pdfs['VO'][ccc]['pd'][np.argmin(abs(pdfs['VO'][ccc]['pd']-track[t,'VO']))] * pdfs['MSLP'][ccc]['pd'][np.argmin(abs(pdfs['MSLP'][ccc]['pd']-track[t,'MSLP']))] for ccc in range(1,6)])
+        #print(cat,p_vo_cat,normalize,p_vo_cat / normalize,fcat[cat])
+        fcat[cat] = p_vo_cat / normalize
+    print(fcat)
+    print(np.argmax(fcat))
+    plt.savefig('detection/JRA55/JRA55_obs_hists_'+str(t)+'.png')
+    for ax in axes:
+        ax.lines=ax.lines[:5]
+#
+# vo=track[:,'MSLP']
+# dvo=20
+# fcat=np.array([0.2]*6)
+#
+# for t in track.time:
+#     #print('*******************')
+#     for cat in range(1,6):
+#         p_vo_cat = np.sum((obs_stats[obs_stats[:,'cat']==cat,'MSLP']>vo[t]-dvo) & (obs_stats[obs_stats[:,'cat']==cat,'MSLP']<vo[t]+dvo))/float(obs_stats[obs_stats[:,'cat']==cat,'MSLP'].shape[0])
+#         normalize = sum([np.sum((obs_stats[obs_stats[:,'cat']==ccc,'MSLP']>vo[t]-dvo) & (obs_stats[obs_stats[:,'cat']==ccc,'MSLP']<vo[t]+dvo))/float(obs_stats[obs_stats[:,'cat']==ccc,'MSLP'].shape[0]) for ccc in range(1,6)])
+#         #print(cat,p_vo_cat,normalize,p_vo_cat / normalize,fcat[cat])
+#         fcat[cat] = p_vo_cat / normalize
+#     print(fcat)
+#     print(np.argmax(fcat),track[t,'cat'])
 #
