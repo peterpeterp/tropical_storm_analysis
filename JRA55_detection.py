@@ -58,7 +58,7 @@ for identifier in identifiers:
     U10=da.read_nc(data_path+'atl_'+identifier+'_U10.nc')['var33'].values.squeeze()
     V10=da.read_nc(data_path+'atl_'+identifier+'_V10.nc')['var34'].values.squeeze()
     T=da.read_nc(data_path+'atl_'+identifier+'_T_ana.nc')['var11'].values[:,:,:,:]
-    T=T[:,0,:,:]-T[:,2,:,:]
+    T=T[:,1,:,:]+T[:,2,:,:]
     T=T.squeeze()
 
     Wind10=(U10**2+V10**2)**0.5
