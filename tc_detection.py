@@ -18,7 +18,7 @@ sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_
 from TC_support import * ; reload(sys.modules['TC_support'])
 
 class tc_tracks(object):
-    def __init__(self,VO,Wind10,MSLP,MSLP_smoothed,SST,T,lats,lons,time_,dates,identifier,working_dir,time_steps=None):
+    def __init__(self,VO,Wind10,MSLP,MSLP_smoothed,SST,T,land_mask,lats,lons,time_,dates,identifier,working_dir,time_steps=None):
         self._identifier=identifier
         self._working_dir=working_dir
         if os.path.isdir(working_dir)==False:
