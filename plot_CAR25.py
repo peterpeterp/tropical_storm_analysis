@@ -80,10 +80,12 @@ plt.savefig('plots/CAR25/CAR25_genesis.png',dpi=300)
 # statistics
 identifiers=list(set([id_.split('_')[0] for id_ in obs_tracks.unnamed]))
 hurrs_in_seas=[]
+tcs_in_season=[]
 for year in identifiers:
     track_ids=[id_ for id_ in obs_tracks.unnamed if id_.split('_')[0]==year]
     clim_cat=np.array(TC_support.tc_cat(np.nanmin(obs_tracks[track_ids,:,'MSLP'],axis=1),'pressure'))
     hurrs_in_seas.append(np.sum(clim_cat>0))
+    tcs_in_season.append(np.sum(clim_cat>-1))
 
 plt.close('all')
 plt.figure(figsize=(5,3))
@@ -95,7 +97,7 @@ plt.ylabel('hurricanes per season')
 plt.xlabel('hurricane category')
 plt.title('CAR25')
 plt.tight_layout()
-plt.savefig('plots/CAR25/CAR25_cat_hist.png',dpi=300)
+plt.savefig('plots/CAR25/CAR25_cat_hist.png')
 
 
 

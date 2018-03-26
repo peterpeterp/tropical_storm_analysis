@@ -61,8 +61,8 @@ if local==False:
                 identifiers=identifiers[int(args.portion)*portion:(int(args.portion)+1)*portion]
 
 if local:
-    identifiers=['p014']
-    overwrite=False
+    identifiers=['p01j']
+    overwrite=True
     task_surrounding=None #range(510,540)
 
 
@@ -114,13 +114,10 @@ for identifier in identifiers:
     ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
     ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
 
-    # #ax.pcolormesh(lons,lats,MSLP[0,:,:],transform=plate_carree)
-    # ax.plot(lons[50,50],lats[50,50],'og',transform=plate_carree)
-    # plt.savefig('test.png')
 
     working_dir='detection/CAR25/'+str(identifier)+'_CAR25/'
     elapsed = time.time() - start;  print('Data loaded %.3f seconds.' % elapsed)
-    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=None,land_mask=land_mask,SST=None,VO=VO,T=T,T_diff=None,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
+    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,5,5)),land_mask=land_mask,SST=None,VO=VO,T=T,T_diff=None,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
     found_tcs.init_map(ax=ax,transform=plate_carree)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
