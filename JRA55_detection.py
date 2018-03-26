@@ -96,7 +96,7 @@ for identifier in identifiers:
     ax.set_ylim(np.min(lats),np.max(lats))
 
     working_dir='detection/JRA55/'+str(identifier)+'_JRA55/'
-    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,2,2)),land_mask=land_mask,SST=None,VO=VO,T=T_ana,T_diff=T_diff,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
+    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,5,5)),land_mask=land_mask,SST=None,VO=VO,T=T_ana,T_diff=T_diff,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
     found_tcs.init_map(ax=ax,transform=plate_carree)
     found_tcs.init_obs_tcs(tc_sel)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
