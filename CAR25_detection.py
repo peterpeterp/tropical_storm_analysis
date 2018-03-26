@@ -82,6 +82,10 @@ for identifier in identifiers:
     dates=[num2date(t,units = nc.axes['time0'].units,calendar = nc.axes['time0'].calendar) for t in time_]
 
     land_mask=da.read_nc(data_path+'land_mask.nc')['land_mask'].values.squeeze()[1:,:]
+    land_mask[np.isnan(land_mask)]=-99
+    land_mask[land_mask==1]=np.nan
+    land_mask[land_mask==-99]=1
+
 
     # prepare map
     lats = nc['global_latitude0'].values
