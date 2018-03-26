@@ -18,7 +18,7 @@ sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_
 from TC_support import * ; reload(sys.modules['TC_support'])
 
 class tc_tracks(object):
-    def __init__(self,VO,Wind10,MSLP,MSLP_smoothed,SST,T,land_mask,lats,lons,time_,dates,identifier,working_dir,time_steps=None):
+    def __init__(self,VO,Wind10,MSLP,MSLP_smoothed,SST,T,T_diff,land_mask,lats,lons,time_,dates,identifier,working_dir,time_steps=None):
         self._identifier=identifier
         self._working_dir=working_dir
         if os.path.isdir(working_dir)==False:
@@ -55,6 +55,7 @@ class tc_tracks(object):
         self._yr_frac=np.array([toYearFraction(dd) for dd in self._dates])
 
         self._T=T
+        self._T_diff=T_diff
         self._SST=SST
 
         # tc cat dict
@@ -138,7 +139,7 @@ class tc_tracks(object):
         core_radius=int(self.degree_to_step(core_radius))
         full_radius=int(self.degree_to_step(full_radius))
 
-        obs_summary=np.zeros([len(self._tc_sel.storm),200,9])*np.nan
+        obs_summary=np.zeros([len(self._tc_sel.storm),200,10])*np.nan
         for i,storm in enumerate(self._tc_sel.storm):
             tmp_t=self._tc_time[i,:]
             last_val=len(np.where(np.isfinite(tmp_t))[0])
@@ -157,12 +158,13 @@ class tc_tracks(object):
                     obs_summary[i,t,4]=self._MSLP[t_,y_core,x_core].min()
                     obs_summary[i,t,5]=self._Wind10[t_,y_full,x_full].max()
                     obs_summary[i,t,6]=self._T[t_,y_core,x_core].max()
+                    obs_summary[i,t,7]=self._T_diff[t_,y_core,x_core].max()
                     if self._SST is not None:
-                        obs_summary[i,t,7]=self._SST[t_,y,x]
-                    obs_summary[i,t,8]=self._land_mask[y,x]
+                        obs_summary[i,t,8]=self._SST[t_,y,x]
+                    obs_summary[i,t,9]=self._land_mask[y,x]
 
         obs_summary=obs_summary[:,np.isfinite(np.nanmean(obs_summary,axis=(0,-1))),:]
-        self._obs_track_info=da.DimArray(obs_summary,axes=[self._tc_sel.storm,range(obs_summary.shape[1]),['cat','obs_wind','obs_pres','VO','MSLP','Wind10','T','SST','land']],dims=['storm','time','variable'])
+        self._obs_track_info=da.DimArray(obs_summary,axes=[self._tc_sel.storm,range(obs_summary.shape[1]),['cat','obs_wind','obs_pres','VO','MSLP','Wind10','T','T_diff','SST','land']],dims=['storm','time','variable'])
 
         da.Dataset({'obs_track_info':self._obs_track_info}).write_nc(out_file)
 

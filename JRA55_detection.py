@@ -57,9 +57,10 @@ for identifier in identifiers:
 
     U10=da.read_nc(data_path+'atl_'+identifier+'_U10.nc')['var33'].values.squeeze()
     V10=da.read_nc(data_path+'atl_'+identifier+'_V10.nc')['var34'].values.squeeze()
-    T=da.read_nc(data_path+'atl_'+identifier+'_T_ana.nc')['var11'].values[:,:,:,:]
-    T=T[:,1,:,:]+T[:,2,:,:]
-    T=T.squeeze()
+    T_ana=da.read_nc(data_path+'atl_'+identifier+'_T_ana.nc')['var11'].values[:,1:3,:,:].mean(axis=1).squeeze()
+    T=da.read_nc(data_path+'atl_'+identifier+'_T.nc')['var11'].values[:,:,:,:]
+    T_diff=T[:,3,:,:]-T[:,2,:,:]
+    T_diff=T_diff.squeeze()
 
     Wind10=(U10**2+V10**2)**0.5
     nc=da.read_nc(data_path+'atl_'+identifier+'_MSLP.nc')
@@ -73,6 +74,8 @@ for identifier in identifiers:
     VO[np.isnan(VO)]=-999
 
     land_mask=da.read_nc(data_path+'atl_land_mask.nc')['data'].values.squeeze()[::-1]
+    land_mask[land_mask==1]=0
+    land_mask[np.isnan(land_mask)]=1
 
     lons,lats=np.meshgrid(nc.lon,nc.lat)
     lons[lons>180]-=360
@@ -93,23 +96,23 @@ for identifier in identifiers:
     ax.set_ylim(np.min(lats),np.max(lats))
 
     working_dir='detection/JRA55/'+str(identifier)+'_JRA55/'
-    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,2,2)),land_mask=land_mask,SST=None,VO=VO,T=T,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
+    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,2,2)),land_mask=land_mask,SST=None,VO=VO,T=T_ana,T_diff=T_diff,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
     found_tcs.init_map(ax=ax,transform=plate_carree)
     found_tcs.init_obs_tcs(tc_sel)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
-    # # contours method
-    # found_tcs.detect_contours(overwrite=True,p_radius=27,dis_mslp_min=3,warm_core_size=3,dis_cores=1)
-    # found_tcs.plot_detect_summary(thr_wind=10)
-    # found_tcs.combine_tracks(overwrite=True,thr_wind=17.5,search_radius=6,total_steps=12,warm_steps=8,consecutive_warm_strong_steps=4,plot=False)
-    # found_tcs.plot_season()
-    # elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
-    #
-    # # thresholds method
-    # found_tcs.detect_knutson2007(overwrite=True,thr_vort=3.5*10**(-5),dis_vort_max=4,dis_cores=2,thr_MSLP_inc=2,dis_MSLP_inc=5,thr_T_drop=0.8,dis_T_drop=5,tc_size=7)
-    # found_tcs.plot_detect_summary(thr_wind=15)
-    # found_tcs.combine_tracks(overwrite=True,thr_wind=15,search_radius=6,total_steps=8,strong_steps=8,warm_steps=8,consecutive_warm_strong_steps=0,plot=False)
-    # found_tcs.plot_season()
+    # contours method
+    found_tcs.detect_contours(overwrite=True,p_radius=27,dis_mslp_min=3,warm_core_size=3,dis_cores=1)
+    found_tcs.plot_detect_summary(thr_wind=10)
+    found_tcs.combine_tracks(overwrite=True,thr_wind=17.5,search_radius=6,total_steps=12,warm_steps=8,consecutive_warm_strong_steps=4,plot=False)
+    found_tcs.plot_season()
+    elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
+
+    # thresholds method
+    found_tcs.detect_knutson2007(overwrite=True,thr_vort=3.5*10**(-5),dis_vort_max=4,dis_cores=2,thr_MSLP_inc=2,dis_MSLP_inc=5,thr_T_drop=0.8,dis_T_drop=5,tc_size=7)
+    found_tcs.plot_detect_summary(thr_wind=15)
+    found_tcs.combine_tracks(overwrite=True,thr_wind=15,search_radius=6,total_steps=8,strong_steps=8,warm_steps=8,consecutive_warm_strong_steps=0,plot=False)
+    found_tcs.plot_season()
 
     found_tcs.obs_track_info(overwrite=True,core_radius=3,full_radius=7)
 
