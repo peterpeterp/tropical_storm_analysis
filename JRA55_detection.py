@@ -54,35 +54,35 @@ print(identifiers)
 for identifier in identifiers:
     start = time.time()
     print('*** started run '+identifier+' ***')
-    #
-    # U10=da.read_nc(data_path+'atl_'+identifier+'_U10.nc')['var33'].values.squeeze()
-    # V10=da.read_nc(data_path+'atl_'+identifier+'_V10.nc')['var34'].values.squeeze()
-    # T_ana=da.read_nc(data_path+'atl_'+identifier+'_T_ana.nc')['var11'].values[:,1:3,:,:].mean(axis=1).squeeze()
-    # T=da.read_nc(data_path+'atl_'+identifier+'_T.nc')['var11'].values[:,:,:,:]
-    # T_diff=T[:,3,:,:]-T[:,2,:,:]
-    # T_diff=T_diff.squeeze()
-    #
-    # Wind10=(U10**2+V10**2)**0.5
-    # nc=da.read_nc(data_path+'atl_'+identifier+'_MSLP.nc')
-    # MSLP=nc['psl'].values/100.
-    # time_=nc.time
-    # dates=[num2date(t,units = nc.axes['time'].units,calendar = nc.axes['time'].calendar) for t in time_]
-    #
-    # U=da.read_nc(data_path+'atl_'+identifier+'_U.nc')['var33']
-    # V=da.read_nc(data_path+'atl_'+identifier+'_V.nc')['var34']
-    # VO=TC_support.rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
-    # VO[np.isnan(VO)]=-999
-    #
-    # land_mask=da.read_nc(data_path+'atl_land_mask.nc')['data'].values.squeeze()[::-1]
-    # land_mask[land_mask==1]=0
-    # land_mask[np.isnan(land_mask)]=1
-    #
-    # lons,lats=np.meshgrid(nc.lon,nc.lat)
-    # lons[lons>180]-=360
-    #
-    # TC_season=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['season']
-    # TC_basin=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['basin']
-    # tc_sel=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc').ix[np.where((TC_season==int(identifier)) & (TC_basin[:,0]==0))[0]]
+    
+    U10=da.read_nc(data_path+'atl_'+identifier+'_U10.nc')['var33'].values.squeeze()
+    V10=da.read_nc(data_path+'atl_'+identifier+'_V10.nc')['var34'].values.squeeze()
+    T_ana=da.read_nc(data_path+'atl_'+identifier+'_T_ana.nc')['var11'].values[:,1:3,:,:].mean(axis=1).squeeze()
+    T=da.read_nc(data_path+'atl_'+identifier+'_T.nc')['var11'].values[:,:,:,:]
+    T_diff=T[:,3,:,:]-T[:,2,:,:]
+    T_diff=T_diff.squeeze()
+
+    Wind10=(U10**2+V10**2)**0.5
+    nc=da.read_nc(data_path+'atl_'+identifier+'_MSLP.nc')
+    MSLP=nc['psl'].values/100.
+    time_=nc.time
+    dates=[num2date(t,units = nc.axes['time'].units,calendar = nc.axes['time'].calendar) for t in time_]
+
+    U=da.read_nc(data_path+'atl_'+identifier+'_U.nc')['var33']
+    V=da.read_nc(data_path+'atl_'+identifier+'_V.nc')['var34']
+    VO=TC_support.rel_vort(U.values[:,0,:,:],V.values[:,0,:,:],U.lat,U.lon)
+    VO[np.isnan(VO)]=-999
+
+    land_mask=da.read_nc(data_path+'atl_land_mask.nc')['data'].values.squeeze()[::-1]
+    land_mask[land_mask==1]=0
+    land_mask[np.isnan(land_mask)]=1
+
+    lons,lats=np.meshgrid(nc.lon,nc.lat)
+    lons[lons>180]-=360
+
+    TC_season=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['season']
+    TC_basin=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')['basin']
+    tc_sel=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc').ix[np.where((TC_season==int(identifier)) & (TC_basin[:,0]==0))[0]]
 
     plt.close('all')
     plate_carree = ccrs.PlateCarree()
