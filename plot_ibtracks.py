@@ -81,7 +81,7 @@ plt.savefig('plots/ibtracks/ibtracks_genesis.png',dpi=300)
 hurrs_in_seas=[]
 for year in range(1979,2018):
     tc_clim=tc_sel.ix[tc_sel['season']==year]
-    print(tc_clim['source_pres'].values)
+    print(np.nanmin(tc_clim['source_pres'],axis=(1,2)))
     clim_cat=np.array(TC_support.tc_cat(np.nanmin(tc_clim['source_pres'],axis=(1,2)),'pressure'))
     hurrs_in_seas.append(np.sum(clim_cat>0))
 

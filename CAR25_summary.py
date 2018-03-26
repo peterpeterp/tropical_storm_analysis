@@ -14,8 +14,13 @@ sns.set_palette(sns.color_palette("plasma"))
 
 try:
     os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
+    data_path='data/CAR25/'
+    local=True
 except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
+    data_path='/p/projects/tumble/carls/shared_folder/CPDN/data/batch_717/region/'
+    local=False
+    
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
 sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
 from TC_support import *
@@ -34,7 +39,7 @@ for style in ['contours','knutson2007']:
     if os.path.isfile('detection/CAR25/CAR25_all_tracks_'+style+'.nc')==False or overwrite:
         # check for duplicates
         all_tracks={}
-        for identifier in [str(yr) for yr in range(1979,2017)]:
+        for identifier in [ff.split('_')[-3] for ff in glob.glob(data_path+'/item16222_6hrly_inst/item16222_6hrly_inst*')]:
             tmp=da.read_nc('detection/CAR25/'+str(identifier)+'_CAR25/track_info_'+style+'.nc')
             for id_,track in tmp.items():
                 if id_ not in ['z','time']:
