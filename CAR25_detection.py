@@ -44,6 +44,8 @@ if local==False:
 
     if args.surrounding is not None:
         task_surrounding=range(args.surrounding[0],args.surrounding[1]+1)
+    else:
+        task_surrounding=None
 
     if args.identifiers is not None:
         identifiers=args.identifiers
