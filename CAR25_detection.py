@@ -55,10 +55,10 @@ if local==False:
         identifiers=[ff.split('_')[-3] for ff in glob.glob(data_path+'/item16222_6hrly_inst/item16222_6hrly_inst*')]
         portion=int(len(identifiers)/10)
         if args.portion is not None:
-            if (int(sys.argv[1])+1)*portion>=len(identifiers):
-                identifiers=identifiers[int(sys.argv[1])*portion:len(identifiers)-1]
+            if (int(args.portion)+1)*portion>=len(identifiers):
+                identifiers=identifiers[int(args.portion)*portion:len(identifiers)-1]
             else:
-                identifiers=identifiers[int(sys.argv[1])*portion:(int(sys.argv[1])+1)*portion]
+                identifiers=identifiers[int(args.portion)*portion:(int(args.portion)+1)*portion]
 
 if local:
     identifiers=['p014']
