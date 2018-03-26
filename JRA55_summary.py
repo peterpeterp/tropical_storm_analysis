@@ -48,9 +48,10 @@ for style in ['contours','knutson2007']:
         all_tracks={}
         for identifier in [str(yr) for yr in range(1979,2017)]:
             print(all_tracks)
-            tmp=da.read_nc('detection/JRA55/'+str(identifier)+'_JRA55/track_info_'+style+'.nc')['track_info_'+style]
-            for storm in tmp.storm:
-                all_tracks[storm]=tmp[storm,:,:]
+            tmp=da.read_nc('detection/JRA55/'+str(identifier)+'_JRA55/track_info_'+style+'.nc')
+            for id_,track in tmp.items():
+                if id_ not in ['z','time']:
+                    all_tracks[id_]=track
 
         all_tracks=da.Dataset({'all_tracks':all_tracks})
         all_tracks.write_nc('detection/JRA55/JRA55_all_tracks_'+style+'.nc',mode='w')
