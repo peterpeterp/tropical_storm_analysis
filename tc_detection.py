@@ -451,7 +451,7 @@ class tc_tracks(object):
                     candidates=[]
                     for p_1 in postions[postions[:,0]==p[0]-1,:].tolist():
                         new_step=np.array((p_1[1]-p[1],p_1[2]-p[2],0))
-                        if v_len(new_step-prev_step)<search_radius and self._land_mask[p_1[1],p_1[2]]:
+                        if v_len(new_step-prev_step)<search_radius and self._land_mask[int(p_1[1]),int(p_1[2])]:
                             # # exclude strong direction changes if TC isn't extremely slow
                             # if v_len(prev_step)/v_len(new_step-prev_step)<1/velocity_jump and angle_between(new_step,prev_step)>smooth_path_angle:
                             #     # strange movement
