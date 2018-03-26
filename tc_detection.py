@@ -490,45 +490,46 @@ class tc_tracks(object):
                         break
 
                 # delete land steps in the beginning of track
-                while True:
-                    if self._land_mask[int(track[0,1]),int(track[0,2])]:
-                        track=track[1:,:]
+                while len(track)>0:
+                    if self._land_mask[int(track[0][1]),int(track[0][2])]:
+                        track=track[1:]
                     else:
                         break
 
-                if sum([pp in used_pos for pp in track])/float(len(track))<0.3:
-                    used_pos+=track
+                if len(track)>0:
+                    if sum([pp in used_pos for pp in track])/float(len(track))<0.3:
+                        used_pos+=track
 
-                    track=da.DimArray(track,axes=[np.array(track)[:,0],['t','y','x','pressure_low','warm_core','MSLP','Wind10']],dims=['time','z'])
-                    save_track=True
-                    start_pos=track.values[0,1:3]
-                    if track.shape[0]<total_steps:
-                        save_track=False
-                    if track[track[:,'warm_core']==1].shape[0]<warm_steps:
-                        save_track=False
-                    elif track[track[:,'warm_core']==1].shape[0]!=0:
-                        start_pos=track[track[:,'warm_core']==1].values[0,1:3]
-                    if track[track[:,'Wind10']>=thr_wind].shape[0]<strong_steps:
-                        save_track=False
-                    elif track[track[:,'Wind10']>=thr_wind].shape[0]!=0:
-                        start_pos=track[track[:,'Wind10']>=thr_wind].values[0,1:3]
-                    if consecutive_warm_strong_steps>0:
-                        warm_strong=track[(track[:,'Wind10']>=thr_wind) & (track[:,'warm_core']==1)]
-                        consecutive=np.diff(warm_strong[:,'t'],1)==1
-                        consec_info=consecutive_sequence(consecutive)
-                        if max(consec_info[:,1])<consecutive_warm_strong_steps:
+                        track=da.DimArray(track,axes=[np.array(track)[:,0],['t','y','x','pressure_low','warm_core','MSLP','Wind10']],dims=['time','z'])
+                        save_track=True
+                        start_pos=track.values[0,1:3]
+                        if track.shape[0]<total_steps:
                             save_track=False
-                        else:
-                            first_of_consec=consec_info[np.argmax(consec_info[:,1]),0]
-                            start_pos=warm_strong.values[first_of_consec,1:3]
+                        if track[track[:,'warm_core']==1].shape[0]<warm_steps:
+                            save_track=False
+                        elif track[track[:,'warm_core']==1].shape[0]!=0:
+                            start_pos=track[track[:,'warm_core']==1].values[0,1:3]
+                        if track[track[:,'Wind10']>=thr_wind].shape[0]<strong_steps:
+                            save_track=False
+                        elif track[track[:,'Wind10']>=thr_wind].shape[0]!=0:
+                            start_pos=track[track[:,'Wind10']>=thr_wind].values[0,1:3]
+                        if consecutive_warm_strong_steps>0:
+                            warm_strong=track[(track[:,'Wind10']>=thr_wind) & (track[:,'warm_core']==1)]
+                            consecutive=np.diff(warm_strong[:,'t'],1)==1
+                            consec_info=consecutive_sequence(consecutive)
+                            if max(consec_info[:,1])<consecutive_warm_strong_steps:
+                                save_track=False
+                            else:
+                                first_of_consec=consec_info[np.argmax(consec_info[:,1]),0]
+                                start_pos=warm_strong.values[first_of_consec,1:3]
 
-                    if self._lats[int(start_pos[0]),int(start_pos[1])]>=lat_formation_cutoff:
-                        save_track=False
+                        if self._lats[int(start_pos[0]),int(start_pos[1])]>=lat_formation_cutoff:
+                            save_track=False
 
-                    if save_track:
-                        self._tcs[self._identifier+'_'+str(self._id)]=track
-                        if plot:    self.plot_track_path(track)
-                        self._id+=1
+                        if save_track:
+                            self._tcs[self._identifier+'_'+str(self._id)]=track
+                            if plot:    self.plot_track_path(track)
+                            self._id+=1
 
         self._tcs=da.Dataset(self._tcs)
         self._tcs.write_nc(out_file,mode='w')
