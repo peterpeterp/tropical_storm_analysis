@@ -32,9 +32,10 @@ globe= ccrs.Orthographic(central_longitude=-60.0, central_latitude=20.0, globe=N
 
 cat_colors={0:'lightblue',1:'#ffffcc',2:'#ffe775',3:'#ffc148',4:'#ff8f20',5:'#ff6060'}
 
-obs_tracks=da.read_nc('detection/JRA55/JRA55_all_tracks.nc')['all_tracks']
+obs_tracks=da.read_nc('detection/JRA55/JRA55_all_tracks_contours.nc')['all_tracks']
 nc=da.read_nc('data/JRA55/atl_2010_MSLP.nc')
 lons,lats=nc.lon,nc.lat
+lons[lons>180]-=360
 
 # sparial stuff
 plt.close('all')
@@ -54,41 +55,44 @@ ax.set_ylim(np.min(grid_lats)-5,np.max(grid_lats)+5)
 reg=Polygon([(grid_lons[0],grid_lats[0]),(grid_lons[-1],grid_lats[0]),(grid_lons[-1],grid_lats[-1]),(grid_lons[0],grid_lats[-1]),(grid_lons[0],grid_lats[0])])
 ax.add_geometries([reg], rot_pole, color='lightgreen',alpha=1,facecolor='none')
 
-for storm in tc_sel.storm:
-    ax.plot(tc_lon[storm,:],tc_lat[storm,:],color=cat_colors[tc_cat(tc_wind[storm,:,0].max(),'wind')],alpha=0.2,linewidth=1,transform=plate_carree)
+for storm in obs_tracks.unnamed:
+    track=obs_tracks[storm,:,:]
+    track=track[np.isfinite(track[:,'t']),:]
+    ax.plot(lons[np.array(track[:,'x'],int)],lats[np.array(track[:,'y'],int)],color=cat_colors[TC_support.tc_cat(track[:,'MSLP'].min(),'pressure')],alpha=0.3,linewidth=2,transform=plate_carree)
 
-plt.title('ibtracks')
+plt.title('JRA55')
 plt.tight_layout()
-plt.savefig('plots/ibtracks/ibtracks_tracks.png',dpi=300)
+plt.savefig('plots/JRA55/JRA55_tracks.png',dpi=300)
 
 ax.lines=[]
-for storm in tc_sel.storm:
-    ax.plot(tc_lon[storm,0],tc_lat[storm,0],color=cat_colors[tc_cat(tc_wind[storm,:,0].max(),'wind')],alpha=0.3,marker='o',transform=plate_carree)
+for storm in obs_tracks.unnamed:
+    track=obs_tracks[storm,:,:]
+    track=track[np.isfinite(track[:,'t']),:]
+    ax.plot(lons[int(track.ix[0,2])],lats[int(track.ix[0,1])],color=cat_colors[TC_support.tc_cat(track[:,'MSLP'].min(),'pressure')],alpha=0.3,marker='o',transform=plate_carree)
 
-plt.title('ibtracks')
+plt.title('JRA55')
 plt.tight_layout()
-plt.savefig('plots/ibtracks/ibtracks_genesis.png',dpi=300)
+plt.savefig('plots/JRA55/JRA55_genesis.png',dpi=300)
 
 
 # statistics
 hurrs_in_seas=[]
 for year in range(1979,2018):
-    tc_clim=tc_sel.ix[tc_sel['season']==year]
-    clim_cat=np.array(TC_support.tc_cat(np.nanmax(tc_clim['source_wind'],axis=(1,2)),'wind'))
+    track_ids=[id_ for id_ in obs_tracks.unnamed if int(id_.split('_')[0])==year]
+    clim_cat=np.array(TC_support.tc_cat(np.nanmin(obs_tracks[track_ids,:,'MSLP'],axis=1),'pressure'))
     hurrs_in_seas.append(np.sum(clim_cat>0))
 
-tc_clim=tc_sel.ix[tc_sel['season']>=1979]
 plt.close('all')
 plt.figure(figsize=(5,3))
-clim_cat=np.array(TC_support.tc_cat(np.nanmax(tc_clim['source_wind'],axis=(1,2)),'wind'))
+clim_cat=np.array(TC_support.tc_cat(np.nanmin(obs_tracks[:,:,'MSLP'],axis=1),'pressure'))
 for cat in range(1,6):
     plt.bar(cat,np.sum(clim_cat==cat)/float(2017-1979),color=cat_colors[cat])
 plt.text(4.2,2.5,'total: '+str(int(round(np.mean(hurrs_in_seas))))+' $\pm$ '+str(int(round(np.std(hurrs_in_seas)))))
 plt.ylabel('hurricanes per season')
 plt.xlabel('hurricane category')
-plt.title('ibtracks')
+plt.title('JRA55')
 plt.tight_layout()
-plt.savefig('plots/ibtracks/ibtracks_cat_hist.png',dpi=300)
+plt.savefig('plots/JRA55/JRA55_cat_hist.png',dpi=300)
 
 
 

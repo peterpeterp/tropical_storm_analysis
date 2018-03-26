@@ -30,26 +30,15 @@ if args.overwrite:
 else:
     overwrite=False
 
-if os.path.isfile('detection/JRA55/JRA55_obs_track_info.nc')==False or overwrite:
-    # check for duplicates
-    obs_tracks={}
-    for identifier in [str(yr) for yr in range(1979,2017)]:
-        tmp=da.read_nc('detection/JRA55/'+str(identifier)+'_JRA55/obs_track_info.nc')['obs_track_info']
-        for storm in tmp.storm:
-            obs_tracks[storm]=tmp[storm,:,:]
-
-    obs_tracks=da.Dataset({'obs_tracks':obs_tracks})
-    obs_tracks.write_nc('detection/JRA55/JRA55_obs_track_info.nc',mode='w')
-
 for style in ['contours','knutson2007']:
-    if os.path.isfile('detection/JRA55/JRA55_all_tracks_'+style+'.nc')==False or overwrite:
+    if os.path.isfile('detection/CAR25/CAR25_all_tracks_'+style+'.nc')==False or overwrite:
         # check for duplicates
         all_tracks={}
         for identifier in [str(yr) for yr in range(1979,2017)]:
-            tmp=da.read_nc('detection/JRA55/'+str(identifier)+'_JRA55/track_info_'+style+'.nc')
+            tmp=da.read_nc('detection/CAR25/'+str(identifier)+'_CAR25/track_info_'+style+'.nc')
             for id_,track in tmp.items():
                 if id_ not in ['z','time']:
                     all_tracks[id_]=track
 
         all_tracks=da.Dataset({'all_tracks':all_tracks})
-        all_tracks.write_nc('detection/JRA55/JRA55_all_tracks_'+style+'.nc',mode='w')
+        all_tracks.write_nc('detection/CAR25/CAR25_all_tracks_'+style+'.nc',mode='w')
