@@ -47,14 +47,14 @@ if args.year is not None:
     identifiers=[args.year]
 else:
     identifiers=[str(yr) for yr in range(1979,2018)]
-    identifiers=['2010']
+    #identifiers=['2010']
 
 print(identifiers)
 
 for identifier in identifiers:
     start = time.time()
     print('*** started run '+identifier+' ***')
-    
+
     U10=da.read_nc(data_path+'atl_'+identifier+'_U10.nc')['var33'].values.squeeze()
     V10=da.read_nc(data_path+'atl_'+identifier+'_V10.nc')['var34'].values.squeeze()
     T_ana=da.read_nc(data_path+'atl_'+identifier+'_T_ana.nc')['var11'].values[:,1:3,:,:].mean(axis=1).squeeze()
