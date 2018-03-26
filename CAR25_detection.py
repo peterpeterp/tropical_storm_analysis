@@ -79,6 +79,8 @@ for identifier in identifiers:
     time_=nc.time0
     dates=[num2date(t,units = nc.axes['time0'].units,calendar = nc.axes['time0'].calendar) for t in time_]
 
+    land_mask=da.read_nc(data_path+'land_mask.nc')['land_mask'].values.squeeze()[1:,:]
+
     # prepare map
     lats = nc['global_latitude0'].values
     lons = nc['global_longitude0'].values
@@ -114,7 +116,7 @@ for identifier in identifiers:
 
     working_dir='detection/CAR25/'+str(identifier)+'_CAR25/'
     elapsed = time.time() - start;  print('Data loaded %.3f seconds.' % elapsed)
-    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=None,SST=None,VO=VO,T=T,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
+    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=None,land_mask=land_mask,SST=None,VO=VO,T=T,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
     found_tcs.init_map(ax=ax,transform=plate_carree)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 
