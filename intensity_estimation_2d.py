@@ -26,12 +26,13 @@ obs_stats[obs_stats[:,'obs_pres']<500,'obs_pres']=np.nan
 pdfs={}
 for ax_j,var_obs in zip(range(2),['obs_wind','obs_pres']):
     pdfs[var_obs]={}
-    for ax_i,vari in zip(range(4),['MSLP','VO','Wind10','T']):
+    for ax_i,vari in zip(range(5),['MSLP','VO','Wind10','T','T_diff']):
         y=obs_stats[:,vari].values
         x=obs_stats[:,var_obs].values
 
-        y=y[np.isfinite(x)]
-        x=x[np.isfinite(x)]
+        finite=np.where(np.isfinite(x) & np.isfinite(y))
+        y=y[finite]
+        x=x[finite]
 
         values = np.vstack([x, y])
         kernel = stats.gaussian_kde(values)
@@ -46,9 +47,9 @@ for ax_j,var_obs in zip(range(2),['obs_wind','obs_pres']):
         pdfs[var_obs][vari]={'X':X,'Y':Y,'Z':Z,'y':y,'x':x}
 
 plt.close('all')
-fig,axes=plt.subplots(nrows=4,ncols=2,figsize=(8,10))
+fig,axes=plt.subplots(nrows=5,ncols=2,figsize=(8,10))
 for ax_j,var_obs in zip(range(2),['obs_wind','obs_pres']):
-    for ax_i,vari in zip(range(4),['MSLP','VO','Wind10','T']):
+    for ax_i,vari in zip(range(5),['MSLP','VO','Wind10','T','T_diff']):
         ax=axes[ax_i,ax_j]
         pdf=pdfs[var_obs][vari]
         xmin,xmax=np.percentile(pdf['x'],[0,100])

@@ -21,12 +21,16 @@ import TC_support ;  TC_support = reload(TC_support)
 # TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
 # tc_sel=TC.ix[np.where(TC['basin'][:,0]==0)[0]]
 # tc_sel=tc_sel.ix[tc_sel['season']>=1979]
+# tc_sel=tc_sel.ix[tc_sel['season']>=1979]
 # tc_lat=tc_sel['lat_for_mapping']
 # tc_lon=tc_sel['lon_for_mapping']
 # tc_lon[tc_lon<0]+=360
-# tc_wind=tc_sel['source_wind']
+# tc_sel['source_wind']=tc_sel['source_wind']
 # tc_wind[np.isnan(tc_wind)]=-999
 #
+# tc_sel_cat=np.array(TC_support.tc_cat(np.nanmin(tc_sel['source_pres'],axis=(1,2)),'pressure'))
+# tc_sel=tc_sel.ix[np.where(tc_sel_cat>0)]
+
 nc=da.read_nc('data/CAR25/item16222_6hrly_inst/item16222_6hrly_inst_p014_2017-06_2017-10.nc')
 lats = nc['global_latitude1'].values
 lons = nc['global_longitude1'].values
@@ -62,7 +66,7 @@ reg=Polygon([(grid_lons[0],grid_lats[0]),(grid_lons[-1],grid_lats[0]),(grid_lons
 ax.add_geometries([reg], rot_pole, color='lightgreen',alpha=1,facecolor='none')
 
 for storm in tc_sel.storm:
-    ax.plot(tc_lon[storm,:],tc_lat[storm,:],color=cat_colors[TC_support.tc_cat(tc_wind[storm,:,0].max(),'wind')],alpha=0.3,linewidth=2,transform=plate_carree)
+    ax.plot(tc_lon[storm,:],tc_lat[storm,:],color=cat_colors[TC_support.tc_cat(np.nanmin(tc_sel['source_pres'][storm,:,:]),'pressure')],alpha=0.7,linewidth=2,transform=plate_carree)
 
 plt.title('ibtracks')
 plt.tight_layout()
@@ -70,7 +74,7 @@ plt.savefig('plots/ibtracks/ibtracks_tracks.png',dpi=300)
 
 ax.lines=[]
 for storm in tc_sel.storm:
-    ax.plot(tc_lon[storm,0],tc_lat[storm,0],color=cat_colors[TC_support.tc_cat(tc_wind[storm,:,0].max(),'wind')],alpha=0.3,marker='o',transform=plate_carree)
+    ax.plot(tc_lon[storm,0],tc_lat[storm,0],color=cat_colors[TC_support.tc_cat(np.nanmin(tc_sel['source_pres'][storm,:,:]),'pressure')],alpha=0.7,marker='o',transform=plate_carree)
 
 plt.title('ibtracks')
 plt.tight_layout()
@@ -81,7 +85,6 @@ plt.savefig('plots/ibtracks/ibtracks_genesis.png',dpi=300)
 hurrs_in_seas=[]
 for year in range(1979,2018):
     tc_clim=tc_sel.ix[tc_sel['season']==year]
-    print(np.nanmin(tc_clim['source_pres'],axis=(1,2)))
     clim_cat=np.array(TC_support.tc_cat(np.nanmin(tc_clim['source_pres'],axis=(1,2)),'pressure'))
     hurrs_in_seas.append(np.sum(clim_cat>0))
 

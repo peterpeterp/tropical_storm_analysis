@@ -714,3 +714,68 @@ class tc_tracks(object):
         da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
         print('done')
         return self._detected
+
+    def detect_hybrid(self,overwrite=False,thr_vort=5*10**(-5),dis_vort_max=4,p_radius=27,p_inc_step=1,warm_core_size=3,T_drop_step=1,dis_cores=1,dis_mslp_min=3):
+        self._add_name='hybrid'
+        out_file=self._working_dir+'detected_positions_'+self._add_name+'.nc'
+        if overwrite and os.path.isfile(out_file):
+            os.system('rm '+out_file)
+        elif overwrite==False and os.path.isfile(out_file):
+            self._detected=da.read_nc(out_file)['detected']
+            return self._detected
+
+        '''
+        Required Thresholds:
+        dis_vort_max:   float [deg]:    minimal distance between vort maxima
+        p_radius:       float [deg]:    maximum radius for mslp closed contours
+        p_inc_step:     float [hPa]:    step for mslp contours
+        warm_core_size: float [deg]:    maximal radius of warm core contours
+        T_drop_step:    float [K]:      step for Ta contours
+        dis_cores:      float [deg]:    maximal distances between vort max and mslp min (mslp min and warm core)
+        '''
+
+        # convert distances from degrees into grid-cells
+        p_radius=self.degree_to_step(p_radius)
+        dis_cores=self.degree_to_step(dis_cores)
+        warm_core_size=self.degree_to_step(warm_core_size)**2*2*np.pi
+        dis_vort_max=int(self.degree_to_step(dis_vort_max))
+
+
+        detect=np.array([[np.nan]*7])
+        print('detecting\n10------50-------100')
+        for t,progress in zip(self._time_i,np.array([['-']+['']*(len(self._time_i)/20+1)]*20).flatten()[0:len(self._time_i)]):
+            sys.stdout.write(progress); sys.stdout.flush()
+
+            vo_=self._VO[t,:,:].copy()
+            vo_[vo_<thr_vort]=0
+            coords = peak_local_max(vo_, min_distance=int(dis_vort_max))
+            if coords.shape[0]>0:
+                for y_v,x_v in zip(coords[:,0],coords[:,1]):
+                    y_circ,x_circ=self.area_around(y_v,x_v,dis_cores)
+                    # get small area around vort max
+                    p_window=self._MSLP_smoothed[t,y_circ,x_circ].flatten()
+                    # MSLP min next to vort max is center
+                    i=np.where(p_window==p_window.min())[0][0]; y_p,x_p=y_circ[i],x_circ[i]
+                    # find closed contours around MSLP min
+                    tc_area,ncont=self.find_closed_contours(self._MSLP_smoothed[t,:,:],y_p,x_p,step=p_inc_step,search_radius=p_radius,method='min')
+                    if ncont>0:
+                        tmp=[t,y_p,x_p,1,0,0,0]
+                        # find warm core center
+                        box=self.get_box(y_p,x_p,dis_cores)
+                        y_,x_=np.where(self._T[t,box[0]:box[1],box[2]:box[3]]==self._T[t,box[0]:box[1],box[2]:box[3]].max())
+                        y_t,x_t=box[0]+y_[0],box[2]+x_[0]
+                        # check if warm core exists
+                        warm_core_area,ncont=self.find_closed_contours(self._T[t,:,:],y_t,x_t,step=T_drop_step,search_radius=p_radius,n_contours=1,method='max')
+                        yy,xx=np.where(warm_core_area==1)
+                        if len(np.where(warm_core_area==1)[0])<warm_core_size and ncont==1:
+                            tmp[4]=1
+
+                        tmp[5]=self._MSLP[t,y_p,x_p]
+                        # tc area is defined by closed contours
+                        tmp[6]=np.nanmax(tc_area*self._Wind10[t,:,:])
+                        detect=np.concatenate((detect,np.array([tmp])))
+
+        self._detected=da.DimArray(np.array(detect[1:,:]),axes=[range(detect.shape[0]-1),['t','y','x','pressure_low','warm_core','MSLP','Wind10']],dims=['ID','z'])
+        da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
+        print('done')
+        return self._detected

@@ -32,7 +32,7 @@ globe= ccrs.Orthographic(central_longitude=-60.0, central_latitude=20.0, globe=N
 
 cat_colors={0:'lightblue',1:'#ffffcc',2:'#ffe775',3:'#ffc148',4:'#ff8f20',5:'#ff6060'}
 
-obs_tracks=da.read_nc('detection/JRA55/JRA55_all_tracks_contours.nc')['all_tracks']
+obs_tracks=da.read_nc('detection/JRA55/JRA55_all_tracks_knutson2007.nc')['all_tracks']
 nc=da.read_nc('data/JRA55/atl_2010_MSLP.nc')
 lons,lats=nc.lon,nc.lat
 lons[lons>180]-=360
@@ -58,7 +58,7 @@ ax.add_geometries([reg], rot_pole, color='lightgreen',alpha=1,facecolor='none')
 for storm in obs_tracks.unnamed:
     track=obs_tracks[storm,:,:]
     track=track[np.isfinite(track[:,'t']),:]
-    ax.plot(lons[np.array(track[:,'x'],int)],lats[np.array(track[:,'y'],int)],color=cat_colors[TC_support.tc_cat(track[:,'MSLP'].min(),'pressure')],alpha=0.3,linewidth=2,transform=plate_carree)
+    ax.plot(lons[np.array(track[:,'x'],int)],lats[np.array(track[:,'y'],int)],color=cat_colors[TC_support.tc_cat(track[:,'MSLP'].min(),'pressure')],alpha=0.7,linewidth=2,transform=plate_carree)
 
 plt.title('JRA55')
 plt.tight_layout()
@@ -68,7 +68,7 @@ ax.lines=[]
 for storm in obs_tracks.unnamed:
     track=obs_tracks[storm,:,:]
     track=track[np.isfinite(track[:,'t']),:]
-    ax.plot(lons[int(track.ix[0,2])],lats[int(track.ix[0,1])],color=cat_colors[TC_support.tc_cat(track[:,'MSLP'].min(),'pressure')],alpha=0.3,marker='o',transform=plate_carree)
+    ax.plot(lons[int(track.ix[0,2])],lats[int(track.ix[0,1])],color=cat_colors[TC_support.tc_cat(track[:,'MSLP'].min(),'pressure')],alpha=0.7,marker='o',transform=plate_carree)
 
 plt.title('JRA55')
 plt.tight_layout()
