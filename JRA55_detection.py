@@ -57,12 +57,12 @@ for identifier in identifiers:
 
     U10=da.read_nc(data_path+'atl_'+identifier+'_U10.nc')['var33'].values.squeeze()
     V10=da.read_nc(data_path+'atl_'+identifier+'_V10.nc')['var34'].values.squeeze()
-    # T_ana=da.read_nc(data_path+'atl_'+identifier+'_T_ana.nc')['var11'].values[:,1:3,:,:].mean(axis=1).squeeze()
+    T_ana=da.read_nc(data_path+'atl_'+identifier+'_T_ana.nc')['var11'].values[:,1:3,:,:].mean(axis=1).squeeze()
     T=da.read_nc(data_path+'atl_'+identifier+'_T.nc')['var11'].values[:,:,:,:]
-    # T_diff=T[:,2,:,:]-T[:,3,:,:]
-    # T_diff=T_diff.squeeze()
-    T_ana=T[:,1:3,:,:].mean(axis=1).squeeze()
-    T_diff=T_ana.copy()
+    T_diff=T[:,2,:,:]-T[:,3,:,:]
+    T_diff=T_diff.squeeze()
+    #T_ana=T[:,1:3,:,:].mean(axis=1).squeeze()
+    #T_diff=T_ana.copy()
 
     Wind10=(U10**2+V10**2)**0.5
     nc=da.read_nc(data_path+'atl_'+identifier+'_MSLP.nc')
