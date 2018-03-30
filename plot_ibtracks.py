@@ -18,18 +18,18 @@ os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
 import TC_support ;  TC_support = reload(TC_support)
 
-# TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
-# tc_sel=TC.ix[np.where(TC['basin'][:,0]==0)[0]]
-# tc_sel=tc_sel.ix[tc_sel['season']>=1979]
-# tc_sel=tc_sel.ix[tc_sel['season']>=1979]
-# tc_lat=tc_sel['lat_for_mapping']
-# tc_lon=tc_sel['lon_for_mapping']
-# tc_lon[tc_lon<0]+=360
-# tc_sel['source_wind']=tc_sel['source_wind']
-# tc_wind[np.isnan(tc_wind)]=-999
-#
-# tc_sel_cat=np.array(TC_support.tc_cat(np.nanmin(tc_sel['source_pres'],axis=(1,2)),'pressure'))
-# tc_sel=tc_sel.ix[np.where(tc_sel_cat>0)]
+TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
+tc_sel=TC.ix[np.where(TC['basin'][:,0]==0)[0]]
+tc_sel=tc_sel.ix[tc_sel['season']>=1979]
+tc_sel=tc_sel.ix[tc_sel['season']>=1979]
+tc_lat=tc_sel['lat_for_mapping']
+tc_lon=tc_sel['lon_for_mapping']
+tc_lon[tc_lon<0]+=360
+tc_sel['source_wind']=tc_sel['source_wind']
+tc_wind[np.isnan(tc_wind)]=-999
+
+tc_sel_cat=np.array(TC_support.tc_cat(np.nanmin(tc_sel['source_pres'],axis=(1,2)),'pressure'))
+tc_sel=tc_sel.ix[np.where(tc_sel_cat>0)]
 
 nc=da.read_nc('data/CAR25/item16222_6hrly_inst/item16222_6hrly_inst_p014_2017-06_2017-10.nc')
 lats = nc['global_latitude1'].values
@@ -74,11 +74,32 @@ plt.savefig('plots/ibtracks/ibtracks_tracks.png',dpi=300)
 
 ax.lines=[]
 for storm in tc_sel.storm:
+    if np.sum(np.isfinite(np.nanmean(tc_sel['source_pres'][storm,:,:],axis=-1)))>=8:
+        if np.sum(TC_support.tc_cat(np.nanmean(tc_sel['source_pres'][storm,:,:],axis=-1),'pressure')>0)>=8:
+            ax.plot(tc_lon[storm,:],tc_lat[storm,:],color=cat_colors[TC_support.tc_cat(np.nanmin(tc_sel['source_pres'][storm,:,:]),'pressure')],alpha=0.7,linewidth=2,transform=plate_carree)
+
+plt.title('ibtracks')
+plt.tight_layout()
+plt.savefig('plots/ibtracks/ibtracks_tracks_longer_than_2days.png',dpi=300)
+
+
+ax.lines=[]
+for storm in tc_sel.storm:
     ax.plot(tc_lon[storm,0],tc_lat[storm,0],color=cat_colors[TC_support.tc_cat(np.nanmin(tc_sel['source_pres'][storm,:,:]),'pressure')],alpha=0.7,marker='o',transform=plate_carree)
 
 plt.title('ibtracks')
 plt.tight_layout()
 plt.savefig('plots/ibtracks/ibtracks_genesis.png',dpi=300)
+
+ax.lines=[]
+for storm in tc_sel.storm:
+    if np.sum(np.isfinite(np.nanmean(tc_sel['source_pres'][storm,:,:],axis=-1)))>=8:
+        if np.sum(TC_support.tc_cat(np.nanmean(tc_sel['source_pres'][storm,:,:],axis=-1),'pressure')>0)>=8:
+            ax.plot(tc_lon[storm,0],tc_lat[storm,0],color=cat_colors[TC_support.tc_cat(np.nanmin(tc_sel['source_pres'][storm,:,:]),'pressure')],alpha=0.7,marker='o',transform=plate_carree)
+
+plt.title('ibtracks')
+plt.tight_layout()
+plt.savefig('plots/ibtracks/ibtracks_genesis_longer_than_2days.png',dpi=300)
 
 
 # statistics
@@ -94,7 +115,7 @@ plt.figure(figsize=(5,3))
 clim_cat=np.array(TC_support.tc_cat(np.nanmin(tc_clim['source_pres'],axis=(1,2)),'pressure'))
 for cat in range(1,6):
     plt.bar(cat,np.sum(clim_cat==cat)/float(2017-1979),color=cat_colors[cat])
-plt.text(4.2,2.5,'total: '+str(int(round(np.mean(hurrs_in_seas))))+' $\pm$ '+str(int(round(np.std(hurrs_in_seas)))))
+plt.annotate('total: '+str(int(round(np.mean(hurrs_in_seas))))+' $\pm$ '+str(int(round(np.std(hurrs_in_seas)))),xy=(0.75,0.85),xycoords='axes fraction')
 plt.ylabel('hurricanes per season')
 plt.xlabel('hurricane category')
 plt.title('ibtracks')

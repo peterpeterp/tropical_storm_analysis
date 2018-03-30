@@ -43,7 +43,6 @@ for ax_j,var_obs in zip(range(2),['obs_wind','obs_pres']):
         positions = np.vstack([X.ravel(), Y.ravel()])
 
         Z = np.reshape(kernel(positions).T, X.shape)
-
         pdfs[var_obs][vari]={'X':X,'Y':Y,'Z':Z,'y':y,'x':x}
 
 plt.close('all')

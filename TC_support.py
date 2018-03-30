@@ -86,7 +86,7 @@ def tc_cat(z,method='pressure'):
             if np.isnan(zz): cat= 0
             return cat
     if isinstance(z,np.ndarray) or isinstance(z,list) or isinstance(z,da.core.dimarraycls.DimArray):
-        return [cat__(zz) for zz in z]
+        return np.array([cat__(zz) for zz in z])
     else:
         return cat__(z)
 

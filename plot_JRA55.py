@@ -87,7 +87,7 @@ plt.figure(figsize=(5,3))
 clim_cat=np.array(TC_support.tc_cat(np.nanmin(obs_tracks[:,:,'MSLP'],axis=1),'pressure'))
 for cat in range(1,6):
     plt.bar(cat,np.sum(clim_cat==cat)/float(2017-1979),color=cat_colors[cat])
-plt.text(4.2,2.5,'total: '+str(int(round(np.mean(hurrs_in_seas))))+' $\pm$ '+str(int(round(np.std(hurrs_in_seas)))))
+plt.annotate('total: '+str(int(round(np.mean(hurrs_in_seas))))+' $\pm$ '+str(int(round(np.std(hurrs_in_seas)))),xy=(0.75,0.85),xycoords='axes fraction')
 plt.ylabel('hurricanes per season')
 plt.xlabel('hurricane category')
 plt.title('JRA55')

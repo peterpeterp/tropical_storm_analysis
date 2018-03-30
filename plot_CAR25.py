@@ -60,7 +60,7 @@ ax.add_geometries([reg], rot_pole, color='lightgreen',alpha=1,facecolor='none')
 for storm in obs_tracks.unnamed:
     track=obs_tracks[storm,:,:]
     track=track[np.isfinite(track[:,'t']),:]
-    ax.plot(lons[np.array(track[:,'y'],int),np.array(track[:,'x'],int)],lats[np.array(track[:,'y'],int),np.array(track[:,'x'],int)],color=cat_colors[TC_support.tc_cat(track[:,'MSLP'].min(),'pressure')],alpha=0.3,linewidth=2,transform=plate_carree)
+    ax.plot(lons[np.array(track[:,'y'],int),np.array(track[:,'x'],int)],lats[np.array(track[:,'y'],int),np.array(track[:,'x'],int)],color=cat_colors[TC_support.tc_cat(track[:,'MSLP'].min(),'pressure')],alpha=0.7,linewidth=2,transform=plate_carree)
 
 plt.title('CAR25')
 plt.tight_layout()
@@ -70,7 +70,7 @@ ax.lines=[]
 for storm in obs_tracks.unnamed:
     track=obs_tracks[storm,:,:]
     track=track[np.isfinite(track[:,'t']),:]
-    ax.plot(lons[int(track.ix[0,1]),int(track.ix[0,2])],lats[int(track.ix[0,1]),int(track.ix[0,2])],color=cat_colors[TC_support.tc_cat(track[:,'MSLP'].min(),'pressure')],alpha=0.3,marker='o',transform=plate_carree)
+    ax.plot(lons[int(track.ix[0,1]),int(track.ix[0,2])],lats[int(track.ix[0,1]),int(track.ix[0,2])],color=cat_colors[TC_support.tc_cat(track[:,'MSLP'].min(),'pressure')],alpha=0.7,marker='o',transform=plate_carree)
 
 plt.title('CAR25')
 plt.tight_layout()
@@ -92,12 +92,12 @@ plt.figure(figsize=(5,3))
 clim_cat=np.array(TC_support.tc_cat(np.nanmin(obs_tracks[:,:,'MSLP'],axis=1),'pressure'))
 for cat in range(1,6):
     plt.bar(cat,np.sum(clim_cat==cat)/float(len(identifiers)),color=cat_colors[cat])
-plt.text(4.2,2.5,'total: '+str(int(round(np.mean(hurrs_in_seas))))+' $\pm$ '+str(int(round(np.std(hurrs_in_seas)))))
+plt.annotate('total: '+str(int(round(np.mean(hurrs_in_seas))))+' $\pm$ '+str(int(round(np.std(hurrs_in_seas)))),xy=(0.75,0.85),xycoords='axes fraction')
 plt.ylabel('hurricanes per season')
 plt.xlabel('hurricane category')
 plt.title('CAR25')
 plt.tight_layout()
-plt.savefig('plots/CAR25/CAR25_cat_hist.png')
+plt.savefig('plots/CAR25/CAR25_cat_hist.png',dpi=300)
 
 
 
