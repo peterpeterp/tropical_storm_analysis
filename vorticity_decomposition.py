@@ -71,10 +71,10 @@ vo=dv_dx-du_dy
 shear_vort=v/W*dW_dx-u/W*dW_dy
 curv_vort=vo-shear_vort
 
-curv_vort.ix[:,:,-1,:]=np.nan
-curv_vort.ix[:,:,0,:]=np.nan
-curv_vort.ix[:,:,:,-1]=np.nan
-curv_vort.ix[:,:,:,0]=np.nan
+curv_vort.ix[:,:,-1,:]=0
+curv_vort.ix[:,:,0,:]=0
+curv_vort.ix[:,:,:,-1]=0
+curv_vort.ix[:,:,:,0]=0
 
 
 curv_vort=da.DimArray(curv_vort,axes=[nc[args.time_var].values,nc[args.lev_var].values,lat,lon],dims=[args.time_var,args.lev_var,args.lat_var,args.lon_var])
