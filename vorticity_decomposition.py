@@ -41,6 +41,7 @@ else:
 if args.u_v_wind is not None:
     u = da.read_nc(args.u_v_wind)[args.u_var].ix[:,:,:,:]
     v = da.read_nc(args.u_v_wind)[args.v_var].ix[:,:,:,:]
+    nc=da.read_nc(args.u_v_wind)
 
 else:
     u = da.read_nc(args.u_wind)[args.u_var].ix[:,:,:,:]
