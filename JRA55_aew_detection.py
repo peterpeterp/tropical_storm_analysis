@@ -77,7 +77,19 @@ ax.set_xlim(np.min(lons),np.max(lons))
 ax.set_ylim(np.min(lats),np.max(lats))
 aews.init_map(ax=ax,transform=plate_carree)
 
-aews.detect(overwrite=True)
+aews.detect(overwrite=True,thr_curv_vort=1*10**(-5))
 aews.combine_tracks(overwrite=True)
 aews.plot_detect_summary()
 aews.plot_season()
+
+
+plt.close('all')
+plate_carree = ccrs.PlateCarree()
+fig,axes=plt.subplots(nrows=2,ncols=1,figsize=(10,8),subplot_kw={'projection': plate_carree})
+for ax in axes:
+    ax.set_global()
+    ax.coastlines()
+    ax.set_xlim(np.min(lons),np.max(lons))
+    ax.set_ylim(np.min(lats),np.max(lats))
+
+aews.plot_surrounding(axes=axes)
