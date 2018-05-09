@@ -301,11 +301,9 @@ class aew_tracks(object):
                                 *np.cos(np.radians(self._lats[int(track[i][1]),int(track[i][2])]))*6371000*2*np.pi/360./(6.*60.*60) for i in range(len(track[1:]))])
                     if -25<np.percentile(c,50)<-2:
                         used_pos+=[pp[0:3] for pp in track]
-                        print('found')
                         keep=True
                         for id__,track__ in found_tracks.items():
                             if sum([pp in track__ for pp in track])/float(len(track))!=0:
-                                print('overlap',sum([pp in track__ for pp in track])/float(len(track)))
                                 if np.sum([pp[7] for pp in track])>np.sum([pp[7] for pp in track__]):
                                     found_tracks.pop(id__)
                                     break
