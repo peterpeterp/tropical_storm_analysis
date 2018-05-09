@@ -11,6 +11,7 @@ import scipy.ndimage as ndimage
 import cartopy.crs as ccrs
 import cartopy
 from shapely.geometry import Polygon
+mpl.use('Agg')
 
 try:
     sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
