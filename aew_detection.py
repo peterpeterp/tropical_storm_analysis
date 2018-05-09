@@ -27,7 +27,6 @@ def coarsener(data,coarseness = 2):
     tmp = data.reshape((data.shape[0],data.shape[-2]//coarseness,coarseness,data.shape[-1]//coarseness,coarseness))
     return(np.nanmean(tmp, axis=(-3,-1)).squeeze())
 
-
 def smoother(data,kernel_size=3):
     kernel = np.ones([kernel_size,kernel_size])/float(kernel_size*kernel_size)
     tmp=ndimage.convolve(data,kernel)
@@ -52,13 +51,16 @@ class aew_tracks(object):
         self._lons_fine=lons
         self._lats=smoother(coarsener(lats,coarsening_factor),smoothing_factor)
         self._lons=smoother(coarsener(lons,coarsening_factor),smoothing_factor)
-        self._lat=lats[:,0]
-        self._lon=lons[0,:]
+        self._lat=self._lats[:,0]
+        self._lon=self._lons[0,:]
         self._time=time_
         if time_steps is None:
             time_steps=range(len(self._time))
         self._time_i=time_steps
         self._dates=dates
+
+        info=da.Dataset({'time':time_,'lats':self._lats,'lons':self._lons})
+        info.write_nc(working_dir+'info.nc',mode='w')
 
         self._vo_fine=vo
         self._u=coarsener(U,coarsening_factor)
@@ -87,6 +89,9 @@ class aew_tracks(object):
         y_step=abs(np.diff(self._lats[:,0],1).mean())
         x_step=abs(np.diff(self._lons[0,:],1).mean())
         return round(degree/(y_step+x_step)*2)
+
+    def point_to_latlon(self,point):
+        return([self._lat[point[0]],self._lon[point[1]]])
 
     # plotting
     def plot_on_map(self,ax,x_in,y_in,latlon=False,**kwargs):
@@ -421,10 +426,10 @@ class aew_tracks(object):
                     dist,pair=group_extend(group)
                     x = [p[0] for p in group]
                     y = [p[1] for p in group]
-                    centroid = [sum(x) / len(group), sum(y) / len(group)]
+                    centr = [sum(x) / len(group), sum(y) / len(group)]
                     max_vort=np.max([self._curv_vort[t,int(pp[0]),int(pp[1])] for pp in group])
                     #tmp=[t,np.median(np.array(group)[:,0]),np.median(np.array(group)[:,1])]+pair[0]+pair[1]
-                    tmp=[t]+centroid+pair[0]+pair[1]+[len(group),max_vort,self._u[t,centroid[0],centroid[1]]]
+                    tmp=[t]+centr+pair[0]+pair[1]+[len(group),max_vort,self._u[t,centr[0],centr[1]]]
                     # save a simplified polygon
                     try:
                         hull = ConvexHull(group)

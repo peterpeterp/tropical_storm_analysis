@@ -26,31 +26,35 @@ except:
     data_path='../reanalysis/ERA_6hourly/u_v/'
     local=False
 
-nc=da.read_nc(data_path+'ano_curv_vort_850-700-600_2008.nc')
-lons,lats=nc.lon,nc.lat
-lons[lons>180]-=360
+nc = da.read_nc('aew_detection/ERAint/2008/info.nc')
+lat=nc['lats'].values
+lon=nc['lons'].values
+lat=lat[:,0]; lat=lat[np.isfinite(lat)]
+lon=lon[0,:]; lon=lon[np.isfinite(lon)]
 
 plt.close('all')
 plate_carree = ccrs.PlateCarree()
-fig,axes=plt.subplots(nrows=2,ncols=1,figsize=(10,10),subplot_kw={'projection': plate_carree})
+fig,axes=plt.subplots(nrows=3,ncols=1,figsize=(10,10),subplot_kw={'projection': plate_carree})
 for ax in axes:
     ax.set_global()
     ax.coastlines()
-    ax.set_xlim(np.min(lons),np.max(lons))
-    ax.set_ylim(np.min(lats),np.max(lats))
+    ax.set_xlim(np.min(lon),np.max(lon))
+    ax.set_ylim(np.min(lat),np.max(lat))
 
 
 for style in ['belanger']:
     if os.path.isfile('aew_detection/ERAint/ERAint_all_tracks_AEW_'+style+'.nc')==False or overwrite:
         # check for duplicates
         for identifier in [str(yr) for yr in range(1979,2017)]:
-            tmp=da.read_nc('aew_detection/ERAint/'+str(identifier)+'/track_info_'+style+'.nc')
-            for id_,track in tmp.items():
-                if id_ not in ['z','time']:
-                    track=track[np.isfinite(track[:,'t']),:]
-                    axes[0].plot(lons[np.array(track[:,'x'],int)],lats[np.array(track[:,'y'],int)],color='orange',alpha=0.5,linewidth=2,transform=plate_carree)
-                    axes[1].plot(lons[np.array(track.ix[0,2],int)],lats[np.array(track.ix[0,1],int)],color='orange',alpha=0.5,linestyle='',transform=plate_carree)
-
+            try:
+                tmp=da.read_nc('aew_detection/ERAint/'+str(identifier)+'/track_info_'+style+'.nc')
+                for id_,track in tmp.items():
+                    if id_ not in ['z','time']:
+                        track=track[np.isfinite(track[:,'t']),:]
+                        axes[1].plot(lon[np.array(track.ix[0,2],int)],lat[np.array(track.ix[0,1],int)],'.m',alpha=0.5,linestyle='',transform=plate_carree)
+                        axes[2].plot(lon[np.array(track[:,'x'],int)],lat[np.array(track[:,'y'],int)],color='orange',alpha=0.5,linewidth=2,transform=plate_carree)
+            except:
+                pass
 
 plt.tight_layout()
 plt.savefig('plots/ERAint/ERAint_AEW_tracks.png',dpi=300)
