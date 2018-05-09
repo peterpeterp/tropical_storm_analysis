@@ -31,6 +31,7 @@ lat=nc['lats'].values
 lon=nc['lons'].values
 lat=lat[:,0]; lat=lat[np.isfinite(lat)]
 lon=lon[0,:]; lon=lon[np.isfinite(lon)]
+lons,lats=np.meshgrid(lon,lat)
 
 plt.close('all')
 plate_carree = ccrs.PlateCarree()
@@ -41,7 +42,7 @@ for ax in axes:
     ax.set_xlim(np.min(lon),np.max(lon))
     ax.set_ylim(np.min(lat),np.max(lat))
 
-
+occurence=lats.copy()*0.0
 for style in ['belanger']:
     if os.path.isfile('aew_detection/ERAint/ERAint_all_tracks_AEW_'+style+'.nc')==False or overwrite:
         # check for duplicates
@@ -53,8 +54,10 @@ for style in ['belanger']:
                         track=track[np.isfinite(track[:,'t']),:]
                         axes[1].plot(lon[np.array(track.ix[0,2],int)],lat[np.array(track.ix[0,1],int)],'.m',alpha=0.5,linestyle='',transform=plate_carree)
                         axes[2].plot(lon[np.array(track[:,'x'],int)],lat[np.array(track[:,'y'],int)],color='orange',alpha=0.5,linewidth=2,transform=plate_carree)
+                        for point in track.values.tolist():
+                            occurence[int(point[1]),int(point[2])]+=1
             except:
                 pass
-
+axes[0].contourf(lons,lats,occurence)
 plt.tight_layout()
 plt.savefig('plots/ERAint/ERAint_AEW_tracks.png',dpi=300)
