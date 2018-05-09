@@ -13,29 +13,13 @@ from skimage.feature import peak_local_max
 import cartopy.crs as ccrs
 import cartopy
 from itertools import combinations
-from itertools import permutations
-from scipy.spatial import ConvexHull
-from shapely.geometry import Polygon
 
-def coarsener(data,coarseness = 2):
-    if len(data.shape)==2:
-        data=data.reshape((1,data.shape[0],data.shape[1]))
-    while data.shape[-2] % coarseness!=0:
-        data=data[:,:-1,:]
-    while data.shape[-1] % coarseness != 0:
-        data=data[:,:,:-1]
-    tmp = data.reshape((data.shape[0],data.shape[-2]//coarseness,coarseness,data.shape[-1]//coarseness,coarseness))
-    return(np.nanmean(tmp, axis=(-3,-1)).squeeze())
+sns.set_palette(sns.color_palette("plasma"))
 
 
-def smoother(data,kernel_size=3):
-    kernel = np.ones([kernel_size,kernel_size])/float(kernel_size*kernel_size)
-    tmp=ndimage.convolve(data,kernel)
-    tmp=ndimage.convolve(tmp,kernel)
-    return(tmp)
 
 class aew_tracks(object):
-    def __init__(self,U,V,vo,curv_vort,curv_vort_advect,lats,lons,smoothing_factor,coarsening_factor,time_,dates,identifier,working_dir,land_mask=None,time_steps=None):
+    def __init__(self,U,V,lats,lons,time_,dates,identifier,working_dir,land_mask=None,time_steps=None):
         self._identifier=identifier
         self._working_dir=working_dir
         if os.path.isdir(working_dir)==False:
@@ -48,10 +32,8 @@ class aew_tracks(object):
             os.system('mkdir '+working_dir+'/track_evolution')
 
         # input fields
-        self._lats_fine=lats
-        self._lons_fine=lons
-        self._lats=smoother(coarsener(lats,coarsening_factor),smoothing_factor)
-        self._lons=smoother(coarsener(lons,coarsening_factor),smoothing_factor)
+        self._lats=lats
+        self._lons=lons
         self._lat=lats[:,0]
         self._lon=lons[0,:]
         self._time=time_
@@ -60,16 +42,52 @@ class aew_tracks(object):
         self._time_i=time_steps
         self._dates=dates
 
-        self._vo_fine=vo
-        self._u=coarsener(U,coarsening_factor)
-        self._v=coarsener(V,coarsening_factor)
-        self._curv_vort=coarsener(curv_vort,coarsening_factor)
-        self._curv_vort_advect=coarsener(curv_vort_advect,coarsening_factor)
-        for t in range(len(time_)):
-            self._u[t,:,:]=smoother(self._u[t,:,:],smoothing_factor)
-            self._v[t,:,:]=smoother(self._v[t,:,:],smoothing_factor)
-            self._curv_vort[t,:,:]=smoother(self._curv_vort[t,:,:],smoothing_factor)
-            self._curv_vort_advect[t,:,:]=smoother(self._curv_vort_advect[t,:,:],smoothing_factor)
+        #self._yr_frac=np.array([toYearFraction(dd) for dd in self._dates])
+
+        U[np.isnan(U)]=0
+        V[np.isnan(V)]=0
+        self._u=U.values
+        self._v=V.values
+
+        xx,yy = np.meshgrid(U.lon,U.lat)
+        dx,dy = np.meshgrid(U.lon.copy()*0+np.mean(np.diff(U.lon,1)),U.lat.copy()*0+np.mean(np.diff(U.lat,1)))
+        dx*=np.cos(np.radians(yy))*6371000*2*np.pi/360.
+        dy*=6371000*2*np.pi/360.
+
+        self._vo,self._curv_vort,self._curv_vort_advect=self._u.copy(),self._u.copy(),self._u.copy()
+
+        for t in self._time_i:
+            u,v=self._u[t,:,:],self._v[t,:,:]
+            W = (u**2+v**2)**0.5
+            du_dx = (u-np.roll(u,1,axis=1))/dx
+            du_dy = (u-np.roll(u,1,axis=0))/dy
+            dv_dx = (v-np.roll(v,1,axis=1))/dx
+            dv_dy = (v-np.roll(v,1,axis=0))/dy
+            dW_dx = (W-np.roll(W,1,axis=1))/dx
+            dW_dy = (W-np.roll(W,1,axis=0))/dy
+
+            vo=dv_dx-du_dy
+            self._vo[t,:,:]=vo
+
+            shear_vort=v/W*dW_dx-u/W*dW_dy
+            curv_vort=vo-shear_vort
+
+            kernel_size=5
+            kernel = np.ones([kernel_size,kernel_size])/float(kernel_size*kernel_size)
+
+            curv_vort_coarse=ndimage.filters.gaussian_filter(curv_vort,3)
+            curv_vort_smoo=ndimage.convolve(curv_vort_coarse,kernel)
+            curv_vort_smoo=ndimage.convolve(curv_vort_smoo,kernel)
+            self._curv_vort[t,:,:]=curv_vort_smoo
+
+            dcurv_vort_dx = (curv_vort-np.roll(curv_vort,1,axis=1))/dx
+            dcurv_vort_dy = (curv_vort-np.roll(curv_vort,1,axis=0))/dy
+            curv_vort_advect=-(u*dcurv_vort_dx+v*dcurv_vort_dy)
+
+            curv_vort_advect_coarse=ndimage.filters.gaussian_filter(curv_vort_advect,3)
+            curv_vort_advect_smoo=ndimage.convolve(curv_vort_advect_coarse,kernel)
+            curv_vort_advect_smoo=ndimage.convolve(curv_vort_advect_smoo,kernel)
+            self._curv_vort_advect[t,:,:]=curv_vort_advect_smoo
 
         if land_mask is not None:
             self._land_mask=land_mask
@@ -165,14 +183,14 @@ class aew_tracks(object):
         #plt.tight_layout()
         for t in time_steps:
             ax=axes[0]
-            ax.contourf(self._lons,self._lats,self._curv_vort[t,:,:],np.arange(-3,3,0.5)*10**(-5),cmap=plt.cm.bwr,transform=self._transform)
-            ax.contour(self._lons_fine,self._lats_fine,self._vo_fine[t,:,:],np.arange(0,10,2)*10**(-5),colors='k',transform=self._transform)
-            ax.contour(self._lons,self._lats,self._curv_vort_advect[t,:,:],[-1,0,1],colors='g',transform=self._transform)
+
+            ax.contourf(self._lons,self._lats,self._curv_vort[t,:,:],np.arange(0.5,3,0.5)*10**(-5),cmap=plt.cm.YlOrRd,transform=self._transform)
+            ax.contour(self._lons,self._lats,self._curv_vort_advect[t,:,:],[-1,0,1],color='k',transform=self._transform)
             asign = np.sign(self._curv_vort_advect[t,:,:])
             signchange_y = ((np.roll(asign, 1,axis=0) - asign) != 0).astype(int)
             signchange_x = ((np.roll(asign, 1,axis=1) - asign) != 0).astype(int)
             y,x=np.where((signchange_y+signchange_x>0))
-            #self.plot_on_map(ax,x,y,linestyle='',color='g',marker='.')
+            self.plot_on_map(ax,x,y,linestyle='',color='g',marker='.')
 
             y,x=np.where((signchange_y+signchange_x>0) & (self._u[t,:,:]<thr_u) & (self._curv_vort[t,:,:]>thr_curv_vort))
             self.plot_on_map(ax,x,y,linestyle='',color='m',marker='*')
@@ -180,16 +198,12 @@ class aew_tracks(object):
             ax=axes[1]
             for id_,track in self._aews.items():
                 track=track[np.isfinite(track[:,'t']),:]
-                #self.plot_on_map(ax,track[:,'x'],track[:,'y'],linestyle='-',linewidth=1,c='g')
+                self.plot_on_map(ax,track[:,'x'],track[:,'y'],linestyle='-',linewidth=1,c='g')
 
             ax.contourf(self._lons,self._lats,self._curv_vort[t,:,:],np.arange(0.5,3,0.5)*10**(-5),cmap=plt.cm.YlOrRd,transform=self._transform)
 
             for point in self._detected[self._detected[:,'t']==t].values.tolist():
                 self.plot_on_map(ax,[int(point[i]) for i in [4,2,6]],[int(point[i]) for i in [3,1,5]],c='b',marker='.')
-                try:
-                    self.plot_on_map(ax,[int(point[i]) for i in [15,16,17,18,19]],[int(point[i]) for i in [10,11,12,13,14]],c='g',marker='.')
-                except:
-                    pass
 
             plt.suptitle(str(self._dates[t]))
             plt.savefig(self._working_dir+'track_surrounding/'+self._add_name+'_'+str(t)+'.png', bbox_inches = 'tight')
@@ -239,15 +253,13 @@ class aew_tracks(object):
         # convert distances from degrees into grid-cells
         search_radius=self.degree_to_step(search_radius)
 
-        found_id=0
-        found_tracks={}
+        self._id=0
+        self._aews={}
 
         postions=self._detected.copy().values
         used_pos=[]
-        print('combining tracks\n10------50-------100')
-        for p,progress in zip(postions.tolist(),np.array([['-']+['']*(len(postions.tolist())/20+1)]*20).flatten()[0:len(postions.tolist())]):
-            sys.stdout.write(progress); sys.stdout.flush()
-            if p[0:3] not in used_pos:
+        for p in postions.tolist():
+            if p not in used_pos:
                 track=[p]
 
                 running=True
@@ -295,36 +307,13 @@ class aew_tracks(object):
                 #         break
 
                 if len(track)>=8:
-                    #if sum([pp in used_pos for pp in track])/float(len(track))<0.3:
-                    # propagation speed
-                    c=np.array([(self._lons[int(track[i][1]),int(track[i][2])]-self._lons[int(track[i-1][1]),int(track[i-1][2])])\
-                                *np.cos(np.radians(self._lats[int(track[i][1]),int(track[i][2])]))*6371000*2*np.pi/360./(6.*60.*60) for i in range(len(track[1:]))])
-                    if -25<np.percentile(c,50)<-2:
-                        used_pos+=[pp[0:3] for pp in track]
-                        print('found')
-                        keep=True
-                        for id__,track__ in found_tracks.items():
-                            if sum([pp in track__ for pp in track])/float(len(track))!=0:
-                                print('overlap',sum([pp in track__ for pp in track])/float(len(track)))
-                                if np.sum([pp[7] for pp in track])>np.sum([pp[7] for pp in track__]):
-                                    found_tracks.pop(id__)
-                                    break
-                                else:
-                                    keep=False
-                                break
-                        if keep:
-                            found_tracks[found_id]=track
-
-                        found_id+=1
-
-
-        self._aews={}
-        self._id=0
-        for track in found_tracks.values():
-            track=da.DimArray(track,axes=[np.array(track)[:,0],['t','y','x','y_ext1','x_ext1','y_ext2','x_ext2','members','max_curv_vort','u_centroid','y1','y2','y3','y4','y5','x1','x2','x3','x4','x5']],dims=['time','z'])
-            self._aews[self._identifier+'_'+str(self._id)]=track
-            if plot:    self.plot_track_path(track)
-            self._id+=1
+                    if sum([pp in used_pos for pp in track])/float(len(track))<0.3:
+                        if -25<np.percentile([self._u[int(pp[0]),int(pp[1]),int(pp[2])] for pp in track],66)<-2:
+                            used_pos+=track
+                            track=da.DimArray(track,axes=[np.array(track)[:,0],['t','y','x','y_ext1','x_ext1','y_ext2','x_ext2','members','max_curv_vort','u_centroid']],dims=['time','z'])
+                            self._aews[self._identifier+'_'+str(self._id)]=track
+                            if plot:    self.plot_track_path(track)
+                            self._id+=1
 
         self._aews=da.Dataset(self._aews)
         self._aews.write_nc(out_file,mode='w')
@@ -353,7 +342,7 @@ class aew_tracks(object):
                     group=[p]
                     for p in group:
                         yy,xx=p[0],p[1]
-                        candidates=[[yy+ystep,xx+xstep] for ystep,xstep in permutations(np.arange(-2,2,1),2)]
+                        candidates=[[yy-1,xx-1],[yy-1,xx],[yy-1,xx+1],[yy,xx+1],[yy+1,xx+1],[yy+1,xx],[yy+1,xx-1],[yy,xx-1]]
                         for pp in candidates:
                             if pp in points and pp not in used_pos:
                                 group.append(pp)
@@ -377,7 +366,7 @@ class aew_tracks(object):
         # convert distances from degrees into grid-cells
         max_extend=self.degree_to_step(max_extend)
 
-        detect=np.array([[np.nan]*20])
+        detect=np.array([[np.nan]*10])
         print('detecting\n10------50-------100')
         for t,progress in zip(self._time_i,np.array([['-']+['']*(len(self._time_i)/20+1)]*20).flatten()[0:len(self._time_i)]):
             sys.stdout.write(progress); sys.stdout.flush()
@@ -393,7 +382,6 @@ class aew_tracks(object):
             groups=group_points(points)
 
             while True:
-                done=True
                 for group in groups:
                     done=True
                     if group_extend(group)[0]>max_extend:
@@ -419,7 +407,7 @@ class aew_tracks(object):
                     break
 
             for group in groups:
-                if len(group)>3:
+                if len(group)>1:
                     dist,pair=group_extend(group)
                     x = [p[0] for p in group]
                     y = [p[1] for p in group]
@@ -427,15 +415,9 @@ class aew_tracks(object):
                     max_vort=np.max([self._curv_vort[t,int(pp[0]),int(pp[1])] for pp in group])
                     #tmp=[t,np.median(np.array(group)[:,0]),np.median(np.array(group)[:,1])]+pair[0]+pair[1]
                     tmp=[t]+centroid+pair[0]+pair[1]+[len(group),max_vort,self._u[t,centroid[0],centroid[1]]]
-                    # save a simplified polygon
-                    try:
-                        hull = ConvexHull(group)
-                        y,x=Polygon(np.array(group)[hull.vertices,:]).simplify(1).exterior.xy
-                        detect=np.concatenate((detect,np.array([tmp+list(y)+list(x)])))
-                    except:
-                        detect=np.concatenate((detect,np.array([tmp+[np.nan]*10])))
+                    detect=np.concatenate((detect,np.array([tmp])))
 
-        self._detected=da.DimArray(np.array(detect[1:,:]),axes=[range(detect.shape[0]-1),['t','y','x','y_ext1','x_ext1','y_ext2','x_ext2','members','max_curv_vort','u_centroid','y1','y2','y3','y4','y5','x1','x2','x3','x4','x5']],dims=['ID','z'])
+        self._detected=da.DimArray(np.array(detect[1:,:]),axes=[range(detect.shape[0]-1),['t','y','x','y_ext1','x_ext1','y_ext2','x_ext2','members','max_curv_vort','u_centroid']],dims=['ID','z'])
         da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
         print('done')
         return self._detected
