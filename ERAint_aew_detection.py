@@ -108,7 +108,7 @@ for identifier in identifiers:
     ax.set_ylim(np.min(lats),np.max(lats))
     aews.init_map(ax=ax,transform=plate_carree)
 
-    aews.detect(overwrite=False,thr_curv_vort=np.nanpercentile(curv_vort,75))
+    aews.detect(overwrite=True,thr_curv_vort=np.nanpercentile(curv_vort,75))
     aews.combine_tracks(overwrite=True)
     aews.plot_detect_summary()
     aews.plot_season()
