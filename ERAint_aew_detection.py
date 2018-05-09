@@ -107,7 +107,7 @@ for identifier in identifiers:
     ax.set_ylim(np.min(lats),np.max(lats))
     aews.init_map(ax=ax,transform=plate_carree)
 
-    aews.detect(overwrite=True,thr_curv_vort=3.2*10**(-6)
+    aews.detect(overwrite=True,thr_curv_vort=3.2*10**(-6))
     aews.combine_tracks(overwrite=True)
     aews.plot_detect_summary()
     aews.plot_season()
@@ -122,4 +122,4 @@ for identifier in identifiers:
             ax.set_xlim(np.min(lons),np.max(lons))
             ax.set_ylim(np.min(lats),np.max(lats))
 
-        aews.plot_surrounding(axes=axes,time_steps=args.surrounding,thr_curv_vort=3.2*10**(-6)
+        aews.plot_surrounding(axes=axes,time_steps=args.surrounding,thr_curv_vort=3.2*10**(-6))
