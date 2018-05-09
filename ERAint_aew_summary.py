@@ -15,13 +15,15 @@ sns.set_palette(sns.color_palette("plasma"))
 try:
     sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
     os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
+    data_path='easterly_waves/'
     local=True
 except:
     sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
+    data_path='../reanalysis/ERA_6hourly/u_v/'
     local=False
 
-nc=da.read_nc('easterly_waves/ano_curv_vort_850-700-600_2008.nc')
+nc=da.read_nc(data_path+'ano_curv_vort_850-700-600_2008.nc')
 lons,lats=nc.lon,nc.lat
 lons[lons>180]-=360
 
