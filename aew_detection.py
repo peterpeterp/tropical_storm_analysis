@@ -4,7 +4,6 @@ from netCDF4 import Dataset,netcdftime,num2date
 import dimarray as da
 import numpy as np
 import matplotlib as mpl
-mpl.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.ndimage as ndimage
@@ -16,6 +15,7 @@ from itertools import combinations
 from itertools import permutations
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon
+mpl.use('Agg')
 
 def coarsener(data,coarseness = 2):
     if len(data.shape)==2:
@@ -437,40 +437,3 @@ class aew_tracks(object):
         da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
         print('done')
         return self._detected
-
-
-    # # detect positions
-    # def detect_old(self,overwrite=False,loc_max_dist=5,thr_u=2.5,thr_curv_vort=1*10**(-5)):
-    #     self._add_name='contours'
-    #     out_file=self._working_dir+'detected_positions_'+self._add_name+'.nc'
-    #     if overwrite and os.path.isfile(out_file):
-    #         os.system('rm '+out_file)
-    #     elif overwrite==False and os.path.isfile(out_file):
-    #         self._detected=da.read_nc(out_file)['detected']
-    #         return self._detected
-    #
-    #
-    #     # convert distances from degrees into grid-cells
-    #     loc_max_dist=self.degree_to_step(loc_max_dist)
-    #
-    #     detect=np.array([[np.nan]*3])
-    #     print('detecting\n10------50-------100')
-    #     for t,progress in zip(self._time_i,np.array([['-']+['']*(len(self._time_i)/20+1)]*20).flatten()[0:len(self._time_i)]):
-    #         sys.stdout.write(progress); sys.stdout.flush()
-    #         coords=peak_local_max(self._curv_vort[t,:,:], min_distance=int(loc_max_dist))
-    #         for y,x in coords:
-    #             if 5<self._lats[y,x]<35:
-    #                 if self._curv_vort[t,y,x]>thr_curv_vort:
-    #                     if self._u[t,y,x]<thr_u:
-    #                         if np.sign(self._curv_vort_advect[t,y,x])!=np.sign(self._curv_vort_advect[t,y,x+1]):
-    #                             tmp=[t,y,x]
-    #                             detect=np.concatenate((detect,np.array([tmp])))
-    #                         if np.sign(self._curv_vort_advect[t,y,x-1])!=np.sign(self._curv_vort_advect[t,y,x]):
-    #                             tmp=[t,y,x]
-    #                             detect=np.concatenate((detect,np.array([tmp])))
-    #
-    #
-    #     self._detected=da.DimArray(np.array(detect[1:,:]),axes=[range(detect.shape[0]-1),['t','y','x']],dims=['ID','z'])
-    #     da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
-    #     print('done')
-    #     return self._detected
