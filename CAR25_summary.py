@@ -20,7 +20,7 @@ except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
     data_path='/p/projects/tumble/carls/shared_folder/CPDN/data/batch_717/region/'
     local=False
-    
+
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
 sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
 from TC_support import *

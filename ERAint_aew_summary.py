@@ -30,15 +30,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--overwrite",'-o', help="overwrite output files",action="store_true")
 args = parser.parse_args()
 
+
 for style in ['belanger']:
-    if os.path.isfile('aew_detection/ERAint/ERAint_all_tracks_'+style+'.nc')==False or args.overwrite:
+    if os.path.isfile('aew_detection/ERAint/ERAint_all_tracks_AEW_'+style+'.nc')==False or overwrite:
         # check for duplicates
         all_tracks={}
-        for file_name in glob.glob('aew_detection/ERAint/*/track_info_belanger.nc'):
-            tmp=da.read_nc(file_name)
+        for identifier in [str(yr) for yr in range(1979,2017)]:
+            tmp=da.read_nc('aew_detection/ERAint/'+str(identifier)+'/track_info_'+style+'.nc')
             for id_,track in tmp.items():
                 if id_ not in ['z','time']:
                     all_tracks[id_]=track
 
         all_tracks=da.Dataset({'all_tracks':all_tracks})
-        all_tracks.write_nc('aew_detection/ERAint/ERAint_all_tracks_'+style+'.nc',mode='w')
+        all_tracks.write_nc('aew_detection/ERAint/ERAint_all_tracks_AEW_'+style+'.nc',mode='w')
