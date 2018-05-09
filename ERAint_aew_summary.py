@@ -49,7 +49,7 @@ for style in ['belanger']:
                 if id_ not in ['z','time']:
                     track=track[np.isfinite(track[:,'t']),:]
                     axes[0].plot(lons[np.array(track[:,'x'],int)],lats[np.array(track[:,'y'],int)],color='orange',alpha=0.5,linewidth=2,transform=plate_carree)
-                    axes[1].plot(lons[np.array(track[0,'x'],int)],lats[np.array(track[0,'y'],int)],color='orange',alpha=0.5,linestyle='',transform=plate_carree)
+                    axes[1].plot(lons[np.array(track.ix[0,2],int)],lats[np.array(track.ix[0,1],int)],color='orange',alpha=0.5,linestyle='',transform=plate_carree)
 
 
 plt.tight_layout()
