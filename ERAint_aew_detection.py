@@ -107,18 +107,19 @@ for identifier in identifiers:
     ax.set_ylim(np.min(lats),np.max(lats))
     aews.init_map(ax=ax,transform=plate_carree)
 
-    aews.detect(overwrite=True,thr_curv_vort=np.nanpercentile(curv_vort,75))
+    aews.detect(overwrite=True,thr_curv_vort=3.2*10**(-6)
     aews.combine_tracks(overwrite=True)
     aews.plot_detect_summary()
     aews.plot_season()
 
-    plt.close('all')
-    plate_carree = ccrs.PlateCarree()
-    fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(16,3),subplot_kw={'projection': plate_carree})
-    for ax in axes:
-        ax.set_global()
-        ax.coastlines()
-        ax.set_xlim(np.min(lons),np.max(lons))
-        ax.set_ylim(np.min(lats),np.max(lats))
+    if args.surrounding is not None:
+        plt.close('all')
+        plate_carree = ccrs.PlateCarree()
+        fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(16,3),subplot_kw={'projection': plate_carree})
+        for ax in axes:
+            ax.set_global()
+            ax.coastlines()
+            ax.set_xlim(np.min(lons),np.max(lons))
+            ax.set_ylim(np.min(lats),np.max(lats))
 
-    aews.plot_surrounding(axes=axes,time_steps=range(300,303),thr_curv_vort=np.nanpercentile(curv_vort,75))
+        aews.plot_surrounding(axes=axes,time_steps=args.surrounding,thr_curv_vort=3.2*10**(-6)
