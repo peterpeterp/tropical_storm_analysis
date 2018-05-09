@@ -64,8 +64,8 @@ if local:
     identifiers=['2008']
 
 for identifier in identifiers:
-    curv_vort = da.read_nc(data_path+'ano_curv_vort_850-700-600_2008.nc')['curv_vort'][:,70000,35:1,-89:3].squeeze().values
-    nc = da.read_nc(data_path+'atl_u_v_850-700-600_2008.nc')
+    curv_vort = da.read_nc(data_path+'ano_curv_vort_850-700-600_'+identifier+'.nc')['curv_vort'][:,70000,35:1,-89:3].squeeze().values
+    nc = da.read_nc(data_path+'atl_u_v_850-700-600_'+identifier+'.nc')
     u=nc['U'][:,70000,35:1,-89:3].squeeze()
     v=nc['V'][:,70000,35:1,-89:3].squeeze().values
     lon,lat=u.lon,u.lat
