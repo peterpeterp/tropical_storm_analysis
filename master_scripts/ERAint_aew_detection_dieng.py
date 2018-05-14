@@ -20,7 +20,7 @@ try:
 except:
     sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
-    data_path='../reanalysis/ERA_6hourly/u_v/'
+    data_path='/p/projects/tumble/carls/shared_folder/reanalysis/ERAint/u_v/'
     local=False
 
 import aew_detection_dieng;    aew_detection_dieng = reload(aew_detection_dieng)
