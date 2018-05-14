@@ -116,9 +116,9 @@ for identifier in identifiers:
     dieng.add_fields(VO=vo,RH=RH)
     dieng.init_map(ax=ax,transform=plate_carree)
 
-    dieng.detect_dieng(overwrite=True,dis_VO_max=8,contour_radius=25,min_number_cells=3,thr_VO=1*10**(-5),thr_RH=50)
+    dieng.detect_dieng(overwrite=overwrite,dis_VO_max=8,contour_radius=25,min_number_cells=3,thr_VO=1*10**(-5),thr_RH=50)
     dieng.plot_detect_summary()
-    dieng.combine_tracks(overwrite=True)
+    dieng.combine_tracks(overwrite=overwrite)
     dieng.plot_season()
 
     # belanger
@@ -127,9 +127,9 @@ for identifier in identifiers:
     belanger.add_fields(U=u,V=v,CURV_VORT=curv_vort,CURV_VORT_ADVECT=curv_vort_advect,VO=vo)
     belanger.init_map(ax=ax,transform=plate_carree)
 
-    belanger.detect_belanger(overwrite=True,thr_curv_vort=3.2*10**(-6))
+    belanger.detect_belanger(overwrite=overwrite,thr_curv_vort=3.2*10**(-6))
     belanger.plot_detect_summary()
-    belanger.combine_tracks(overwrite=True)
+    belanger.combine_tracks(overwrite=overwrite)
     belanger.plot_season()
 
 
