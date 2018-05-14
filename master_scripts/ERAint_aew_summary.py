@@ -58,14 +58,14 @@ for style in ['belanger']:
                     for point in track.values.tolist():
                         occurence[int(point[1]),int(point[2])]+=1
 
-occurence/=len(years)
+occurence/=float(len(years))
 cs=axes[0].contourf(lons,lats,occurence)
 axes[1].outline_patch.set_edgecolor('white')
 cbar_ax=fig.add_axes([0,0.6,1,0.15])
 cbar_ax.axis('off')
 cb=fig.colorbar(cs,orientation='horizontal',label='seasonal occurence frequency',ax=cbar_ax)
 
-genesis/=len(years)
+genesis/=float(len(years))
 cs=axes[2].contourf(lons,lats,genesis)
 axes[3].outline_patch.set_edgecolor('white')
 cbar_ax=fig.add_axes([0,0.1,1,0.15])
