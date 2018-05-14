@@ -32,7 +32,7 @@ except:
 
 for style in ['dieng','belanger']:
     print(style)
-    nc = da.read_nc('aew_detection/ERAint/2008/info_'+style+'.nc')
+    nc = da.read_nc('aew_detection/ERAint/2008/2008_'+style+'_grid.nc')
     lat=nc['lats'].values
     lon=nc['lons'].values
     lat=lat[:,0]; lat=lat[np.isfinite(lat)]
