@@ -37,6 +37,7 @@ lons,lats=np.meshgrid(lon,lat)
 
 
 for style in ['dieng','belanger']:
+    print(style)
     plt.close('all')
     plate_carree = ccrs.PlateCarree()
     fig,axes=plt.subplots(nrows=4,ncols=1,figsize=(8,6),subplot_kw={'projection': plate_carree},gridspec_kw = {'height_ratios':[3,1,3,1]})
