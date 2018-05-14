@@ -28,7 +28,7 @@ except:
     local=False
     years=range(1979,2017)
 
-
+cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["blue","green","yellow","red","brown","violet","white"])
 
 for style in ['dieng','belanger']:
     print(style)
@@ -62,14 +62,14 @@ for style in ['dieng','belanger']:
                         occurence[int(point[1]),int(point[2])]+=1
 
     occurence/=float(len(years))
-    cs=axes[0].contourf(lons,lats,occurence)
+    cs=axes[0].contourf(lons,lats,occurence,20,cmap=cmap)
     axes[1].outline_patch.set_edgecolor('white')
     cbar_ax=fig.add_axes([0,0.6,1,0.15])
     cbar_ax.axis('off')
     cb=fig.colorbar(cs,orientation='horizontal',label='seasonal occurence frequency',ax=cbar_ax)
 
     genesis/=float(len(years))
-    cs=axes[2].contourf(lons,lats,genesis)
+    cs=axes[2].contourf(lons,lats,genesis,20,cmap=cmap)
     axes[3].outline_patch.set_edgecolor('white')
     cbar_ax=fig.add_axes([0,0.1,1,0.15])
     cbar_ax.axis('off')
