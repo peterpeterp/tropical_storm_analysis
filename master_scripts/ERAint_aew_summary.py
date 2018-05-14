@@ -44,8 +44,8 @@ for style in ['dieng','belanger']:
     for ax in axes[[0,2]]:
         ax.set_global()
         ax.coastlines()
-        ax.set_xlim(np.min(lon),np.max(lon))
-        ax.set_ylim(np.min(lat),np.max(lat))
+        ax.set_xlim(-70,30)
+        ax.set_ylim(0,30)
 
     occurence=lats.copy()*0.0
     genesis=lats.copy()*0.0
@@ -76,4 +76,4 @@ for style in ['dieng','belanger']:
 
 
     plt.tight_layout()
-    plt.savefig('plots/ERAint/ERAint_AEW_tracks'+style+'.png',dpi=300)
+    plt.savefig('plots/ERAint/ERAint_AEW_tracks_'+style+'.png',dpi=300)

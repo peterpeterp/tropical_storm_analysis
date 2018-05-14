@@ -278,19 +278,21 @@ class aew_tracks(object):
                     # propagation speed in starting domain
                     start_of_track=track[self._lons[np.array(track[:,'y'],int),np.array(track[:,'x'],int)]>-40]
                     c=np.array([self.step_to_distance(start_of_track[i-1,'y'],start_of_track[i,'y'],start_of_track[i-1,'x'],start_of_track[i,'x'])[0]/(6.*60.*60) for i in start_of_track.time[1:] if i-1 in start_of_track.time])
-                    if np.percentile(c,50)<-2 and np.mean(self._lats[np.array(start_of_track[:,'y'],int),np.array(start_of_track[:,'x'],int)])<35:
-                        keep=True
-                        for id__,track__ in found_tracks.items():
-                            if sum([pp in track__.values.tolist() for pp in track.values.tolist()])/float(len(track.values.tolist()))!=0:
-                                if track[:,'cells_above_thr'].sum()>track__[:,'cells_above_thr'].sum():
-                                    found_tracks.pop(id__)
-                                    break
-                                else:
-                                    keep=False
-                                    break
-                        if keep:
-                            found_tracks[found_id]=track
-                            found_id+=1
+                    if np.percentile(c,50)<-2:
+                        if np.mean(self._lats[np.array(start_of_track[:,'y'],int),np.array(start_of_track[:,'x'],int)])<35:
+                            if abs(self._lons[int(track.ix[-1,1]),int(track.ix[-1,2])]-self._lons[int(track.ix[0,1]),int(track.ix[0,2])])>6:
+                                keep=True
+                                for id__,track__ in found_tracks.items():
+                                    if sum([pp in track__.values.tolist() for pp in track.values.tolist()])/float(len(track.values.tolist()))!=0:
+                                        if track[:,'cells_above_thr'].sum()>track__[:,'cells_above_thr'].sum():
+                                            found_tracks.pop(id__)
+                                            break
+                                        else:
+                                            keep=False
+                                            break
+                                if keep:
+                                    found_tracks[found_id]=track
+                                    found_id+=1
 
 
         self._aews={}
