@@ -65,7 +65,7 @@ class aew_tracks(object):
         self._lon=self._lons[0,:]
 
         info=da.Dataset({'time':time_,'lats':self._lats,'lons':self._lons})
-        info.write_nc(working_dir+'info.nc',mode='w')
+        info.write_nc(working_dir+'tmp_info.nc',mode='w')
 
         self._VO_fine=VO
         self._RH_fine=RH
@@ -303,7 +303,7 @@ class aew_tracks(object):
             if plot:    self.plot_track_path(track)
             self._id+=1
 
-        self._aews=da.Dataset(self._aews)
+        self._aews=da.Dataset(self._aews.update({'time':self._time,'lats':self._lats,'lons':self._lons}))
         self._aews.write_nc(out_file,mode='w')
         return self._aews
 
