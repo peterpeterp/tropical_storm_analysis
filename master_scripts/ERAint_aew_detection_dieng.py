@@ -66,34 +66,34 @@ if local:
     surrounding=range(290,400)
 
 for identifier in identifiers:
-    # RH = da.read_nc(data_path+'atl_atmos_850-700-600_'+identifier+'.nc')['R'][:,70000,:,:].squeeze().values
-    # nc = da.read_nc(data_path+'atl_u_v_850-700-600_'+identifier+'.nc')
-    # u=nc['U'][:,70000,:,:].squeeze()
-    # v=nc['V'][:,70000,:,:].squeeze().values
-    # lon,lat=u.lon,u.lat
-    # u=u.values
-    # lon[lon>180]-=360
-    # lon_rolling=len(lon)-np.where(lon<0)[0][0]
-    # lon=np.roll(lon,lon_rolling,axis=-1)
-    # lon=np.roll(lon,lon_rolling,axis=-1)
-    # u=np.roll(u,lon_rolling,axis=-1)
-    # v=np.roll(v,lon_rolling,axis=-1)
-    # lons,lats=np.meshgrid(lon,lat)
-    # time_=nc.time
-    # dates=[num2date(t,units = nc.axes['time'].units,calendar = nc.axes['time'].calendar) for t in time_]
-    # xx,yy = np.meshgrid(lon,lat)
-    # dx,dy = np.meshgrid(lon.copy()*0+np.mean(np.diff(lon,1)),lat.copy()*0+np.mean(np.diff(lat,1)))
-    # dx*=np.cos(np.radians(yy))*6371000*2*np.pi/360.
-    # dy*=6371000*2*np.pi/360.
-    #
-    # W = (u**2+v**2)**0.5
-    # du_dx = (u-np.roll(u,1,axis=-1))/dx
-    # du_dy = (u-np.roll(u,1,axis=-2))/dy
-    # dv_dx = (v-np.roll(v,1,axis=-1))/dx
-    # dv_dy = (v-np.roll(v,1,axis=-2))/dy
-    # dW_dx = (W-np.roll(W,1,axis=-1))/dx
-    # dW_dy = (W-np.roll(W,1,axis=-2))/dy
-    # vo=dv_dx-du_dy
+    RH = da.read_nc(data_path+'atl_atmos_850-700-600_'+identifier+'.nc')['R'][:,70000,:,:].squeeze().values
+    nc = da.read_nc(data_path+'atl_u_v_850-700-600_'+identifier+'.nc')
+    u=nc['U'][:,70000,:,:].squeeze()
+    v=nc['V'][:,70000,:,:].squeeze().values
+    lon,lat=u.lon,u.lat
+    u=u.values
+    lon[lon>180]-=360
+    lon_rolling=len(lon)-np.where(lon<0)[0][0]
+    lon=np.roll(lon,lon_rolling,axis=-1)
+    lon=np.roll(lon,lon_rolling,axis=-1)
+    u=np.roll(u,lon_rolling,axis=-1)
+    v=np.roll(v,lon_rolling,axis=-1)
+    lons,lats=np.meshgrid(lon,lat)
+    time_=nc.time
+    dates=[num2date(t,units = nc.axes['time'].units,calendar = nc.axes['time'].calendar) for t in time_]
+    xx,yy = np.meshgrid(lon,lat)
+    dx,dy = np.meshgrid(lon.copy()*0+np.mean(np.diff(lon,1)),lat.copy()*0+np.mean(np.diff(lat,1)))
+    dx*=np.cos(np.radians(yy))*6371000*2*np.pi/360.
+    dy*=6371000*2*np.pi/360.
+
+    W = (u**2+v**2)**0.5
+    du_dx = (u-np.roll(u,1,axis=-1))/dx
+    du_dy = (u-np.roll(u,1,axis=-2))/dy
+    dv_dx = (v-np.roll(v,1,axis=-1))/dx
+    dv_dy = (v-np.roll(v,1,axis=-2))/dy
+    dW_dx = (W-np.roll(W,1,axis=-1))/dx
+    dW_dy = (W-np.roll(W,1,axis=-2))/dy
+    vo=dv_dx-du_dy
 
     aews=aew_detection_dieng.aew_tracks(VO=vo,RH=RH,lats=lats,lons=lons,time_=time_,dates=dates,smoothing_factor=2,coarsening_factor=2,identifier=identifier,working_dir='aew_detection/ERAint/'+identifier+'/')
     plt.close('all')
