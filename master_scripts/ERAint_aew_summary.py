@@ -52,7 +52,7 @@ for style in ['dieng','belanger']:
     if os.path.isfile('aew_detection/ERAint/ERAint_all_tracks_AEW_'+style+'.nc')==False or overwrite:
         # check for duplicates
         for identifier in [str(yr) for yr in years]:
-            tmp=da.read_nc('aew_detection/ERAint/'+str(identifier)+'/track_info_'+style+'.nc')
+            tmp=da.read_nc('aew_detection/ERAint/'+str(identifier)+'/'+str(identifier)+'_'+style+'_track_info.nc')
             for id_,track in tmp.items():
                 if id_ not in ['z','time']:
                     track=track[np.isfinite(track[:,'t']),:]
