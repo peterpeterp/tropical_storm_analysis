@@ -352,7 +352,7 @@ class aew_tracks(object):
                 start_of_track=track[self._lons[np.array(track[:,'y'],int),np.array(track[:,'x'],int)]>-40]
                 if len(start_of_track.time)>=3 and len(track.time)>=8:
                     # propagation speed in starting domain
-                    c=np.array([self.step_to_distance(start_of_track[i-1,'y'],start_of_track[i,'y'],start_of_track[i-1,'x'],start_of_track[i,'x'])[0]/(6.*60.*60) for i in start_of_track.time[1:] if i-1 in start_of_track.time])
+                    c=np.array([self.step_to_distance(track[i-1,'y'],track[i,'y'],track[i-1,'x'],track[i,'x'])[0]/(6.*60.*60) for i in track.time[1:] if i-1 in track.time])
                     if np.percentile(c,50)<-2:
                         if np.mean(self._lats[np.array(start_of_track[:,'y'],int),np.array(start_of_track[:,'x'],int)])<35:
                             if abs(self._lons[int(track.ix[-1,1]),int(track.ix[-1,2])]-self._lons[int(track.ix[0,1]),int(track.ix[0,2])])>6:
@@ -417,7 +417,7 @@ class aew_tracks(object):
                 if self._VO[t,y_,x_]>thr_VO:
                     yy,xx=self.find_group(field=self._VO[t,:,:],y=y_,x=x_,thresh=thr_VO)
                     if len(yy)>=min_number_cells:
-                        if self._RH[t,y_,x_]>=thr_RH:
+                        if self._RH[t,y_,x_]>=thr_RH and self._lat[y_]<35:
                             #y_,x_ = sum(yy) / len(yy), sum(xx) / len(yy)
                             tmp=[t,y_,x_,self._VO[t,y_,x_],self._RH[t,y_,x_],len(yy)]
                             detect=np.concatenate((detect,np.array([tmp])))
