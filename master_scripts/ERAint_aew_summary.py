@@ -46,7 +46,7 @@ for ax in axes[[0,2]]:
 
 occurence=lats.copy()*0.0
 genesis=lats.copy()*0.0
-for style in ['belanger']:
+for style in ['dieng','belanger']:
     if os.path.isfile('aew_detection/ERAint/ERAint_all_tracks_AEW_'+style+'.nc')==False or overwrite:
         # check for duplicates
         for identifier in [str(yr) for yr in years]:
