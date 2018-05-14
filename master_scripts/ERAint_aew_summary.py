@@ -28,16 +28,17 @@ except:
     local=False
     years=range(1979,2017)
 
-nc = da.read_nc('aew_detection/ERAint/2008/info.nc')
-lat=nc['lats'].values
-lon=nc['lons'].values
-lat=lat[:,0]; lat=lat[np.isfinite(lat)]
-lon=lon[0,:]; lon=lon[np.isfinite(lon)]
-lons,lats=np.meshgrid(lon,lat)
 
 
 for style in ['dieng','belanger']:
     print(style)
+    nc = da.read_nc('aew_detection/ERAint/2008/info_'+style+'.nc')
+    lat=nc['lats'].values
+    lon=nc['lons'].values
+    lat=lat[:,0]; lat=lat[np.isfinite(lat)]
+    lon=lon[0,:]; lon=lon[np.isfinite(lon)]
+    lons,lats=np.meshgrid(lon,lat)
+
     plt.close('all')
     plate_carree = ccrs.PlateCarree()
     fig,axes=plt.subplots(nrows=4,ncols=1,figsize=(8,6),subplot_kw={'projection': plate_carree},gridspec_kw = {'height_ratios':[3,1,3,1]})
