@@ -15,7 +15,6 @@ from itertools import combinations
 from itertools import permutations
 from scipy.spatial import ConvexHull
 from shapely.geometry import Polygon
-mpl.use('Agg')
 
 def coarsener(data,coarseness = 2):
     if len(data.shape)==2:

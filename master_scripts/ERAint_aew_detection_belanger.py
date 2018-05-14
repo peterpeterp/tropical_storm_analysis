@@ -20,10 +20,10 @@ try:
 except:
     sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
-    data_path='/p/projects/tumble/carls/shared_folder/reanalysis/ERAint/'
+    data_path='../reanalysis/ERA_6hourly/u_v/'
     local=False
 
-import aew_detection_dieng;    aew_detection_dieng = reload(aew_detection_dieng)
+import aew_detection_belanger;    aew_detection_belanger = reload(aew_detection_belanger)
 
 def toYearFraction(date):
     date=datetime(year=date.year,month=date.month,day=date.day,hour=date.hour)
@@ -57,19 +57,16 @@ if local==False:
         identifiers=[str(yr) for yr in range(1979,2018)]
         #identifiers=['2010']
 
-    surrounding=args.surrounding
-
     print(identifiers)
 
 if local:
     identifiers=['2008']
-    surrounding=range(290,400)
 
 for identifier in identifiers:
-    RH = da.read_nc(data_path+'atmos/atl_atmos_850-700-600_'+identifier+'.nc')['R'][:,70000,:,:].squeeze().values
-    nc = da.read_nc(data_path+'u_v/atl_u_v_850-700-600_'+identifier+'.nc')
-    u=nc['U'][:,70000,:,:].squeeze()
-    v=nc['V'][:,70000,:,:].squeeze().values
+    curv_vort = da.read_nc(data_path+'ano_curv_vort_850-700-600_'+identifier+'.nc')['curv_vort'][:,70000,35:1,-89:30].squeeze().values
+    nc = da.read_nc(data_path+'atl_u_v_850-700-600_'+identifier+'.nc')
+    u=nc['U'][:,70000,35:1,-89:30].squeeze()
+    v=nc['V'][:,70000,35:1,-89:30].squeeze().values
     lon,lat=u.lon,u.lat
     u=u.values
     lon[lon>180]-=360
@@ -94,8 +91,11 @@ for identifier in identifiers:
     dW_dx = (W-np.roll(W,1,axis=-1))/dx
     dW_dy = (W-np.roll(W,1,axis=-2))/dy
     vo=dv_dx-du_dy
+    dcurv_vort_dx = (curv_vort-np.roll(curv_vort,1,axis=-1))/dx
+    dcurv_vort_dy = (curv_vort-np.roll(curv_vort,1,axis=-2))/dy
+    curv_vort_advect=-(u*dcurv_vort_dx+v*dcurv_vort_dy)
 
-    aews=aew_detection_dieng.aew_tracks(VO=vo,RH=RH,lats=lats,lons=lons,time_=time_,dates=dates,smoothing_factor=2,coarsening_factor=2,identifier=identifier,working_dir='aew_detection/ERAint/'+identifier+'/')
+    aews=aew_detection_belanger.aew_tracks(U=u,V=v,vo=vo,curv_vort=curv_vort,curv_vort_advect=curv_vort_advect,lats=lats,lons=lons,smoothing_factor=3,coarsening_factor=2,time_=time_,dates=dates,identifier=identifier,working_dir='aew_detection/ERAint/'+identifier+'/')
     plt.close('all')
     plate_carree = ccrs.PlateCarree()
     fig,ax=plt.subplots(nrows=1,ncols=1,figsize=(10,5))
@@ -106,20 +106,19 @@ for identifier in identifiers:
     ax.set_ylim(np.min(lats),np.max(lats))
     aews.init_map(ax=ax,transform=plate_carree)
 
-    #aews.detect_dieng_groups(overwrite=True,dis_VO_max=8,max_extend=25,min_number_cells=6,thr_VO=1*10**(-5),thr_RH=50)
-    aews.detect_dieng(overwrite=True,dis_VO_max=8,contour_radius=25,min_number_cells=3,thr_VO=1*10**(-5),thr_RH=50)
-    aews.combine_tracks(overwrite=True,search_radius=8)
+    aews.detect(overwrite=True,thr_curv_vort=3.2*10**(-6))
+    aews.combine_tracks(overwrite=True)
     aews.plot_detect_summary()
     aews.plot_season()
 
     if surrounding is not None:
         plt.close('all')
         plate_carree = ccrs.PlateCarree()
-        fig,axes=plt.subplots(nrows=1,ncols=1,figsize=(8,3),subplot_kw={'projection': plate_carree})
-        for ax in [axes]:
+        fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(16,3),subplot_kw={'projection': plate_carree})
+        for ax in axes:
             ax.set_global()
             ax.coastlines()
             ax.set_xlim(np.min(lons),np.max(lons))
             ax.set_ylim(np.min(lats),np.max(lats))
 
-        aews.plot_surrounding(axes=[axes],time_steps=surrounding,thr_VO=1*10**(-5))
+        aews.plot_surrounding(axes=axes,time_steps=surrounding,thr_curv_vort=3.2*10**(-6))
