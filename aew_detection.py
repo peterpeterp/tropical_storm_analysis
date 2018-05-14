@@ -350,7 +350,7 @@ class aew_tracks(object):
 
                 track=da.DimArray(track,axes=[np.array(track)[:,0],self._detected.z],dims=['time','z'])
                 start_of_track=track[self._lons[np.array(track[:,'y'],int),np.array(track[:,'x'],int)]>-40]
-                if len(start_of_track.time)>=2 and len(track.time)>=8:
+                if len(start_of_track.time)>=3 and len(track.time)>=8:
                     # propagation speed in starting domain
                     c=np.array([self.step_to_distance(start_of_track[i-1,'y'],start_of_track[i,'y'],start_of_track[i-1,'x'],start_of_track[i,'x'])[0]/(6.*60.*60) for i in start_of_track.time[1:] if i-1 in start_of_track.time])
                     if np.percentile(c,50)<-2:
