@@ -11,7 +11,6 @@ from shapely.geometry.polygon import Polygon
 import matplotlib.ticker as mticker
 import cartopy
 import cartopy.crs as ccrs
-mpl.use('Agg')
 
 sns.set_palette(sns.color_palette("plasma"))
 
@@ -28,7 +27,7 @@ except:
     local=False
     years=range(1979,2017)
 
-cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["blue","green","yellow","red","brown","violet","white"])
+cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["blue","green","yellow","red","brown","violet","white"])
 
 for style in ['dieng','belanger']:
     print(style)
