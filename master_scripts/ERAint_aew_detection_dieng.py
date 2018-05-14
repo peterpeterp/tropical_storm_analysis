@@ -20,7 +20,7 @@ try:
 except:
     sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
-    data_path='/p/projects/tumble/carls/shared_folder/reanalysis/ERAint/u_v/'
+    data_path='/p/projects/tumble/carls/shared_folder/reanalysis/ERAint/'
     local=False
 
 import aew_detection_dieng;    aew_detection_dieng = reload(aew_detection_dieng)
@@ -66,8 +66,8 @@ if local:
     surrounding=range(290,400)
 
 for identifier in identifiers:
-    RH = da.read_nc(data_path+'atl_atmos_850-700-600_'+identifier+'.nc')['R'][:,70000,:,:].squeeze().values
-    nc = da.read_nc(data_path+'atl_u_v_850-700-600_'+identifier+'.nc')
+    RH = da.read_nc(data_path+'atmos/atl_atmos_850-700-600_'+identifier+'.nc')['R'][:,70000,:,:].squeeze().values
+    nc = da.read_nc(data_path+'u_v/atl_u_v_850-700-600_'+identifier+'.nc')
     u=nc['U'][:,70000,:,:].squeeze()
     v=nc['V'][:,70000,:,:].squeeze().values
     lon,lat=u.lon,u.lat
