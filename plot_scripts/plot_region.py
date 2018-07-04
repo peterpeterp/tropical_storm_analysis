@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.ndimage as ndimage
 from shapely.geometry.polygon import Polygon
-
 import cartopy.crs as ccrs
 
 os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/plots/region/')

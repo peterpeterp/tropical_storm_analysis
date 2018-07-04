@@ -49,7 +49,6 @@ class aew_tracks(object):
         if os.path.isdir(working_dir+'/track_evolution')==False:
             os.system('mkdir '+working_dir+'/track_evolution')
 
-
     def prepare_data(self,lats,lons,time_,dates,smoothing_factor=1,coarsening_factor=1,land_mask=None,time_steps=None):
         self._time=time_
         if time_steps is None:
@@ -76,7 +75,6 @@ class aew_tracks(object):
 
         info=da.Dataset({'lats':self._lats,'lons':self._lons})
         info.write_nc(self._working_dir+str(self._identifier)+'_grid.nc',mode='w')
-
 
     def add_fields(self,U=None,V=None,VO=None,RH=None,CURV_VORT=None,CURV_VORT_ADVECT=None):
         if VO is not None:
@@ -114,9 +112,6 @@ class aew_tracks(object):
             self._CURV_VORT_ADVECT=coarsener(CURV_VORT_ADVECT,self._coarsening_factor)
             for t in range(len(self._time)):
                 self._CURV_VORT_ADVECT[t,:,:]=smoother(self._CURV_VORT_ADVECT[t,:,:],self._smoothing_factor)
-
-
-
 
     def init_map(self,ax,transform):
         self._ax=ax
@@ -283,7 +278,7 @@ class aew_tracks(object):
                 ax.set_ylim(np.min(self._lats),np.max(self._lats))
 
     # combine detected positions
-    def combine_tracks(self,plot=True,search_radius=8,overwrite=False):
+    def combine_tracks(self,plot=True,overwrite=False,search_radius=8,min_duration=8,min_duration_in_start_area=3,propagation_speed=-2,propagation_length=10,lat_restriction=[5,35]):
         out_file=self._working_dir+str(self._identifier)+'_track_info.nc'
         if overwrite and os.path.isfile(out_file):
             os.system('rm '+out_file)
@@ -297,6 +292,8 @@ class aew_tracks(object):
             return vector / np.linalg.norm(vector)
 
         def angle_between(v1, v2):
+            if sum(v1)==0 or sum(v2)==0:
+                return 0
             v1_u = unit_vector(v1)
             v2_u = unit_vector(v2)
             return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
@@ -307,6 +304,7 @@ class aew_tracks(object):
 
         # convert distances from degrees into grid-cells
         search_radius=self.degree_to_step(search_radius)
+        propagation_length=self.degree_to_step(propagation_length)
 
         found_id=0
         found_tracks={}
@@ -314,61 +312,88 @@ class aew_tracks(object):
         postions=self._detected.copy().values
         used_pos=[]
         print('combining tracks\n10------50-------100')
-        for p,progress in zip(postions.tolist(),np.array([['-']+['']*(len(postions.tolist())/20+1)]*20).flatten()[0:len(postions.tolist())]):
+        for p_0,progress in zip(postions.tolist(),np.array([['-']+['']*(len(postions.tolist())/20+1)]*20).flatten()[0:len(postions.tolist())]):
             sys.stdout.write(progress); sys.stdout.flush()
-            if p[0:3] not in used_pos:
-                track=[p]
+            track=[p_0,p_0]
+            running=True
+            #go backwards
+            while True:
+                p=track[0]
+                p__=track[1]
+                candidates={}
+                v_1=((p[1]-p__[1]),(p[2]-p__[2]))
+                for p_1 in postions[postions[:,0]==p[0]-1,:].tolist():
+                    v_2=((p_1[1]-p[1]),(p_1[2]-p[2]))
+                    if v_len(v_2)<search_radius:
+                        candidates[v_len(v_2)*angle_between(v_1,v_2)]=p_1
+                        end=False
+                if len(candidates.keys())>0:
+                    track=[candidates[np.min(candidates.keys())]]+track
+                else:
+                    break
 
-                running=True
-                #go backwards
-                while True:
-                    p=track[0]
-                    candidates={}
-                    for p_1 in postions[postions[:,0]==p[0]-1,:].tolist():
-                        dist=((p_1[1]-p[1])**2+(p_1[2]-p[2])**2)**0.5
-                        if dist<search_radius:
-                            candidates[dist]=p_1
-                            end=False
-                    if len(candidates.keys())>0:
-                        track=[candidates[np.min(candidates.keys())]]+track
-                    else:
-                        break
+            #go forewards
+            while True:
+                p=track[-1]
+                p__=track[-2]
+                candidates={}
+                v_1=((p[1]-p__[1]),(p[2]-p__[2]))
+                for p_1 in postions[postions[:,0]==p[0]+1,:].tolist():
+                    v_2=((p_1[1]-p[1]),(p_1[2]-p[2]))
+                    if v_len(v_2)<search_radius:
+                        candidates[v_len(v_2)*angle_between(v_1,v_2)]=p_1
+                        end=False
+                if len(candidates.keys())>0:
+                    track=track+[candidates[np.min(candidates.keys())]]
+                else:
+                    break
 
-                #go forewards
-                while True:
-                    p=track[-1]
-                    candidates={}
-                    for p_1 in postions[postions[:,0]==p[0]+1,:].tolist():
-                        dist=((p_1[1]-p[1])**2+(p_1[2]-p[2])**2)**0.5
-                        if dist<search_radius:
-                            candidates[dist]=p_1
-                            end=False
-                    if len(candidates.keys())>0:
-                        track=track+[candidates[np.min(candidates.keys())]]
-                    else:
-                        break
+            track.remove(p_0)
+            track=da.DimArray(track,axes=[np.array(track)[:,0],self._detected.z],dims=['time','z'])
 
-                track=da.DimArray(track,axes=[np.array(track)[:,0],self._detected.z],dims=['time','z'])
+            # conditions:
+            keep=True
+
+            # duration
+            if len(track.time)<min_duration:
+                keep=False
+
+            # duration in start domain
+            if min_duration_in_start_area>1 and keep:
                 start_of_track=track[self._lons[np.array(track[:,'y'],int),np.array(track[:,'x'],int)]>-40]
-                if len(start_of_track.time)>=3 and len(track.time)>=8:
-                    # propagation speed in starting domain
-                    c=np.array([self.step_to_distance(track[i-1,'y'],track[i,'y'],track[i-1,'x'],track[i,'x'])[0]/(6.*60.*60) for i in track.time[1:] if i-1 in track.time])
-                    if np.percentile(c,50)<-2:
-                        if np.mean(self._lats[np.array(start_of_track[:,'y'],int),np.array(start_of_track[:,'x'],int)])<35:
-                            if abs(self._lons[int(track.ix[-1,1]),int(track.ix[-1,2])]-self._lons[int(track.ix[0,1]),int(track.ix[0,2])])>6:
-                                keep=True
-                                for id__,track__ in found_tracks.items():
-                                    if sum([pp in track__.values.tolist() for pp in track.values.tolist()])/float(len(track.values.tolist()))!=0:
-                                        if track[:,'members'].sum()>track__[:,'members'].sum():
-                                            found_tracks.pop(id__)
-                                            break
-                                        else:
-                                            keep=False
-                                            break
-                                if keep:
-                                    found_tracks[found_id]=track
-                                    found_id+=1
+                if len(start_of_track.time)<min_duration_in_start_area:
+                    keep=False
 
+            # propagation speed (in starting domain?)
+            if propagation_speed is not None and len(track.time)>1 and keep:
+                c=np.array([self.step_to_distance(track[i-1,'y'],track[i,'y'],track[i-1,'x'],track[i,'x'])[0]/(6.*60.*60) for i in track.time[1:] if i-1 in track.time])
+                if np.percentile(c,50)>propagation_speed:
+                    kepp=False
+
+            # propagation length
+            if propagation_length is not None and len(track.time)>1 and keep:
+                if abs(self._lons[int(track.ix[-1,1]),int(track.ix[-1,2])]-self._lons[int(track.ix[0,1]),int(track.ix[0,2])])<propagation_length:
+                    keep=False
+
+            # lat genesis restriction
+            if lat_restriction is not None and keep:
+                if self._lats[np.array(track.ix[0,1],int),np.array(track.ix[0,2],int)]>max(lat_restriction) or self._lats[np.array(track.ix[0,1],int),np.array(track.ix[0,2],int)]<min(lat_restriction):
+                    keep=False
+
+            # delete duplicates
+            if keep:
+                for id__,track__ in found_tracks.items():
+                    if sum([pp in track__.values.tolist() for pp in track.values.tolist()])/float(len(track.values.tolist()))!=0:
+                        if track[:,'members'].sum()>track__[:,'members'].sum():
+                            found_tracks.pop(id__)
+                            break
+                        else:
+                            keep=False
+                            break
+
+            if keep:
+                found_tracks[found_id]=track
+                found_id+=1
 
         self._aews={}
         self._id=0
@@ -395,7 +420,7 @@ class aew_tracks(object):
         return(np.array(group)[:,0],np.array(group)[:,1])
 
     # detect positions
-    def detect_dieng(self,overwrite=False,dis_VO_max=8,contour_radius=25,min_number_cells=6,thr_VO=1*10**(-5),thr_RH=50):
+    def detect_dieng(self,overwrite=False,dis_VO_max=8,min_number_cells=6,thr_VO=1*10**(-5),thr_RH=50):
         out_file=self._working_dir+str(self._identifier)+'_detected_positions.nc'
         if overwrite and os.path.isfile(out_file):
             os.system('rm '+out_file)
@@ -405,7 +430,6 @@ class aew_tracks(object):
 
         # convert distances from degrees into grid-cells
         dis_VO_max=self.degree_to_step(dis_VO_max)
-        contour_radius=self.degree_to_step(contour_radius)
 
         detect=np.array([[np.nan]*6])
         print('detecting\n10------50-------100')
@@ -426,8 +450,6 @@ class aew_tracks(object):
         da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
         print('\ndone')
         return self._detected
-
-
 
     # detect positions
     def detect_belanger(self,overwrite=False,max_extend=25,thr_u=2.5,thr_curv_vort=1*10**(-5)):

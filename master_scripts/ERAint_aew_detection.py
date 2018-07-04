@@ -64,42 +64,44 @@ if local==False:
 if local:
     identifiers=['2008']
     surrounding=range(280,310)
+    overwrite=True
 
 for identifier in identifiers:
-    RH = da.read_nc(data_path+'atmos/atl_atmos_850-700-600_'+identifier+'.nc')['R'][:,70000,:,:].squeeze().values
-    nc = da.read_nc(data_path+'u_v/atl_u_v_850-700-600_'+identifier+'.nc')
-    u=nc['U'][:,70000,:,:].squeeze()
-    v=nc['V'][:,70000,:,:].squeeze().values
-    lon,lat=u.lon,u.lat
-    u=u.values
-    lon[lon>180]-=360
-    lon_rolling=len(lon)-np.where(lon<0)[0][0]
-    lon=np.roll(lon,lon_rolling,axis=-1)
-    lon=np.roll(lon,lon_rolling,axis=-1)
-    u=np.roll(u,lon_rolling,axis=-1)
-    v=np.roll(v,lon_rolling,axis=-1)
-    lons,lats=np.meshgrid(lon,lat)
-    time_=nc.time
-    dates=[num2date(t,units = nc.axes['time'].units,calendar = nc.axes['time'].calendar) for t in time_]
-    xx,yy = np.meshgrid(lon,lat)
-    dx,dy = np.meshgrid(lon.copy()*0+np.mean(np.diff(lon,1)),lat.copy()*0+np.mean(np.diff(lat,1)))
-    dx*=np.cos(np.radians(yy))*6371000*2*np.pi/360.
-    dy*=6371000*2*np.pi/360.
+    if False:
+        RH = da.read_nc(data_path+'atmos/atl_atmos_850-700-600_'+identifier+'.nc')['R'][:,70000,:,:].squeeze().values
+        nc = da.read_nc(data_path+'u_v/atl_u_v_850-700-600_'+identifier+'.nc')
+        u=nc['U'][:,70000,:,:].squeeze()
+        v=nc['V'][:,70000,:,:].squeeze().values
+        lon,lat=u.lon,u.lat
+        u=u.values
+        lon[lon>180]-=360
+        lon_rolling=len(lon)-np.where(lon<0)[0][0]
+        lon=np.roll(lon,lon_rolling,axis=-1)
+        lon=np.roll(lon,lon_rolling,axis=-1)
+        u=np.roll(u,lon_rolling,axis=-1)
+        v=np.roll(v,lon_rolling,axis=-1)
+        lons,lats=np.meshgrid(lon,lat)
+        time_=nc.time
+        dates=[num2date(t,units = nc.axes['time'].units,calendar = nc.axes['time'].calendar) for t in time_]
+        xx,yy = np.meshgrid(lon,lat)
+        dx,dy = np.meshgrid(lon.copy()*0+np.mean(np.diff(lon,1)),lat.copy()*0+np.mean(np.diff(lat,1)))
+        dx*=np.cos(np.radians(yy))*6371000*2*np.pi/360.
+        dy*=6371000*2*np.pi/360.
 
-    W = (u**2+v**2)**0.5
-    du_dx = (u-np.roll(u,1,axis=-1))/dx
-    du_dy = (u-np.roll(u,1,axis=-2))/dy
-    dv_dx = (v-np.roll(v,1,axis=-1))/dx
-    dv_dy = (v-np.roll(v,1,axis=-2))/dy
-    dW_dx = (W-np.roll(W,1,axis=-1))/dx
-    dW_dy = (W-np.roll(W,1,axis=-2))/dy
-    vo=dv_dx-du_dy
+        W = (u**2+v**2)**0.5
+        du_dx = (u-np.roll(u,1,axis=-1))/dx
+        du_dy = (u-np.roll(u,1,axis=-2))/dy
+        dv_dx = (v-np.roll(v,1,axis=-1))/dx
+        dv_dy = (v-np.roll(v,1,axis=-2))/dy
+        dW_dx = (W-np.roll(W,1,axis=-1))/dx
+        dW_dy = (W-np.roll(W,1,axis=-2))/dy
+        vo=dv_dx-du_dy
 
-    curv_vort = da.read_nc(data_path+'u_v/ano_curv_vort_850-700-600_'+identifier+'.nc')['curv_vort'][:,70000,:,:].squeeze().values
+        curv_vort = da.read_nc(data_path+'u_v/ano_curv_vort_850-700-600_'+identifier+'.nc')['curv_vort'][:,70000,:,:].squeeze().values
 
-    dcurv_vort_dx = (curv_vort-np.roll(curv_vort,1,axis=-1))/dx
-    dcurv_vort_dy = (curv_vort-np.roll(curv_vort,1,axis=-2))/dy
-    curv_vort_advect=-(u*dcurv_vort_dx+v*dcurv_vort_dy)
+        dcurv_vort_dx = (curv_vort-np.roll(curv_vort,1,axis=-1))/dx
+        dcurv_vort_dy = (curv_vort-np.roll(curv_vort,1,axis=-2))/dy
+        curv_vort_advect=-(u*dcurv_vort_dx+v*dcurv_vort_dy)
 
     plt.close('all')
     plate_carree = ccrs.PlateCarree()
@@ -116,36 +118,49 @@ for identifier in identifiers:
     dieng.add_fields(VO=vo,RH=RH)
     dieng.init_map(ax=ax,transform=plate_carree)
 
-    dieng.detect_dieng(overwrite=overwrite,dis_VO_max=8,contour_radius=25,min_number_cells=3,thr_VO=1*10**(-5),thr_RH=50)
+    dieng.detect_dieng(overwrite=False,dis_VO_max=6,min_number_cells=3,thr_VO=0.5*10**(-5),thr_RH=0)
     dieng.plot_detect_summary()
     dieng.combine_tracks(overwrite=overwrite)
     dieng.plot_season()
 
-    # belanger
-    belanger=aew_detection.aew_tracks(identifier=identifier+'_belanger',working_dir='aew_detection/ERAint/'+identifier+'/')
-    belanger.prepare_data(lats=lats,lons=lons,time_=time_,dates=dates,smoothing_factor=3,coarsening_factor=2)
-    belanger.add_fields(U=u,V=v,CURV_VORT=curv_vort,CURV_VORT_ADVECT=curv_vort_advect,VO=vo)
-    belanger.init_map(ax=ax,transform=plate_carree)
-
-    belanger.detect_belanger(overwrite=overwrite,thr_curv_vort=3.2*10**(-6))
-    belanger.plot_detect_summary()
-    belanger.combine_tracks(overwrite=overwrite)
-    belanger.plot_season()
-
-
     if surrounding is not None:
-        for t in surrounding:
-            plt.close('all')
-            plate_carree = ccrs.PlateCarree()
-            fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(16,6),subplot_kw={'projection': plate_carree})
-            for ax in axes.flatten():
-                ax.set_global()
-                ax.coastlines()
-                ax.set_xlim(-70,30)
-                ax.set_ylim(0,30)
+        plt.close('all')
+        plate_carree = ccrs.PlateCarree()
+        fig,axes=plt.subplots(nrows=1,ncols=1,figsize=(8,3),subplot_kw={'projection': plate_carree})
+        for ax in [axes]:
+            ax.set_global()
+            ax.coastlines()
+            ax.set_xlim(-70,30)
+            ax.set_ylim(0,30)
 
-            dieng.add_surounding_dieng(axes=axes[0,:],t=t,thr_VO=1*10**(-5))
-            belanger.add_surounding_belanger(axes=axes[1,:],t=t,thr_curv_vort=3.2*10**(-6))
-            plt.suptitle(str(aews._dates[t]))
-            plt.tight_layout()
-            plt.savefig(aews._working_dir+'track_surrounding/combined_'+str(t)+'.png', bbox_inches = 'tight')
+        dieng.plot_surrounding(axes=[axes],style='dieng',time_steps=surrounding)
+
+    #
+    # # belanger
+    # belanger=aew_detection.aew_tracks(identifier=identifier+'_belanger',working_dir='aew_detection/ERAint/'+identifier+'/')
+    # belanger.prepare_data(lats=lats,lons=lons,time_=time_,dates=dates,smoothing_factor=3,coarsening_factor=2)
+    # belanger.add_fields(U=u,V=v,CURV_VORT=curv_vort,CURV_VORT_ADVECT=curv_vort_advect,VO=vo)
+    # belanger.init_map(ax=ax,transform=plate_carree)
+    #
+    # belanger.detect_belanger(overwrite=overwrite,thr_curv_vort=3.2*10**(-6))
+    # belanger.plot_detect_summary()
+    # belanger.combine_tracks(overwrite=overwrite)
+    # belanger.plot_season()
+    #
+    #
+    # if surrounding is not None:
+    #     for t in surrounding:
+    #         plt.close('all')
+    #         plate_carree = ccrs.PlateCarree()
+    #         fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(16,6),subplot_kw={'projection': plate_carree})
+    #         for ax in axes.flatten():
+    #             ax.set_global()
+    #             ax.coastlines()
+    #             ax.set_xlim(-70,30)
+    #             ax.set_ylim(0,30)
+    #
+    #         dieng.add_surounding_dieng(axes=axes[0,:],t=t,thr_VO=1*10**(-5))
+    #         belanger.add_surounding_belanger(axes=axes[1,:],t=t,thr_curv_vort=3.2*10**(-6))
+    #         plt.suptitle(str(aews._dates[t]))
+    #         plt.tight_layout()
+    #         plt.savefig(aews._working_dir+'track_surrounding/combined_'+str(t)+'.png', bbox_inches = 'tight')
