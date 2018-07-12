@@ -15,35 +15,36 @@ import cartopy
 import cartopy.crs as ccrs
 
 os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
-sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
+sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/TC_scripts')
 import TC_support ;  TC_support = reload(TC_support)
 
-TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
-tc_sel=TC.ix[np.where(TC['basin'][:,0]==0)[0]]
-tc_sel=tc_sel.ix[tc_sel['season']>=1979]
-tc_sel=tc_sel.ix[tc_sel['season']>=1979]
-tc_lat=tc_sel['lat_for_mapping']
-tc_lon=tc_sel['lon_for_mapping']
-tc_lon[tc_lon<0]+=360
-tc_sel['source_wind']=tc_sel['source_wind']
-tc_wind[np.isnan(tc_wind)]=-999
+if 'TC' not in globals():
+    TC=da.read_nc('data/Allstorms.ibtracs_all.v03r10.nc')
+    tc_sel=TC.ix[np.where(TC['basin'][:,0]==0)[0]]
+    tc_sel=tc_sel.ix[tc_sel['season']>=1979]
+    tc_sel=tc_sel.ix[tc_sel['season']>=1979]
+    tc_lat=tc_sel['lat_for_mapping']
+    tc_lon=tc_sel['lon_for_mapping']
+    tc_lon[tc_lon<0]+=360
+    tc_wind=tc_sel['source_wind']
+    tc_wind[np.isnan(tc_wind)]=-999
 
-tc_sel_cat=np.array(TC_support.tc_cat(np.nanmin(tc_sel['source_pres'],axis=(1,2)),'pressure'))
-tc_sel=tc_sel.ix[np.where(tc_sel_cat>0)]
+    tc_sel_cat=np.array(TC_support.tc_cat(np.nanmin(tc_sel['source_pres'],axis=(1,2)),'pressure'))
+    tc_sel=tc_sel.ix[np.where(tc_sel_cat>0)]
 
-nc=da.read_nc('data/CAR25/item16222_6hrly_inst/item16222_6hrly_inst_p014_2017-06_2017-10.nc')
-lats = nc['global_latitude1'].values
-lons = nc['global_longitude1'].values
-grid_lats = nc['latitude1'].values
-grid_lons = nc['longitude1'].values
-lons[lons>180]-=360
-o_lon_p = nc['rotated_pole1'].attrs['grid_north_pole_longitude']
-o_lat_p = nc['rotated_pole1'].attrs['grid_north_pole_latitude']
-lon_0 = TC_support.normalize180(o_lon_p-180.)
+    nc=da.read_nc('data/CAR25/item16222_6hrly_inst/item16222_6hrly_inst_p014_2017-06_2017-10.nc')
+    lats = nc['global_latitude1'].values
+    lons = nc['global_longitude1'].values
+    grid_lats = nc['latitude1'].values
+    grid_lons = nc['longitude1'].values
+    lons[lons>180]-=360
+    o_lon_p = nc['rotated_pole1'].attrs['grid_north_pole_longitude']
+    o_lat_p = nc['rotated_pole1'].attrs['grid_north_pole_latitude']
+    lon_0 = TC_support.normalize180(o_lon_p-180.)
 
-rot_pole = ccrs.RotatedPole(pole_longitude=o_lon_p, pole_latitude=o_lat_p)
-plate_carree = ccrs.PlateCarree()
-globe= ccrs.Orthographic(central_longitude=-60.0, central_latitude=20.0, globe=None)
+    rot_pole = ccrs.RotatedPole(pole_longitude=o_lon_p, pole_latitude=o_lat_p)
+    plate_carree = ccrs.PlateCarree()
+    globe= ccrs.Orthographic(central_longitude=-60.0, central_latitude=20.0, globe=None)
 
 cat_colors={0:'lightblue',1:'#ffffcc',2:'#ffe775',3:'#ffc148',4:'#ff8f20',5:'#ff6060'}
 
@@ -82,6 +83,16 @@ plt.title('ibtracks')
 plt.tight_layout()
 plt.savefig('plots/ibtracks/ibtracks_tracks_longer_than_2days.png',dpi=300)
 
+ax.lines=[]
+for storm in tc_sel.storm:
+    category=TC_support.tc_cat(np.nanmax(tc_sel['source_wind'][storm,:,:],axis=-1),'wind')
+    if len(np.where(category>0)[0])>0:
+        ax.plot(tc_lon[storm,category>0],tc_lat[storm,category>0],color=cat_colors[TC_support.tc_cat(np.nanmax(tc_sel['source_wind'][storm,:,:]),'wind')],alpha=0.7,linewidth=2,transform=plate_carree)
+
+plt.title('ibtracks')
+plt.tight_layout()
+plt.savefig('plots/ibtracks/ibtracks_tracks_only_cat1_steps.png',dpi=300)
+
 
 ax.lines=[]
 for storm in tc_sel.storm:
@@ -100,6 +111,18 @@ for storm in tc_sel.storm:
 plt.title('ibtracks')
 plt.tight_layout()
 plt.savefig('plots/ibtracks/ibtracks_genesis_longer_than_2days.png',dpi=300)
+
+ax.lines=[]
+for storm in tc_sel.storm:
+    category=TC_support.tc_cat(np.nanmax(tc_sel['source_wind'][storm,:,:],axis=-1),'wind')
+    if len(np.where(category>0)[0])>0:
+        ax.plot(tc_lon[storm,category>0].ix[0],tc_lat[storm,category>0].ix[0],color=cat_colors[TC_support.tc_cat(np.nanmax(tc_sel['source_wind'][storm,:,:]),'wind')],alpha=0.7,marker='o',transform=plate_carree)
+
+plt.title('ibtracks')
+plt.tight_layout()
+plt.savefig('plots/ibtracks/ibtracks_genesis_only_cat1_steps.png',dpi=300)
+
+
 
 
 # statistics
