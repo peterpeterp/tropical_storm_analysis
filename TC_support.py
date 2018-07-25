@@ -1,13 +1,62 @@
+# Author: Peter Pfleiderer <peter.pfleiderer@climateanalytics.org>
+#
+# License: GNU General Public License v3.0
+
 import os,sys,glob,time,collections,gc,calendar
 from datetime import datetime as datetime
 from datetime import timedelta
-from netCDF4 import Dataset,netcdftime,num2date
+from netCDF4 import Dataset,num2date
 import dimarray as da
 import numpy as np
 import scipy
 import scipy.ndimage as ndimage
 import scipy.ndimage.filters as filters
 import matplotlib.pyplot as plt
+
+#------------- get atlantic tc's from ibtracks
+def get_atl_tcs(file='/Users/peterpfleiderer/Projects/tropical_cyclones/data/Allstorms.ibtracs_all.v03r10.nc'):
+    TC=da.read_nc(file)
+    # select north atlantic basin
+    tc_sel=TC.ix[TC['basin'][:,0]==0]
+    # select time period
+    tc_sel=tc_sel.ix[tc_sel['season']>=1981,:]
+    # select main tracks
+    tc_sel=tc_sel.ix[tc_sel['track_type']==0,:]
+
+    tc_lat=tc_sel['lat_for_mapping']
+    tc_lon=tc_sel['lon_for_mapping']
+    # tc_sel=tc_sel.ix[np.where(tc_sel_cat>0)]
+    tmp_time=tc_sel['source_time']
+    tc_year,tc_month,tc_yrmn,tc_yrFr=tmp_time.copy(),tmp_time.copy(),tmp_time.copy(),tmp_time.copy()
+    for storm in tmp_time.storm:
+        for tt in tmp_time.time:
+            if np.isfinite(tmp_time[storm,tt]):
+                datevar=num2date(tmp_time[storm,tt],units = tmp_time.units)
+                tc_year[storm,tt]=datevar.year
+                tc_month[storm,tt]=datevar.month
+                tc_yrmn[storm,tt]=datevar.year+float(datevar.month-1)/12.
+                tc_yrFr[storm,tt]=toYearFraction(datevar)
+
+    # remove extratropical time steps (and distrubances)
+    tc_wind=tc_sel['source_wind'].ix[:,:,0]
+    tc_wind.ix[tc_sel['nature_for_mapping']!=2]==np.nan
+    tc_wind.ix[tc_sel['nature_for_mapping']!=3]==np.nan
+    tc_pres=tc_sel['source_pres'].ix[:,:,0]
+    tc_pres.ix[tc_sel['nature_for_mapping']!=2]==np.nan
+    tc_pres.ix[tc_sel['nature_for_mapping']!=3]==np.nan
+
+    ds=da.Dataset({
+        'wind':tc_wind,
+        'mslp':tc_pres,
+        'lat':tc_lat,
+        'lon':tc_lon,
+        'time':tc_sel['source_time'],
+        'year':tc_year,
+        'month':tc_month,
+        'yrmn':tc_yrmn,
+        'yrFr':tc_yrFr,
+    })
+    return(ds)
 
 #------------ Met stuff
 def rel_vort(U,V,y,x):
@@ -53,15 +102,29 @@ def yearFractiontoDate(yr_fr):
     dt=time.localtime(seconds)
     return datetime(year=dt.tm_year, month=dt.tm_mon, day=dt.tm_mday, hour=dt.tm_hour)
 
-def running_mean_func(xx,N):
+#----------- utilities
+
+def running_mean(xx,N):
 	if N==1:
 		return xx
 	if N!=1:
 	    x=np.ma.masked_invalid(xx.copy())
 	    ru_mean=x.copy()*np.nan
 	    for t in range(int(N/2),len(x)-int(N/2)):
-	        ru_mean[t]=np.nanmean(x[t-int(N/2):t+int(N/2)])
+			if np.sum(np.isfinite(x[t-int(N/2):t+int(N/2)]))>0:
+				ru_mean[t]=np.nanmean(x[t-int(N/2):t+int(N/2)])
 	    return ru_mean
+
+def running_cumsum(xx,N):
+	if N==1:
+		return xx
+	if N!=1:
+	    x=np.ma.masked_invalid(xx.copy())
+	    ru_sum=x.copy()*np.nan
+	    for t in range(int(N),len(x)+1):
+			if np.sum(np.isfinite(x[t-int(N):t]))>0:
+				ru_sum[t-1]=np.nansum(x[t-int(N):t])
+	    return ru_sum
 
 #------------ TC stuff
 

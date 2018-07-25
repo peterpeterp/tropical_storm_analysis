@@ -1,3 +1,7 @@
+# Author: Peter Pfleiderer <peter.pfleiderer@climateanalytics.org>
+#
+# License: GNU General Public License v3.0
+
 from __future__ import print_function
 import os,sys,glob,time,collections,gc,calendar,weakref,resource,datetime
 from netCDF4 import Dataset,netcdftime,num2date
