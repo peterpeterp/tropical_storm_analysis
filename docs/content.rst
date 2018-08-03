@@ -34,3 +34,18 @@ Plotting functions
 .. automethod:: tc_tracks.plot_season
 .. automethod:: tc_tracks.plot_detect_summary
 .. automethod:: tc_tracks.plot_surrounding
+
+~~~~~~~~~~~~~~~~~~~~
+Supporting functions
+~~~~~~~~~~~~~~~~~~~~
+.. automethod:: tc_tracks.get_box
+.. automethod:: tc_tracks.area_around
+.. automethod:: tc_tracks.circle_around
+.. automethod:: tc_tracks.degree_to_step
+.. automethod:: tc_tracks.tc_cat
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Analysis using observed track data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. automethod:: tc_tracks.init_obs_tcs
+.. automethod:: tc_tracks.obs_track_info

@@ -83,23 +83,39 @@ class tc_tracks(object):
         self._cat_colors={0:'lightblue',1:'#ffffcc',2:'#ffe775',3:'#ffc148',4:'#ff8f20',5:'#ff6060'}
         self._cat_names={0:'tropical storm',1:'Category 1',2:'Category 2',3:'Category 3',4:'Category 4',5:'Category 5'}
 
-    def set_thresholds(self,thr_wind,thr_mslp,p_radius,neighborhood_size,warm_core_size,cores_distance,search_radius,min_time_steps):
-        self._thr_wind=thr_wind
-        self._thr_mslp=thr_mslp
-        self._min_time_steps=min_time_steps
-
-        self._p_radius=self.degree_to_step(p_radius)
-        self._neighborhood_size=self.degree_to_step(neighborhood_size)
-        self._warm_core_size=self.degree_to_step(warm_core_size)**2
-        self._cores_distance=self.degree_to_step(cores_distance)
-        self._search_radius=self.degree_to_step(search_radius)
-
     def degree_to_step(self,degree):
+        """
+        Converts distances in degrees into steps on the lat-lon grid
+
+        Parameters
+        ----------
+            degree: float [deg]
+                distance to be converted
+
+        Returns
+        -------
+            number of steps on the lon-lat grid corresponding to the distance
+        """
         y_step=abs(np.diff(self._lats[:,0],1).mean())
         x_step=abs(np.diff(self._lons[0,:],1).mean())
         return round(degree/(y_step+x_step)*2)
 
     def tc_cat(self,z,method='pressure'):
+        """
+        Returns the category of a storm snapshot based on 10m wind speed or MSLP
+
+        Parameters
+        ----------
+            z: float [hPa or m/s]
+                value tested against TC-categors thresholds
+            method: str ['pressure' or 'wind'], default='pressure'
+                specifies if `z` is a wind-speed or a pressure value
+
+        Returns
+        -------
+            cat: int
+                category of the TC form 0-5
+        """
         def cat__(zz):
             if method=='wind':
                 if zz<=64: cat= 0
@@ -126,6 +142,14 @@ class tc_tracks(object):
 
     # treating ibtracks
     def init_obs_tcs(self,tc_sel):
+        """
+        This functions transforms ibtracks input into the format used by plot functions
+
+        Parameters
+        ----------
+            tc_sel: dimarray
+                ibtracks loaded as dimarray
+        """
         self._tc_sel=tc_sel
         tmp_time=tc_sel['source_time'].values
         self._tc_time=tmp_time.copy()*np.nan
@@ -140,6 +164,23 @@ class tc_tracks(object):
         self._obs_tc=True
 
     def obs_track_info(self,core_radius=3,full_radius=7,overwrite=False):
+        """
+        Collects and sves info of input fields around observed tracks
+
+        Parameters
+        ----------
+            core_radius: int, default=3
+                radius of grid-cells around storm center which are going to be analyzed for core specific variables
+            full_radius: int, default=7
+                radius of grid-cells around storm center which are going to be analyzed
+            overwrite:  bool, default=False
+                if False, existing outputfiles of the function are loaded, if True they are overwritten
+
+        Returns
+        -------
+            self._obs_track_info: dimarray
+                array containg info at time steps and positions of observed storms
+        """
         out_file=self._working_dir+'obs_track_info.nc'
         if overwrite and os.path.isfile(out_file):
             os.system('rm '+out_file)
@@ -435,6 +476,23 @@ class tc_tracks(object):
 
     # analyze fields
     def get_box(self,y,x,window):
+        """
+        Finds square around position
+
+        Parameters
+        ----------
+            y: index
+                center of square as an index of `self._lats` and `self._lons`
+            x: index
+                center of square as an index of `self._lats` and `self._lons`
+            window:
+                half of the length of the square
+
+        Returns
+        -------
+            corners: tuple (y_min,y_max,x_min,x_max)
+                corner coordinates of square
+        """
         y_min=int(max(0,y-window))
         y_max=int(min(self._lats.shape[0],y+window+1))
         x_min=int(max(0,x-window))
@@ -442,6 +500,24 @@ class tc_tracks(object):
         return (y_min,y_max,x_min,x_max)
 
     def area_around(self,y,x,radius):
+        """
+        Finds area around position as ponints within a circle defining the area
+
+        Parameters
+        ----------
+            y: index
+                center of circle as an index of `self._lats` and `self._lons`
+            x: index
+                center of circle as an index of `self._lats` and `self._lons`
+            window:
+                radius of the circle
+
+        Returns
+        -------
+            indices: tuple (y_,x_)
+                y and x indices of points within circle defining the area
+        """
+
         box=self.get_box(y,x,radius)
         y_,x_=[],[]
         for i in range(box[0],box[1]):
@@ -452,6 +528,23 @@ class tc_tracks(object):
         return y_,x_
 
     def circle_around(self,y,x,radius):
+        """
+        Finds circle around position
+
+        Parameters
+        ----------
+            y: index
+                center of circle as an index of `self._lats` and `self._lons`
+            x: index
+                center of circle as an index of `self._lats` and `self._lons`
+            window:
+                radius of the circle
+
+        Returns
+        -------
+            indices: tuple (y_,x_)
+                y and x indices of points on the circle
+        """
         box=self.get_box(y,x,radius)
         y_,x_=[],[]
         for i in range(box[0],box[1]):
@@ -846,6 +939,7 @@ class tc_tracks(object):
         print('done')
         return self._detected
 
+    # pld stuff
     # def detect_thresholds_simple(self,thr_vort=3.5*10**(-5),dis_vort_max=4,dis_cores=2,thr_MSLP_inc=2,dis_MSLP_inc=5,thr_T_drop=1,dis_T_drop=3,tc_size=5,overwrite=False):
     #     self._add_name='thresholds'
     #     out_file=self._working_dir+'detected_positions_thresholds_'+self._add_name+'.nc'
@@ -968,3 +1062,14 @@ class tc_tracks(object):
     #     da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
     #     print('done')
     #     return self._detected
+
+    # def set_thresholds(self,thr_wind,thr_mslp,p_radius,neighborhood_size,warm_core_size,cores_distance,search_radius,min_time_steps):
+    #     self._thr_wind=thr_wind
+    #     self._thr_mslp=thr_mslp
+    #     self._min_time_steps=min_time_steps
+    #
+    #     self._p_radius=self.degree_to_step(p_radius)
+    #     self._neighborhood_size=self.degree_to_step(neighborhood_size)
+    #     self._warm_core_size=self.degree_to_step(warm_core_size)**2
+    #     self._cores_distance=self.degree_to_step(cores_distance)
+    #     self._search_radius=self.degree_to_step(search_radius)

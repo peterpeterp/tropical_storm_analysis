@@ -229,23 +229,39 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_cat_colors</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="s1">&#39;lightblue&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="s1">&#39;#ffffcc&#39;</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="s1">&#39;#ffe775&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="s1">&#39;#ffc148&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">:</span><span class="s1">&#39;#ff8f20&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">:</span><span class="s1">&#39;#ff6060&#39;</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cat_names</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="s1">&#39;tropical storm&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="s1">&#39;Category 1&#39;</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="s1">&#39;Category 2&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="s1">&#39;Category 3&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">:</span><span class="s1">&#39;Category 4&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">:</span><span class="s1">&#39;Category 5&#39;</span><span class="p">}</span></div>
 
-    <span class="k">def</span> <span class="nf">set_thresholds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">thr_wind</span><span class="p">,</span><span class="n">thr_mslp</span><span class="p">,</span><span class="n">p_radius</span><span class="p">,</span><span class="n">neighborhood_size</span><span class="p">,</span><span class="n">warm_core_size</span><span class="p">,</span><span class="n">cores_distance</span><span class="p">,</span><span class="n">search_radius</span><span class="p">,</span><span class="n">min_time_steps</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_thr_wind</span><span class="o">=</span><span class="n">thr_wind</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_thr_mslp</span><span class="o">=</span><span class="n">thr_mslp</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_min_time_steps</span><span class="o">=</span><span class="n">min_time_steps</span>
+<div class="viewcode-block" id="tc_tracks.degree_to_step"><a class="viewcode-back" href="../content.html#TC_detection.tc_tracks.degree_to_step">[docs]</a>    <span class="k">def</span> <span class="nf">degree_to_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">degree</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts distances in degrees into steps on the lat-lon grid</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_p_radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">degree_to_step</span><span class="p">(</span><span class="n">p_radius</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_neighborhood_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">degree_to_step</span><span class="p">(</span><span class="n">neighborhood_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_warm_core_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">degree_to_step</span><span class="p">(</span><span class="n">warm_core_size</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cores_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">degree_to_step</span><span class="p">(</span><span class="n">cores_distance</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_search_radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">degree_to_step</span><span class="p">(</span><span class="n">search_radius</span><span class="p">)</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            degree: float [deg]</span>
+<span class="sd">                distance to be converted</span>
 
-    <span class="k">def</span> <span class="nf">degree_to_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">degree</span><span class="p">):</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            number of steps on the lon-lat grid corresponding to the distance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">y_step</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lats</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
         <span class="n">x_step</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lons</span><span class="p">[</span><span class="mi">0</span><span class="p">,:],</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
-        <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">degree</span><span class="o">/</span><span class="p">(</span><span class="n">y_step</span><span class="o">+</span><span class="n">x_step</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">degree</span><span class="o">/</span><span class="p">(</span><span class="n">y_step</span><span class="o">+</span><span class="n">x_step</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">tc_cat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;pressure&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="tc_tracks.tc_cat"><a class="viewcode-back" href="../content.html#TC_detection.tc_tracks.tc_cat">[docs]</a>    <span class="k">def</span> <span class="nf">tc_cat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;pressure&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the category of a storm snapshot based on 10m wind speed or MSLP</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            z: float [hPa or m/s]</span>
+<span class="sd">                value tested against TC-categors thresholds</span>
+<span class="sd">            method: str [&#39;pressure&#39; or &#39;wind&#39;], default=&#39;pressure&#39;</span>
+<span class="sd">                specifies if `z` is a wind-speed or a pressure value</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            cat: int</span>
+<span class="sd">                category of the TC form 0-5</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">def</span> <span class="nf">cat__</span><span class="p">(</span><span class="n">zz</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">method</span><span class="o">==</span><span class="s1">&#39;wind&#39;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">zz</span><span class="o">&lt;=</span><span class="mi">64</span><span class="p">:</span> <span class="n">cat</span><span class="o">=</span> <span class="mi">0</span>
@@ -268,10 +284,18 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">da</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">dimarraycls</span><span class="o">.</span><span class="n">DimArray</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">cat__</span><span class="p">(</span><span class="n">zz</span><span class="p">)</span> <span class="k">for</span> <span class="n">zz</span> <span class="ow">in</span> <span class="n">z</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">cat__</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cat__</span><span class="p">(</span><span class="n">z</span><span class="p">)</span></div>
 
     <span class="c1"># treating ibtracks</span>
-    <span class="k">def</span> <span class="nf">init_obs_tcs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tc_sel</span><span class="p">):</span>
+<div class="viewcode-block" id="tc_tracks.init_obs_tcs"><a class="viewcode-back" href="../content.html#TC_detection.tc_tracks.init_obs_tcs">[docs]</a>    <span class="k">def</span> <span class="nf">init_obs_tcs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tc_sel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This functions transforms ibtracks input into the format used by plot functions</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            tc_sel: dimarray</span>
+<span class="sd">                ibtracks loaded as dimarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tc_sel</span><span class="o">=</span><span class="n">tc_sel</span>
         <span class="n">tmp_time</span><span class="o">=</span><span class="n">tc_sel</span><span class="p">[</span><span class="s1">&#39;source_time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tc_time</span><span class="o">=</span><span class="n">tmp_time</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -283,9 +307,26 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_tc_lon</span><span class="o">=</span><span class="n">tc_sel</span><span class="p">[</span><span class="s1">&#39;lon_for_mapping&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tc_lon</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_tc_lon</span><span class="o">&gt;</span><span class="mi">180</span><span class="p">]</span><span class="o">-=</span><span class="mi">360</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tc_intens</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">tc_sel</span><span class="p">[</span><span class="s1">&#39;source_wind&#39;</span><span class="p">],</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_obs_tc</span><span class="o">=</span><span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obs_tc</span><span class="o">=</span><span class="kc">True</span></div>
 
-    <span class="k">def</span> <span class="nf">obs_track_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">core_radius</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">full_radius</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="tc_tracks.obs_track_info"><a class="viewcode-back" href="../content.html#TC_detection.tc_tracks.obs_track_info">[docs]</a>    <span class="k">def</span> <span class="nf">obs_track_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">core_radius</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">full_radius</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Collects and sves info of input fields around observed tracks</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            core_radius: int, default=3</span>
+<span class="sd">                radius of grid-cells around storm center which are going to be analyzed for core specific variables</span>
+<span class="sd">            full_radius: int, default=7</span>
+<span class="sd">                radius of grid-cells around storm center which are going to be analyzed</span>
+<span class="sd">            overwrite:  bool, default=False</span>
+<span class="sd">                if False, existing outputfiles of the function are loaded, if True they are overwritten</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            self._obs_track_info: dimarray</span>
+<span class="sd">                array containg info at time steps and positions of observed storms</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">out_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_working_dir</span><span class="o">+</span><span class="s1">&#39;obs_track_info.nc&#39;</span>
         <span class="k">if</span> <span class="n">overwrite</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">out_file</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;rm &#39;</span><span class="o">+</span><span class="n">out_file</span><span class="p">)</span>
@@ -335,7 +376,7 @@
                 <span class="n">pos</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">obs_summary</span><span class="o">==</span><span class="n">cat</span><span class="p">)</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">obs_summary</span><span class="p">[</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">vari</span><span class="p">]))</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">);</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obs_track_info</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obs_track_info</span></div>
 
     <span class="c1"># plotting</span>
 <div class="viewcode-block" id="tc_tracks.init_map"><a class="viewcode-back" href="../content.html#TC_detection.tc_tracks.init_map">[docs]</a>    <span class="k">def</span> <span class="nf">init_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ax</span><span class="p">,</span><span class="n">transform</span><span class="p">):</span>
@@ -580,14 +621,49 @@
                 <span class="n">element</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div>
 
     <span class="c1"># analyze fields</span>
-    <span class="k">def</span> <span class="nf">get_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">window</span><span class="p">):</span>
+<div class="viewcode-block" id="tc_tracks.get_box"><a class="viewcode-back" href="../content.html#TC_detection.tc_tracks.get_box">[docs]</a>    <span class="k">def</span> <span class="nf">get_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">window</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds square around position</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            y: index</span>
+<span class="sd">                center of square as an index of `self._lats` and `self._lons`</span>
+<span class="sd">            x: index</span>
+<span class="sd">                center of square as an index of `self._lats` and `self._lons`</span>
+<span class="sd">            window:</span>
+<span class="sd">                half of the length of the square</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            corners: tuple (y_min,y_max,x_min,x_max)</span>
+<span class="sd">                corner coordinates of square</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">y_min</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">y</span><span class="o">-</span><span class="n">window</span><span class="p">))</span>
         <span class="n">y_max</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lats</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">y</span><span class="o">+</span><span class="n">window</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
         <span class="n">x_min</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">x</span><span class="o">-</span><span class="n">window</span><span class="p">))</span>
         <span class="n">x_max</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lats</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">x</span><span class="o">+</span><span class="n">window</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">y_min</span><span class="p">,</span><span class="n">y_max</span><span class="p">,</span><span class="n">x_min</span><span class="p">,</span><span class="n">x_max</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">y_min</span><span class="p">,</span><span class="n">y_max</span><span class="p">,</span><span class="n">x_min</span><span class="p">,</span><span class="n">x_max</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">area_around</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">radius</span><span class="p">):</span>
+<div class="viewcode-block" id="tc_tracks.area_around"><a class="viewcode-back" href="../content.html#TC_detection.tc_tracks.area_around">[docs]</a>    <span class="k">def</span> <span class="nf">area_around</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">radius</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds area around position as ponints within a circle defining the area</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            y: index</span>
+<span class="sd">                center of circle as an index of `self._lats` and `self._lons`</span>
+<span class="sd">            x: index</span>
+<span class="sd">                center of circle as an index of `self._lats` and `self._lons`</span>
+<span class="sd">            window:</span>
+<span class="sd">                radius of the circle</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            indices: tuple (y_,x_)</span>
+<span class="sd">                y and x indices of points within circle defining the area</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">box</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_box</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">radius</span><span class="p">)</span>
         <span class="n">y_</span><span class="p">,</span><span class="n">x_</span><span class="o">=</span><span class="p">[],[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
@@ -595,9 +671,26 @@
                 <span class="k">if</span> <span class="p">((</span><span class="n">y</span><span class="o">-</span><span class="n">i</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">j</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="o">&lt;=</span><span class="n">radius</span><span class="p">:</span>
                     <span class="n">y_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
                     <span class="n">x_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">y_</span><span class="p">,</span><span class="n">x_</span>
+        <span class="k">return</span> <span class="n">y_</span><span class="p">,</span><span class="n">x_</span></div>
 
-    <span class="k">def</span> <span class="nf">circle_around</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">radius</span><span class="p">):</span>
+<div class="viewcode-block" id="tc_tracks.circle_around"><a class="viewcode-back" href="../content.html#TC_detection.tc_tracks.circle_around">[docs]</a>    <span class="k">def</span> <span class="nf">circle_around</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">radius</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds circle around position</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            y: index</span>
+<span class="sd">                center of circle as an index of `self._lats` and `self._lons`</span>
+<span class="sd">            x: index</span>
+<span class="sd">                center of circle as an index of `self._lats` and `self._lons`</span>
+<span class="sd">            window:</span>
+<span class="sd">                radius of the circle</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            indices: tuple (y_,x_)</span>
+<span class="sd">                y and x indices of points on the circle</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">box</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_box</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">radius</span><span class="p">)</span>
         <span class="n">y_</span><span class="p">,</span><span class="n">x_</span><span class="o">=</span><span class="p">[],[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
@@ -605,7 +698,7 @@
                 <span class="k">if</span> <span class="n">radius</span><span class="o">-</span><span class="mi">1</span><span class="o">&lt;=</span><span class="p">((</span><span class="n">y</span><span class="o">-</span><span class="n">i</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">j</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="o">&lt;=</span><span class="n">radius</span><span class="p">:</span>
                     <span class="n">y_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
                     <span class="n">x_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">y_</span><span class="p">,</span><span class="n">x_</span>
+        <span class="k">return</span> <span class="n">y_</span><span class="p">,</span><span class="n">x_</span></div>
 
 <div class="viewcode-block" id="tc_tracks.find_closed_contours"><a class="viewcode-back" href="../content.html#TC_detection.tc_tracks.find_closed_contours">[docs]</a>    <span class="k">def</span> <span class="nf">find_closed_contours</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">field</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">search_radius</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="n">n_contours</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
@@ -992,6 +1085,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;done&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detected</span></div></div>
 
+    <span class="c1"># pld stuff</span>
     <span class="c1"># def detect_thresholds_simple(self,thr_vort=3.5*10**(-5),dis_vort_max=4,dis_cores=2,thr_MSLP_inc=2,dis_MSLP_inc=5,thr_T_drop=1,dis_T_drop=3,tc_size=5,overwrite=False):</span>
     <span class="c1">#     self._add_name=&#39;thresholds&#39;</span>
     <span class="c1">#     out_file=self._working_dir+&#39;detected_positions_thresholds_&#39;+self._add_name+&#39;.nc&#39;</span>
@@ -1114,6 +1208,17 @@
     <span class="c1">#     da.Dataset({&#39;detected&#39;:self._detected}).write_nc(out_file,mode=&#39;w&#39;)</span>
     <span class="c1">#     print(&#39;done&#39;)</span>
     <span class="c1">#     return self._detected</span>
+
+    <span class="c1"># def set_thresholds(self,thr_wind,thr_mslp,p_radius,neighborhood_size,warm_core_size,cores_distance,search_radius,min_time_steps):</span>
+    <span class="c1">#     self._thr_wind=thr_wind</span>
+    <span class="c1">#     self._thr_mslp=thr_mslp</span>
+    <span class="c1">#     self._min_time_steps=min_time_steps</span>
+    <span class="c1">#</span>
+    <span class="c1">#     self._p_radius=self.degree_to_step(p_radius)</span>
+    <span class="c1">#     self._neighborhood_size=self.degree_to_step(neighborhood_size)</span>
+    <span class="c1">#     self._warm_core_size=self.degree_to_step(warm_core_size)**2</span>
+    <span class="c1">#     self._cores_distance=self.degree_to_step(cores_distance)</span>
+    <span class="c1">#     self._search_radius=self.degree_to_step(search_radius)</span>
 </pre></div>
 
            </div>

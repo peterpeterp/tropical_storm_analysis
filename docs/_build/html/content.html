@@ -84,6 +84,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#detecting-storm-snapshots">Detecting storm snapshots</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-storm-snapshots-to-tracks">Combine storm snapshots to tracks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotting-functions">Plotting functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#supporting-functions">Supporting functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#analysis-using-observed-track-data">Analysis using observed track data</a></li>
 </ul>
 </li>
 </ul>
@@ -387,6 +389,168 @@ The method is based on the detection mean sea level pressure (MSLP) minima. If c
 <li><strong>axes</strong> (<em>array of 4 cartopy.mpl.geoaxes.GeoAxesSubplot</em>) – an array with 4 axes with cartopy projection. This ax object can be created with a command as <cite>fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(11.5,5),subplot_kw={‘projection’: ccrs.PlateCarree()}); axes=axes.flatten()</cite></li>
 <li><strong>time_steps</strong> (<em>array of ints</em><em> [</em><em>indices of time axis</em><em>]</em><em>, </em><em>default=None</em>) – time steps for which plots are created. If None, plots are created for all time steps</li>
 </ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="supporting-functions">
+<h3>Supporting functions<a class="headerlink" href="#supporting-functions" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="TC_detection.tc_tracks.get_box">
+<code class="descclassname">tc_tracks.</code><code class="descname">get_box</code><span class="sig-paren">(</span><em>y</em>, <em>x</em>, <em>window</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.get_box"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.get_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds square around position</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y</strong> (<em>index</em>) – center of square as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
+<li><strong>x</strong> (<em>index</em>) – center of square as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
+<li><strong>window</strong> – half of the length of the square</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>corners</strong> – corner coordinates of square</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple (y_min,y_max,x_min,x_max)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="TC_detection.tc_tracks.area_around">
+<code class="descclassname">tc_tracks.</code><code class="descname">area_around</code><span class="sig-paren">(</span><em>y</em>, <em>x</em>, <em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.area_around"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.area_around" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds area around position as ponints within a circle defining the area</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y</strong> (<em>index</em>) – center of circle as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
+<li><strong>x</strong> (<em>index</em>) – center of circle as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
+<li><strong>window</strong> – radius of the circle</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>indices</strong> – y and x indices of points within circle defining the area</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple (<a href="#id1"><span class="problematic" id="id2">y_</span></a>,x_)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="TC_detection.tc_tracks.circle_around">
+<code class="descclassname">tc_tracks.</code><code class="descname">circle_around</code><span class="sig-paren">(</span><em>y</em>, <em>x</em>, <em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.circle_around"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.circle_around" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds circle around position</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y</strong> (<em>index</em>) – center of circle as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
+<li><strong>x</strong> (<em>index</em>) – center of circle as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
+<li><strong>window</strong> – radius of the circle</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>indices</strong> – y and x indices of points on the circle</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple (<a href="#id3"><span class="problematic" id="id4">y_</span></a>,x_)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="TC_detection.tc_tracks.degree_to_step">
+<code class="descclassname">tc_tracks.</code><code class="descname">degree_to_step</code><span class="sig-paren">(</span><em>degree</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.degree_to_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.degree_to_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts distances in degrees into steps on the lat-lon grid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>degree</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em>) – distance to be converted</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">number of steps on the lon-lat grid corresponding to the distance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="TC_detection.tc_tracks.tc_cat">
+<code class="descclassname">tc_tracks.</code><code class="descname">tc_cat</code><span class="sig-paren">(</span><em>z</em>, <em>method='pressure'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.tc_cat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.tc_cat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the category of a storm snapshot based on 10m wind speed or MSLP</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>z</strong> (<em>float</em><em> [</em><em>hPa</em><em> or </em><em>m/s</em><em>]</em>) – value tested against TC-categors thresholds</li>
+<li><strong>method</strong> (<em>str</em><em> [</em><em>'pressure'</em><em> or </em><em>'wind'</em><em>]</em><em>, </em><em>default='pressure'</em>) – specifies if <cite>z</cite> is a wind-speed or a pressure value</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cat</strong> – category of the TC form 0-5</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="analysis-using-observed-track-data">
+<h3>Analysis using observed track data<a class="headerlink" href="#analysis-using-observed-track-data" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="TC_detection.tc_tracks.init_obs_tcs">
+<code class="descclassname">tc_tracks.</code><code class="descname">init_obs_tcs</code><span class="sig-paren">(</span><em>tc_sel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.init_obs_tcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.init_obs_tcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>This functions transforms ibtracks input into the format used by plot functions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tc_sel</strong> (<em>dimarray</em>) – ibtracks loaded as dimarray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="TC_detection.tc_tracks.obs_track_info">
+<code class="descclassname">tc_tracks.</code><code class="descname">obs_track_info</code><span class="sig-paren">(</span><em>core_radius=3</em>, <em>full_radius=7</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.obs_track_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.obs_track_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collects and sves info of input fields around observed tracks</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>core_radius</strong> (<em>int</em><em>, </em><em>default=3</em>) – radius of grid-cells around storm center which are going to be analyzed for core specific variables</li>
+<li><strong>full_radius</strong> (<em>int</em><em>, </em><em>default=7</em>) – radius of grid-cells around storm center which are going to be analyzed</li>
+<li><strong>overwrite</strong> (<em>bool</em><em>, </em><em>default=False</em>) – if False, existing outputfiles of the function are loaded, if True they are overwritten</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self._obs_track_info</strong> – array containg info at time steps and positions of observed storms</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dimarray</p>
 </td>
 </tr>
 </tbody>
