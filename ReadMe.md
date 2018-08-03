@@ -1,4 +1,7 @@
 
+# Functions for tropical storm tracking and analysis
+
+The package documentation can be found under: https://tropical-storm-analysis.readthedocs.io/en/latest/content.html
 
 # Installation
 
