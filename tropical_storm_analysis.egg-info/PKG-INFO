@@ -1,0 +1,55 @@
+Metadata-Version: 1.1
+Name: tropical-storm-analysis
+Version: 0.1.0
+Summary: Library .
+Home-page: None
+Author: Peter Pfleiderer
+Author-email: UNKNOWN
+License: BSD 3-Clause
+Description: 
+        # Functions for tropical storm tracking and analysis
+        
+        The package documentation can be found under: https://tropical-storm-analysis.readthedocs.io/en/latest/content.html
+        
+        # Installation
+        
+        This project requires python2.7 with the following packages:  
+        - numpy
+        - scipy
+        - netCDF4
+        - matplotlib
+        - opencv
+        - ipython
+        - seaborn
+        - shapely
+        - pandas
+        - scikit-image
+        - cartopy
+        - dimarray
+        
+        
+        ```
+        conda create --name some_name python=2.7 netcdf4 numpy scipy matplotlib opencv ipython seaborn shapely pandas scikit-image
+        ```
+        the two packages pycountry and dimarray are not found by conda, install them using pip
+        ```
+        conda install -c conda-forge cartopy
+        pip install dimarray
+        ```
+        
+        # Todo
+        check out windspharm
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Science/Research
+Classifier: Development Status :: 3 - Alpha
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Scientific/Engineering :: Atmospheric Science
