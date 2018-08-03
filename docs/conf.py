@@ -24,7 +24,7 @@ sys.path.append(os.path.abspath('../feature_tracking'))
 
 # -- Project information -----------------------------------------------------
 
-project = u'feature_tracking'
+project = u'storm_analysis'
 copyright = u'2018, Peter Pfleiderer'
 author = u'Peter Pfleiderer'
 
