@@ -9,7 +9,7 @@ Tropical cyclone detection and tracking
 .. currentmodule:: TC_detection
 
 This part of the documentation shows the full API reference of all public
-functions.
+functions. 
 
 .. autoclass:: tc_tracks
 
@@ -31,7 +31,7 @@ Plotting functions
 .. automethod:: tc_tracks.init_map
 .. automethod:: tc_tracks.plot_on_map
 .. automethod:: tc_tracks.plot_track_path
-.. automethod:: tc_tracks.plot_season
+.. automethod:: tc_tracks.plot_all_tracks
 .. automethod:: tc_tracks.plot_detect_summary
 .. automethod:: tc_tracks.plot_surrounding
 
