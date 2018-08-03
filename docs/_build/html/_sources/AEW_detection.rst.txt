@@ -1,0 +1,7 @@
+AEW\_detection module
+=====================
+
+.. automodule:: AEW_detection
+    :members:
+    :undoc-members:
+    :show-inheritance:

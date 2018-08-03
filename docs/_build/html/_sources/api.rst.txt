@@ -1,0 +1,15 @@
+===
+API
+===
+
+.. currentmodule:: TC_detection
+
+This part of the documentation shows the full API reference of all public
+functions.
+
+
+.. autoclass:: tc_tracks
+----------------------------
+Detection of storm snapshots
+----------------------------
+  :members: detect_contours, detect_knutson2007, find_closed_contours

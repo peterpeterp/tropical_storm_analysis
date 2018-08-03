@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>TC_support module &mdash; feature_tracking  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> feature_tracking
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="content.html">Modules</a></li>
+</ul>
+
+            
+          
+    <a href="genindex.html">Index</a>
+  
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">feature_tracking</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>TC_support module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/TC_support.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-TC_support">
+<span id="tc-support-module"></span><h1>TC_support module<a class="headerlink" href="#module-TC_support" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="TC_support.get_atl_tcs">
+<code class="descclassname">TC_support.</code><code class="descname">get_atl_tcs</code><span class="sig-paren">(</span><em>file='/Users/peterpfleiderer/Projects/tropical_cyclones/data/Allstorms.ibtracs_all.v03r10.nc'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#get_atl_tcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.get_atl_tcs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.latlon_to_meshgrid">
+<code class="descclassname">TC_support.</code><code class="descname">latlon_to_meshgrid</code><span class="sig-paren">(</span><em>lat</em>, <em>lon</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#latlon_to_meshgrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.latlon_to_meshgrid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.local_extrem">
+<code class="descclassname">TC_support.</code><code class="descname">local_extrem</code><span class="sig-paren">(</span><em>data</em>, <em>method='max'</em>, <em>threshold=0</em>, <em>neighborhood_size=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#local_extrem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.local_extrem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.local_extrem_filters">
+<code class="descclassname">TC_support.</code><code class="descname">local_extrem_filters</code><span class="sig-paren">(</span><em>data</em>, <em>method</em>, <em>threshold=13</em>, <em>neighborhood_size=30</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#local_extrem_filters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.local_extrem_filters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.normalize180">
+<code class="descclassname">TC_support.</code><code class="descname">normalize180</code><span class="sig-paren">(</span><em>lon</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#normalize180"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.normalize180" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize lon to range [180, 180)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="TC_support.rel_vort">
+<code class="descclassname">TC_support.</code><code class="descname">rel_vort</code><span class="sig-paren">(</span><em>U</em>, <em>V</em>, <em>y</em>, <em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#rel_vort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.rel_vort" title="Permalink to this definition">¶</a></dt>
+<dd><p>adapted from wrftools: github.com/keltonhalbert/wrftools</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="TC_support.running_cumsum">
+<code class="descclassname">TC_support.</code><code class="descname">running_cumsum</code><span class="sig-paren">(</span><em>xx</em>, <em>N</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#running_cumsum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.running_cumsum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.running_mean">
+<code class="descclassname">TC_support.</code><code class="descname">running_mean</code><span class="sig-paren">(</span><em>xx</em>, <em>N</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#running_mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.running_mean" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.tc_cat">
+<code class="descclassname">TC_support.</code><code class="descname">tc_cat</code><span class="sig-paren">(</span><em>z</em>, <em>method='pressure'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#tc_cat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.tc_cat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.tc_plot">
+<code class="descclassname">TC_support.</code><code class="descname">tc_plot</code><span class="sig-paren">(</span><em>m</em>, <em>x</em>, <em>y</em>, <em>z</em>, <em>color_type=&lt;function tc_wind_color&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#tc_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.tc_plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.tc_pressure_color">
+<code class="descclassname">TC_support.</code><code class="descname">tc_pressure_color</code><span class="sig-paren">(</span><em>z</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#tc_pressure_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.tc_pressure_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.tc_wind_color">
+<code class="descclassname">TC_support.</code><code class="descname">tc_wind_color</code><span class="sig-paren">(</span><em>z</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#tc_wind_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.tc_wind_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.toYearFraction">
+<code class="descclassname">TC_support.</code><code class="descname">toYearFraction</code><span class="sig-paren">(</span><em>date</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#toYearFraction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.toYearFraction" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.uniq">
+<code class="descclassname">TC_support.</code><code class="descname">uniq</code><span class="sig-paren">(</span><em>lst</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#uniq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.uniq" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.unique">
+<code class="descclassname">TC_support.</code><code class="descname">unique</code><span class="sig-paren">(</span><em>l</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#unique"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.unique" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.wind_speed">
+<code class="descclassname">TC_support.</code><code class="descname">wind_speed</code><span class="sig-paren">(</span><em>U</em>, <em>V</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#wind_speed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.wind_speed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="TC_support.yearFractiontoDate">
+<code class="descclassname">TC_support.</code><code class="descname">yearFractiontoDate</code><span class="sig-paren">(</span><em>yr_fr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#yearFractiontoDate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.yearFractiontoDate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Peter Pfleiderer.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

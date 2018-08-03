@@ -1,6 +1,6 @@
 from __future__ import print_function
 import os,sys,glob,time,collections,gc,calendar,weakref,resource
-from netCDF4 import Dataset,netcdftime,num2date
+from netCDF4 import Dataset,num2date
 import dimarray as da
 import numpy as np
 import matplotlib as mpl
@@ -15,18 +15,18 @@ import cartopy
 sns.set_palette(sns.color_palette("plasma"))
 
 try:
-    os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
+    os.chdir('/Users/peterpfleiderer/Projects/tropical_cyclones/')
     data_path='data/CAR25/'
     local=True
 except:
     os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
     data_path='/p/projects/tumble/carls/shared_folder/CPDN/data/batch_717/region/'
     local=False
-sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
-sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
+sys.path.append('/Users/peterpfleiderer/Projects/tropical_cyclones/TC_scripts/feature_tracking')
+sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/TC_detection')
 
 import TC_support ;  TC_support = reload(TC_support)
-import tc_detection;    tc_detection = reload(tc_detection)
+import TC_detection;    TC_detection = reload(TC_detection)
 
 if local==False:
     import argparse
@@ -114,10 +114,11 @@ for identifier in identifiers:
     ax.set_xlim(np.min(grid_lons),np.max(grid_lons))
     ax.set_ylim(np.min(grid_lats),np.max(grid_lats))
 
+    asdas
 
     working_dir='detection/CAR25/'+str(identifier)+'_CAR25/'
     elapsed = time.time() - start;  print('Data loaded %.3f seconds.' % elapsed)
-    found_tcs=tc_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,5,5)),land_mask=land_mask,SST=None,VO=VO,T=T,T_diff=None,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
+    found_tcs=TC_detection.tc_tracks(Wind10=Wind10,MSLP=MSLP,MSLP_smoothed=ndimage.gaussian_filter(MSLP,sigma=(0,5,5)),land_mask=land_mask,SST=None,VO=VO,T=T,T_diff=None,lats=lats,lons=lons,time_=time_,dates=dates,identifier=identifier,working_dir=working_dir)
     found_tcs.init_map(ax=ax,transform=plate_carree)
     elapsed = time.time() - start;  print('Done with preparations %.3f seconds.' % elapsed)
 

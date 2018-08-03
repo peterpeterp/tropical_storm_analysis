@@ -1,0 +1,7 @@
+TC\_support module
+==================
+
+.. automodule:: TC_support
+    :members:
+    :undoc-members:
+    :show-inheritance:

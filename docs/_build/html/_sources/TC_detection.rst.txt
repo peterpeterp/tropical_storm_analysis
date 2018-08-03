@@ -1,0 +1,7 @@
+TC\_detection module
+====================
+
+.. automodule:: TC_detection
+    :members:
+    :undoc-members:
+    :show-inheritance:

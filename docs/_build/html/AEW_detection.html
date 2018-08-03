@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>AEW_detection module &mdash; feature_tracking  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> feature_tracking
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="content.html">Modules</a></li>
+</ul>
+
+            
+          
+    <a href="genindex.html">Index</a>
+  
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">feature_tracking</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>AEW_detection module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/AEW_detection.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-AEW_detection">
+<span id="aew-detection-module"></span><h1>AEW_detection module<a class="headerlink" href="#module-AEW_detection" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="AEW_detection.aew_tracks">
+<em class="property">class </em><code class="descclassname">AEW_detection.</code><code class="descname">aew_tracks</code><span class="sig-paren">(</span><em>identifier</em>, <em>working_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.add_fields">
+<code class="descname">add_fields</code><span class="sig-paren">(</span><em>U=None</em>, <em>V=None</em>, <em>VO=None</em>, <em>RH=None</em>, <em>CURV_VORT=None</em>, <em>CURV_VORT_ADVECT=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.add_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.add_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.add_surounding_belanger">
+<code class="descname">add_surounding_belanger</code><span class="sig-paren">(</span><em>axes</em>, <em>t</em>, <em>thr_curv_vort=1e-05</em>, <em>thr_u=2.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.add_surounding_belanger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.add_surounding_belanger" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.add_surounding_dieng">
+<code class="descname">add_surounding_dieng</code><span class="sig-paren">(</span><em>axes</em>, <em>t</em>, <em>thr_VO=1e-05</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.add_surounding_dieng"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.add_surounding_dieng" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.combine_tracks">
+<code class="descname">combine_tracks</code><span class="sig-paren">(</span><em>plot=True, overwrite=False, search_radius=8, min_duration=8, min_duration_in_start_area=3, propagation_speed=-2, propagation_length=10, lat_restriction=[5, 35]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.combine_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.combine_tracks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.degree_to_step">
+<code class="descname">degree_to_step</code><span class="sig-paren">(</span><em>degree</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.degree_to_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.degree_to_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.detect_belanger">
+<code class="descname">detect_belanger</code><span class="sig-paren">(</span><em>overwrite=False</em>, <em>max_extend=25</em>, <em>thr_u=2.5</em>, <em>thr_curv_vort=1e-05</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.detect_belanger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.detect_belanger" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.detect_dieng">
+<code class="descname">detect_dieng</code><span class="sig-paren">(</span><em>overwrite=False</em>, <em>dis_VO_max=8</em>, <em>min_number_cells=6</em>, <em>thr_VO=1e-05</em>, <em>thr_RH=50</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.detect_dieng"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.detect_dieng" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.find_group">
+<code class="descname">find_group</code><span class="sig-paren">(</span><em>field</em>, <em>y</em>, <em>x</em>, <em>thresh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.find_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.find_group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.init_map">
+<code class="descname">init_map</code><span class="sig-paren">(</span><em>ax</em>, <em>transform</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.init_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.init_map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.plot_detect_summary">
+<code class="descname">plot_detect_summary</code><span class="sig-paren">(</span><em>out_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.plot_detect_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.plot_detect_summary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.plot_on_map">
+<code class="descname">plot_on_map</code><span class="sig-paren">(</span><em>ax</em>, <em>x_in</em>, <em>y_in</em>, <em>latlon=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.plot_on_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.plot_on_map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.plot_season">
+<code class="descname">plot_season</code><span class="sig-paren">(</span><em>out_name=None</em>, <em>start_point=True</em>, <em>facecolor='none'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.plot_season"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.plot_season" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.plot_surrounding">
+<code class="descname">plot_surrounding</code><span class="sig-paren">(</span><em>axes</em>, <em>style</em>, <em>time_steps=None</em>, <em>thr_VO=1e-05</em>, <em>thr_curv_vort=1e-05</em>, <em>thr_u=2.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.plot_surrounding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.plot_surrounding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.plot_track_path">
+<code class="descname">plot_track_path</code><span class="sig-paren">(</span><em>track</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.plot_track_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.plot_track_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.point_to_latlon">
+<code class="descname">point_to_latlon</code><span class="sig-paren">(</span><em>point</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.point_to_latlon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.point_to_latlon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.prepare_data">
+<code class="descname">prepare_data</code><span class="sig-paren">(</span><em>lats</em>, <em>lons</em>, <em>time_</em>, <em>dates</em>, <em>smoothing_factor=1</em>, <em>coarsening_factor=1</em>, <em>land_mask=None</em>, <em>time_steps=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.prepare_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.prepare_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AEW_detection.aew_tracks.step_to_distance">
+<code class="descname">step_to_distance</code><span class="sig-paren">(</span><em>y1</em>, <em>y2</em>, <em>x1</em>, <em>x2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks.step_to_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks.step_to_distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="AEW_detection.coarsener">
+<code class="descclassname">AEW_detection.</code><code class="descname">coarsener</code><span class="sig-paren">(</span><em>data</em>, <em>coarseness=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#coarsener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.coarsener" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="AEW_detection.smoother">
+<code class="descclassname">AEW_detection.</code><code class="descname">smoother</code><span class="sig-paren">(</span><em>data</em>, <em>kernel_size=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#smoother"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.smoother" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Peter Pfleiderer.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
