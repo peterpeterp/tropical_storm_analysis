@@ -10,7 +10,7 @@ import dimarray as da
 import numpy as np
 import scipy
 import scipy.ndimage as ndimage
-import scipy.ndimage.filters as filters
+# import scipy.ndimage.filters as filters
 import matplotlib.pyplot as plt
 
 #------------- get atlantic tc's from ibtracks
@@ -197,8 +197,8 @@ def latlon_to_meshgrid(lat,lon):
     y=np.append(y,[y[-1]+np.diff(y,1)[0]])
     return np.meshgrid(x,y)
 
-def local_extrem_filters(data,method,threshold=13,neighborhood_size=30):
-    data_max = filters.maximum_filter(data, neighborhood_size)
+# def local_extrem_filters(data,method,threshold=13,neighborhood_size=30):
+    # data_max = filters.maximum_filter(data, neighborhood_size)
     data_min = filters.minimum_filter(data, neighborhood_size)
     if method=='max':
         extreme = (data == data_max)

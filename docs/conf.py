@@ -168,3 +168,28 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+
+autodoc_mock_imports = ['numpy', 'scipy', 'matplotlib','scipy','cv2','dimarray','netCDF4','seaborn','cartopy','scikit-image']
+
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import Mock as MagicMock
+
+
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        Mock()
+        return 1
+
+MOCK_MODULES = [
+    'numpy',
+    'scipy',
+    'scipy.ndimage',
+    # 'scipy.ndimage.filters',
+    'skimage',
+    'skimage.feature'
+]
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
