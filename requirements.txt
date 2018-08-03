@@ -12,6 +12,7 @@ cloudpickle==0.5.3
 cryptography==2.3
 cryptography-vectors==2.3
 cycler==0.10.0
+Cython==0.28.5
 dask==0.18.2
 decorator==4.3.0
 dimarray==0.2.5
