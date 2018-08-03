@@ -3,16 +3,19 @@
 # License: GNU General Public License v3.0
 
 from __future__ import print_function
-import os,sys,glob,time,collections,gc,calendar,weakref,resource,datetime
+import os,sys,glob,time,weakref,datetime
+
 from netCDF4 import Dataset,num2date
-import dimarray as da
 import numpy as np
+import dimarray as da
+
+import scipy.ndimage as ndimage
+from skimage.feature import peak_local_max
+import cv2
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
-import scipy.ndimage as ndimage
-import cv2
-from skimage.feature import peak_local_max
 import cartopy.crs as ccrs
 import cartopy
 sns.set_palette(sns.color_palette("plasma"))

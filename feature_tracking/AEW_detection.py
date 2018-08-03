@@ -3,23 +3,24 @@
 # License: GNU General Public License v3.0
 
 from __future__ import print_function
-import os,sys,glob,time,collections,gc,calendar,weakref,resource,datetime
+import os,sys,glob,time,weakref,datetime
+
 from netCDF4 import Dataset,num2date
-import dimarray as da
 import numpy as np
+import dimarray as da
+
+import scipy.ndimage as ndimage
+from scipy.spatial import ConvexHull
+from shapely.geometry import Polygon
+from skimage.feature import peak_local_max
+import cv2
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
-import scipy.ndimage as ndimage
-import cv2
-from skimage.feature import peak_local_max
 import cartopy.crs as ccrs
 import cartopy
-from itertools import combinations
-from itertools import permutations
-from scipy.spatial import ConvexHull
-from shapely.geometry import Polygon
-# mpl.use('Agg')
+sns.set_palette(sns.color_palette("plasma"))
 
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
 from TC_support import * ; reload(sys.modules['TC_support'])

@@ -169,7 +169,21 @@ texinfo_documents = [
 
 # -- Extension configuration -------------------------------------------------
 
-autodoc_mock_imports = ['numpy', 'scipy', 'matplotlib','scipy','cv2','dimarray','netCDF4','seaborn','cartopy','scikit-image']
+autodoc_mock_imports = [
+    'numpy',
+    'scipy',
+    'matplotlib',
+    'scipy',
+    'cv2',
+    'dimarray',
+    'netCDF4',
+    'seaborn',
+    'cartopy',
+    'scikit-image',
+    'shapely',
+    'datetime',
+    'time',
+    'glob']
 
 try:
     from unittest.mock import MagicMock
@@ -188,6 +202,7 @@ MOCK_MODULES = [
     'numpy',
     'scipy',
     'scipy.ndimage',
+    'scipy.spatial',
     # 'scipy.ndimage.filters',
     'skimage',
     'skimage.feature'
