@@ -199,6 +199,8 @@ class Mock(MagicMock):
         return 1
 
 MOCK_MODULES = [
+    'cartopy',
+    'dimarray',
     'numpy',
     'scipy',
     'scipy.ndimage',
