@@ -517,8 +517,8 @@ class tc_tracks(object):
 
         Returns
         -------
-            indices: tuple (y_,x_)
-                y and x indices of points within circle defining the area
+            indices:
+                ya and x indices of points within circle defining the area
         """
 
         box=self.get_box(y,x,radius)
@@ -545,7 +545,7 @@ class tc_tracks(object):
 
         Returns
         -------
-            indices: tuple (y_,x_)
+            indices:
                 y and x indices of points on the circle
         """
         box=self.get_box(y,x,radius)
