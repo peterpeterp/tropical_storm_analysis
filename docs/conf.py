@@ -169,21 +169,21 @@ texinfo_documents = [
 
 # -- Extension configuration -------------------------------------------------
 
-autodoc_mock_imports = [
-    'numpy',
-    'scipy',
-    'matplotlib',
-    'scipy',
-    'cv2',
-    'dimarray',
-    'netCDF4',
-    'seaborn',
-    'cartopy',
-    'scikit-image',
-    'shapely',
-    'datetime',
-    'time',
-    'glob']
+# autodoc_mock_imports = [
+#     'numpy',
+#     'scipy',
+#     'matplotlib',
+#     'scipy',
+#     'cv2',
+#     'dimarray',
+#     'netCDF4',
+#     'seaborn',
+#     'cartopy',
+#     'scikit-image',
+#     'shapely',
+#     'datetime',
+#     'time',
+#     'glob']
 
 try:
     from unittest.mock import MagicMock
@@ -199,7 +199,13 @@ class Mock(MagicMock):
         return 1
 
 MOCK_MODULES = [
+    'matplotlib',
+    'matplotlib.pyplot',
+    'seaborn',
+    'netCDF4',
+    'cv2',
     'cartopy',
+    'cartopy.crs',
     'dimarray',
     'numpy',
     'scipy',

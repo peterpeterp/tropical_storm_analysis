@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import cartopy.crs as ccrs
 import cartopy
-sns.set_palette(sns.color_palette("plasma"))
+# sns.set_palette(sns.color_palette("plasma"))
 
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
 from TC_support import * ; reload(sys.modules['TC_support'])
