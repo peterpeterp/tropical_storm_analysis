@@ -88,6 +88,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#analysis-using-observed-track-data">Analysis using observed track data</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#module-AEW_detection">African easterly wave detection and tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-TC_support">Support Functions</a></li>
 </ul>
 </li>
 </ul>
@@ -577,6 +579,30 @@ The method is based on the detection mean sea level pressure (MSLP) minima. If c
 </dd></dl>
 
 </div>
+</div>
+<div class="section" id="module-AEW_detection">
+<span id="african-easterly-wave-detection-and-tracking"></span><h2>African easterly wave detection and tracking<a class="headerlink" href="#module-AEW_detection" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="AEW_detection.aew_tracks">
+<em class="property">class </em><code class="descclassname">AEW_detection.</code><code class="descname">aew_tracks</code><span class="sig-paren">(</span><em>identifier</em>, <em>working_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class similar to tc_tracks but for african easterly waves</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-TC_support">
+<span id="support-functions"></span><h2>Support Functions<a class="headerlink" href="#module-TC_support" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="TC_support.rel_vort">
+<code class="descclassname">TC_support.</code><code class="descname">rel_vort</code><span class="sig-paren">(</span><em>U</em>, <em>V</em>, <em>y</em>, <em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#rel_vort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.rel_vort" title="Permalink to this definition">¶</a></dt>
+<dd><p>adapted from wrftools: github.com/keltonhalbert/wrftools</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="TC_support.normalize180">
+<code class="descclassname">TC_support.</code><code class="descname">normalize180</code><span class="sig-paren">(</span><em>lon</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#normalize180"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.normalize180" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize lon to range [180, 180)</p>
+</dd></dl>
+
 </div>
 </div>
 

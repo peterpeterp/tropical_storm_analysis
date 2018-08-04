@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import cartopy.crs as ccrs
 import cartopy
-sns.set_palette(sns.color_palette("plasma"))
+# sns.set_palette(sns.color_palette("plasma"))
 
 sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
 from TC_support import * ; reload(sys.modules['TC_support'])
@@ -42,6 +42,9 @@ def smoother(data,kernel_size=3):
     return(tmp)
 
 class aew_tracks(object):
+    """
+    Class similar to tc_tracks but for african easterly waves
+    """
     def __init__(self,identifier,working_dir):
         self._identifier=identifier
         self._working_dir=working_dir

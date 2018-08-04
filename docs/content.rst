@@ -9,7 +9,7 @@ Tropical cyclone detection and tracking
 .. currentmodule:: TC_detection
 
 This part of the documentation shows the full API reference of all public
-functions. 
+functions.
 
 .. autoclass:: tc_tracks
 
@@ -49,3 +49,17 @@ Analysis using observed track data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automethod:: tc_tracks.init_obs_tcs
 .. automethod:: tc_tracks.obs_track_info
+
+--------------------------------------------
+African easterly wave detection and tracking
+--------------------------------------------
+
+.. automodule:: AEW_detection
+  :members:
+
+-----------------
+Support Functions
+-----------------
+
+.. automodule:: TC_support
+  :members:
