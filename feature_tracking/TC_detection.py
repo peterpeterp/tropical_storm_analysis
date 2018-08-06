@@ -72,7 +72,14 @@ class tc_tracks(object):
         self._data={}
 
     def add_data(self,input_data={'dummy':None}):
+        """
+        Add data to the class. This data will be used by various methods.
 
+        Parameters
+        ----------
+            input_data: dict
+                dict containing input fields
+        """
         for key,field in input_data.items():
             # here the data can be checked
             if len(field.shape)>3:
@@ -232,7 +239,26 @@ class tc_tracks(object):
         return self._obs_track_info
 
     # plotting
-    def plot_settings(self,projection,transform,extent=[-180,180,-90,90],land_color='darkgreen',ocean_color='darkblue',figsize=(10,5)):
+    def plot_settings(self,projection,transform=None,extent=[-180,180,-90,90],land_color='darkgreen',ocean_color='darkblue',figsize=(10,5)):
+        """
+        Plot settings used by different methods
+
+        Parameters
+        ----------
+            projection: cartopy.crs projection
+                projection of the ouput plot
+            transform: cartopy.crs projection
+                projection of lat-lon grid. This is usually ccrs.PlateCarree()
+            extent: list, default=[-180,180,-90,90]
+                extent of the plot
+            land_color: str, default='darkgreen'
+                color of continents
+            ocean_color: str, default='darkblue'
+                color of oceans
+            figsize: tuple, default=(10,5)
+                size of the plot
+        """
+        if transform is None: transform=ccrs.PlateCarree()
         self._projection=projection
         self._transform=transform
         self._extent=extent
