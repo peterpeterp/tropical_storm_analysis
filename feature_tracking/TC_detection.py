@@ -41,7 +41,7 @@ class tc_tracks(object):
     """
     This class can be used to detect tropical cyclones. Depending on the method used to detect storm snapshots different input data is required. Currently two storm snapshot detecion methods are implemented: :meth:`detect_contours` or :meth:`detect_knutson2007`. When adding new methods you should stick to the output format of these methods.
     """
-    def __init__(self,VO,Wind10,MSLP,MSLP_smoothed,SST,T,T_diff,land_mask,lats,lons,time_,dates,identifier,working_dir,time_steps=None):
+    def __init__(self,lats,lons,time_,dates,identifier,working_dir='',time_steps=None):
         self._identifier=identifier
         self._working_dir=working_dir
         if os.path.isdir(working_dir)==False:
@@ -57,19 +57,6 @@ class tc_tracks(object):
         self._lats=lats
         self._lons=lons
 
-        self._VO=VO
-        self._Wind10=Wind10
-        self._MSLP=MSLP
-        if MSLP_smoothed is not None:
-            self._MSLP_smoothed=MSLP_smoothed
-        else:
-            self._MSLP_smoothed=MSLP
-
-        if land_mask is not None:
-            self._land_mask=land_mask
-        else:
-            self._land_mask=self._MSLP[0,:,:].copy()*0+1
-
         self._time=time_
         if time_steps is None:
             time_steps=range(len(self._time))
@@ -77,14 +64,23 @@ class tc_tracks(object):
         self._dates=dates
         self._yr_frac=np.array([toYearFraction(dd) for dd in self._dates])
 
-        self._T=T
-        self._T_diff=T_diff
-        self._SST=SST
-
         # tc cat dict
         self._obs_tc=False
         self._cat_colors={0:'lightblue',1:'#ffffcc',2:'#ffe775',3:'#ffc148',4:'#ff8f20',5:'#ff6060'}
         self._cat_names={0:'tropical storm',1:'Category 1',2:'Category 2',3:'Category 3',4:'Category 4',5:'Category 5'}
+
+        self._data={}
+
+    def add_data(self,input_data={'dummy':None}):
+
+        for key,field in input_data.items():
+            # here the data can be checked
+            if len(field.shape)>3:
+                print('Please select a level for '+key)
+            elif key not in ['MSLP','T','VO','Wind10','T_diff','MSLP_smoothed','land_mask','SST']:
+                print('the variable '+key+' is not used in any method. If you have modified the script and actually use this variable, you have to change tc_tracks.add_data().')
+            else:
+                self._data[key]=field
 
     def degree_to_step(self,degree):
         """
@@ -211,14 +207,14 @@ class tc_tracks(object):
                     y,x=np.argmin(abs(self._lats[:,0]-self._tc_lat[i,t])),np.argmin(abs(self._lons[0,:]-self._tc_lon[i,t]))
                     y_core,x_core=self.area_around(y,x,core_radius)
                     y_full,x_full=self.area_around(y,x,full_radius)
-                    obs_summary[i,t,3]=self._VO[t_,y_core,x_core].max()
-                    obs_summary[i,t,4]=self._MSLP[t_,y_core,x_core].min()
-                    obs_summary[i,t,5]=self._Wind10[t_,y_full,x_full].max()
-                    obs_summary[i,t,6]=self._T[t_,y_core,x_core].max()
-                    obs_summary[i,t,7]=self._T_diff[t_,y_core,x_core].max()
-                    if self._SST is not None:
-                        obs_summary[i,t,8]=self._SST[t_,y,x]
-                    obs_summary[i,t,9]=self._land_mask[y,x]
+                    obs_summary[i,t,3]=self._data['VO'][t_,y_core,x_core].max()
+                    obs_summary[i,t,4]=self._data['MSLP'][t_,y_core,x_core].min()
+                    obs_summary[i,t,5]=self._data['Wind10'][t_,y_full,x_full].max()
+                    obs_summary[i,t,6]=self._data['T'][t_,y_core,x_core].max()
+                    obs_summary[i,t,7]=self._data['T_diff'][t_,y_core,x_core].max()
+                    if self._data['SST'] is not None:
+                        obs_summary[i,t,8]=self._data['SST'][t_,y,x]
+                    obs_summary[i,t,9]=self._data['land_mask'][y,x]
 
         obs_summary=obs_summary[:,np.isfinite(np.nanmean(obs_summary,axis=(0,-1))),:]
         self._obs_track_info=da.DimArray(obs_summary,axes=[self._tc_sel.storm,range(obs_summary.shape[1]),['cat','obs_wind','obs_pres','VO','MSLP','Wind10','T','T_diff','SST','land']],dims=['storm','time','variable'])
@@ -236,7 +232,15 @@ class tc_tracks(object):
         return self._obs_track_info
 
     # plotting
-    def init_map(self,ax,transform):
+    def plot_settings(self,projection,transform,extent=[-180,180,-90,90],land_color='darkgreen',ocean_color='darkblue',figsize=(10,5)):
+        self._projection=projection
+        self._transform=transform
+        self._extent=extent
+        self._land_color=land_color
+        self._ocean_color=ocean_color
+        self._figsize=(10,5)
+
+    def init_map(self):
         """
         All plot functions except :meth:`plot_surrounding` plot on the map initialized in this function
 
@@ -247,11 +251,16 @@ class tc_tracks(object):
             transform: cartopy.crs, default=ccrs.PlateCarree()
                 this argument will be added to all plot functions to  interprete given lat-lon coordinates
         """
-        self._ax=ax
-        self._transform=transform
+        plt.close('all')
+        fig,ax=plt.subplots(nrows=1,ncols=1,figsize=self._figsize)
+        ax = plt.axes(projection=self._projection)
+        ax.set_global()
+        ax.coastlines()
+        ax.add_feature(cartopy.feature.LAND, facecolor=self._land_color)
+        ax.add_feature(cartopy.feature.OCEAN,facecolor=self._ocean_color)
+        ax.set_extent(self._extent,crs=ccrs.PlateCarree())
 
-        # for storm in range(len(self._tc_sel.storm)):
-        #     self._m.plot(self._tc_lon[storm,:],self._tc_lat[storm,:],color='gray')
+        return(ax)
 
     def plot_on_map(self,ax,x_in,y_in,cat=None,latlon=False,**kwargs):
         """
@@ -305,29 +314,24 @@ class tc_tracks(object):
                 track saved by :meth:`combine_tracks`
         """
 
+        ax=self.init_map()
+
         t=int(track.ix[np.nanargmin(track[:,'MSLP'].values),0])
-        tmp,txt=[],[]
 
         if self._obs_tc:
             storms=np.where(abs(self._tc_time-self._yr_frac[t])<0.002)[0]
             for storm in set(storms):
-                tmp+=self.plot_on_map(self._ax,self._tc_lon[storm,:],self._tc_lat[storm,:],cat=self.tc_cat(self._tc_intens[storm,:],method='wind'),latlon=True)
+                self.plot_on_map(ax,self._tc_lon[storm,:],self._tc_lat[storm,:],cat=self.tc_cat(self._tc_intens[storm,:],method='wind'),latlon=True)
                 last_pos=np.where(np.isfinite(self._tc_lon[storm,:]))[0][-1]
-                txt.append(self._ax.text(self._tc_lon[storm,last_pos],self._tc_lat[storm,last_pos],''.join(self._tc_sel['name'].ix[storm,:]),transform=self._transform))
+                ax.text(self._tc_lon[storm,last_pos],self._tc_lat[storm,last_pos],''.join(self._tc_sel['name'].ix[storm,:]),transform=self._transform)
 
-        tmp.append(self.plot_on_map(self._ax,track[:,'x'],track[:,'y'],c='orange'))
-        tmp+=self.plot_on_map(self._ax,track[:,'x'],track[:,'y'],cat=self.tc_cat(track[:,'MSLP'].values),marker='.',linestyle='')
-        self._ax.set_title(str(self._dates[t]))
+        self.plot_on_map(ax,track[:,'x'],track[:,'y'],c='orange')
+        self.plot_on_map(ax,track[:,'x'],track[:,'y'],cat=self.tc_cat(track[:,'MSLP'].values),marker='.',linestyle='')
+        ax.set_title(str(self._dates[t]))
 
-        #tmp+=self.plot_on_map(self._m,self._detected[:,'x'],self._detected[:,'y'],marker='.',linestyle='',color='m')
 
         plt.savefig(self._working_dir+'track_path/'+str(self._identifier)+'_'+self._add_name+'_'+str(t)+'_'+str(self._id)+'.png')
 
-        # clean map
-        for element in tmp:
-            l = element.pop(0); wl = weakref.ref(l); l.remove(); del l
-        for element in txt:
-            element.remove()
 
     def plot_all_tracks(self,out_name=None,start_point=True,facecolor='none'):
         """
@@ -343,39 +347,34 @@ class tc_tracks(object):
                 background color of the saved plot
 
         """
+        ax=self.init_map()
 
-        tmp,txt=[],[]
         if out_name is None:
             out_name=self._working_dir+'season_'+str(self._identifier)+'_found_tracks_'+self._add_name+'.png'
 
-        self._ax.set_title('season '+self._identifier)#
+        ax.set_title('season '+self._identifier)#
 
         summary={0:[],1:[],2:[],3:[],4:[],5:[]}
         for id_,track in self._tcs.items():
             track=track[np.isfinite(track[:,'t']),:]
             if start_point:
-                tmp.append(self.plot_on_map(self._ax,track.ix[0,2],track.ix[0,1],linestyle='',marker='o',c='r'))
-                txt.append(self._ax.text(self._lons[int(track.ix[0,1]),int(track.ix[0,2])]-1,self._lats[int(track.ix[0,1]),int(track.ix[0,2])],str(track.ix[0,0]),color='red',va='bottom',ha='right',fontsize=7,transform=self._transform))
-            tmp.append(self.plot_on_map(self._ax,track[:,'x'],track[:,'y'],linestyle='-',linewidth=0.5,c='r'))
-            tmp+=self.plot_on_map(self._ax,track[:,'x'],track[:,'y'],cat=self.tc_cat(track[:,'MSLP'].values),marker='.',linestyle='')
+                self.plot_on_map(ax,track.ix[0,2],track.ix[0,1],linestyle='',marker='o',c='r')
+                ax.text(self._lons[int(track.ix[0,1]),int(track.ix[0,2])]-1,self._lats[int(track.ix[0,1]),int(track.ix[0,2])],str(track.ix[0,0]),color='red',va='bottom',ha='right',fontsize=7,transform=self._transform)
+            self.plot_on_map(ax,track[:,'x'],track[:,'y'],linestyle='-',linewidth=0.5,c='r')
+            self.plot_on_map(ax,track[:,'x'],track[:,'y'],cat=self.tc_cat(track[:,'MSLP'].values),marker='.',linestyle='')
             summary[max(self.tc_cat(track[:,'MSLP'].values))].append(id_)
 
         if self._obs_tc:
             for storm in range(len(self._tc_sel.storm)):
-                tmp+=self.plot_on_map(self._ax,self._tc_lon[storm,:],self._tc_lat[storm,:],cat=self.tc_cat(self._tc_intens[storm,:],method='wind'),latlon=True)
+                self.plot_on_map(ax,self._tc_lon[storm,:],self._tc_lat[storm,:],cat=self.tc_cat(self._tc_intens[storm,:],method='wind'),latlon=True)
 
 
         summary.pop(0)
         for cat,y in zip(summary.keys(),[0.99,0.95,0.91,0.87,0.83]):
-            txt.append(self._ax.text(0.005,y,self._cat_names[cat]+': '+''.join(['X']*len(summary[cat])),transform=self._ax.transAxes,color=self._cat_colors[cat],va='top',ha='left',fontsize=12))
+            ax.text(0.005,y,self._cat_names[cat]+': '+''.join(['X']*len(summary[cat])),transform=ax.transAxes,color=self._cat_colors[cat],va='top',ha='left',fontsize=12)
         plt.tight_layout()
         plt.savefig(out_name,facecolor=facecolor)
 
-        # clean map
-        for element in txt:
-            element.remove()
-        for element in tmp:
-            l = element.pop(0); wl = weakref.ref(l); l.remove(); del l
 
     def plot_detect_summary(self,thr_wind=17.5,out_name=None):
         """
@@ -428,20 +427,20 @@ class tc_tracks(object):
         for t in time_steps:
             tmp,txt=[],[]
             ax=axes[0]; ax.set_title('mean sea level pressure')
-            im=ax.pcolormesh(self._lons,self._lats,self._MSLP[t,:,:],vmin=980,vmax=1020,transform=self._transform)
+            im=ax.pcolormesh(self._lons,self._lats,self._data['MSLP'][t,:,:],vmin=980,vmax=1020,transform=self._transform)
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
             ax=axes[1]; ax.set_title('temperature')
-            im=ax.pcolormesh(self._lons,self._lats,self._T[t,:,:],transform=self._transform)
+            im=ax.pcolormesh(self._lons,self._lats,self._data['T'][t,:,:],transform=self._transform)
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
             ax=axes[2]; ax.set_title('wind speed')
-            im=ax.pcolormesh(self._lons,self._lats,self._Wind10[t,:,:],vmin=0,vmax=30,transform=self._transform)
+            im=ax.pcolormesh(self._lons,self._lats,self._data['Wind10'][t,:,:],vmin=0,vmax=30,transform=self._transform)
             im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
 
-            if self._VO is not None:
+            if self._data['VO'] is not None:
                 ax=axes[3]; ax.set_title('rel. Vorticity')
-                im=ax.pcolormesh(self._lons,self._lats,self._VO[t,:,:],vmin=-9.5*10**(-5),vmax=0.0002,transform=self._transform)
+                im=ax.pcolormesh(self._lons,self._lats,self._data['VO'][t,:,:],vmin=-9.5*10**(-5),vmax=0.0002,transform=self._transform)
                 im.set_cmap('bone'); ax.autoscale(False); ax.axis('off')
             else:
                 ax=axes[3]; ax.set_title('wind speed [m/s] and mslp [mbar]')
@@ -700,7 +699,7 @@ class tc_tracks(object):
                     candidates=[]
                     for p_1 in postions[postions[:,0]==p[0]-1,:].tolist():
                         new_step=np.array((p_1[1]-p[1],p_1[2]-p[2],0))
-                        if v_len(new_step-prev_step)<search_radius: # and self._land_mask[int(p_1[1]),int(p_1[2])]
+                        if v_len(new_step-prev_step)<search_radius: # and self._data['land_mask'][int(p_1[1]),int(p_1[2])]
                             # # exclude strong direction changes if TC isn't extremely slow
                             # if v_len(prev_step)/v_len(new_step-prev_step)<1/velocity_jump and angle_between(new_step,prev_step)>smooth_path_angle:
                             #     # strange movement
@@ -739,11 +738,12 @@ class tc_tracks(object):
                         break
 
                 # delete land steps in the beginning of track
-                while len(track)>0:
-                    if self._land_mask[int(track[0][1]),int(track[0][2])]:
-                        track=track[1:]
-                    else:
-                        break
+                if 'land_mask' in self._data.keys():
+                    while len(track)>0:
+                        if self._data['land_mask'][int(track[0][1]),int(track[0][2])]:
+                            track=track[1:]
+                        else:
+                            break
 
                 # check whether the track should be saved
                 if len(track)>0:
@@ -791,6 +791,8 @@ class tc_tracks(object):
         This detection algorithm is a adapted from Murakami 2015.
         The method is based on the detection mean sea level pressure (MSLP) minima. If closed contours in MSLP are found around a minimum (using :meth:`find_closed_contours`), the minimum is taken as storm center. Within a radius of `dis_cores` the maximum in temperature anomaly (Ta) is suspected to be the warm core of the storm. If a closed  contour in Ta is found around the maximum in Ta, the storm is treated as a warm core storm snapshot.
 
+        Run :meth:`add_data` to add the required fields (MSLP, MSLP_smoothed, Wind10, T) before running this function.
+
         Parameters
         ----------
             dis_mslp_min:   float [deg],default=3
@@ -814,6 +816,16 @@ class tc_tracks(object):
                 time, position and characteristics of detected snapshots
         '''
 
+        # check if required data is available
+        missing_vars=[]
+        for varname in ['MSLP_smoothed','MSLP','Wind10','T']:
+            if varname not in self._data.keys():
+                missing_vars.append(varname)
+        if len(missing_vars)>0:
+            print(', '.join(missing_vars)+' are missing. Please add this field using tc_tracks.add_data()')
+            print('This function requires:\n MSLP: mean sea level pressure\n MSLP_smoothed: smoothed mean sea level pressure (you can also use MSLP)\n Wind10: 10m wind speed\n T: temperature at 500mbar')
+            return(None)
+
         self._add_name='contours'
         out_file=self._working_dir+'detected_positions_'+self._add_name+'.nc'
         if overwrite and os.path.isfile(out_file):
@@ -832,22 +844,22 @@ class tc_tracks(object):
         print('detecting\n10------50-------100')
         for t,progress in zip(self._time_i,np.array([['-']+['']*(len(self._time_i)/20+1)]*20).flatten()[0:len(self._time_i)]):
             sys.stdout.write(progress); sys.stdout.flush()
-            coords=peak_local_max(-self._MSLP_smoothed[t,:,:], min_distance=int(dis_mslp_min))
+            coords=peak_local_max(-self._data['MSLP_smoothed'][t,:,:], min_distance=int(dis_mslp_min))
             for y_p,x_p in zip(coords[:,0],coords[:,1]):
-                tc_area,ncont=self.find_closed_contours(self._MSLP_smoothed[t,:,:],y_p,x_p,step=p_inc_step,search_radius=p_radius,method='min')
+                tc_area,ncont=self.find_closed_contours(self._data['MSLP_smoothed'][t,:,:],y_p,x_p,step=p_inc_step,search_radius=p_radius,method='min')
                 if ncont>0:
                     tmp=[t,y_p,x_p,1,0,0,0]
                     # have to check boundary issues here
                     box=self.get_box(y_p,x_p,dis_cores)
-                    y_,x_=np.where(self._T[t,box[0]:box[1],box[2]:box[3]]==self._T[t,box[0]:box[1],box[2]:box[3]].max())
+                    y_,x_=np.where(self._data['T'][t,box[0]:box[1],box[2]:box[3]]==self._data['T'][t,box[0]:box[1],box[2]:box[3]].max())
                     y_t,x_t=box[0]+y_[0],box[2]+x_[0]
-                    warm_core_area,ncont=self.find_closed_contours(self._T[t,:,:],y_t,x_t,step=T_drop_step,search_radius=p_radius,n_contours=1,method='max')
+                    warm_core_area,ncont=self.find_closed_contours(self._data['T'][t,:,:],y_t,x_t,step=T_drop_step,search_radius=p_radius,n_contours=1,method='max')
                     yy,xx=np.where(warm_core_area==1)
                     if len(np.where(warm_core_area==1)[0])<warm_core_size and ncont==1:
                         tmp[4]=1
 
-                    tmp[5]=self._MSLP[t,y_p,x_p]
-                    tmp[6]=np.nanmax(tc_area*self._Wind10[t,:,:])
+                    tmp[5]=self._data['MSLP'][t,y_p,x_p]
+                    tmp[6]=np.nanmax(tc_area*self._data['Wind10'][t,:,:])
                     if np.isnan(tmp[6]):
                         print(ncont)
                     detect=np.concatenate((detect,np.array([tmp])))
@@ -860,6 +872,8 @@ class tc_tracks(object):
     def detect_knutson2007(self,thr_vort=3.5*10**(-5),dis_vort_max=4,dis_cores=2,thr_MSLP_inc=4,dis_MSLP_inc=5,thr_T_drop=0.8,dis_T_drop=5,tc_size=7,overwrite=False):
         '''
         Detection based on thresholds
+
+        Run :meth:`add_data` to add the required fields (VO, MSLP, Wind10, T) before running this function.
 
         Parameters
         ----------
@@ -888,6 +902,16 @@ class tc_tracks(object):
                 time, position and characteristics of detected snapshots
         '''
 
+        # check if required data is available
+        missing_vars=[]
+        for varname in ['VO','MSLP','Wind10','T']:
+            if varname not in self._data.keys():
+                missing_vars.append(varname)
+        if len(missing_vars)>0:
+            print(', '.join(missing_vars)+' are missing. Please add this field using tc_tracks.add_data()')
+            print('This function requires:\n MSLP: mean sea level pressure\n MSLP_smoothed: smoothed mean sea level pressure (you can also use MSLP)\n Wind10: 10m wind speed\n T: temperature at 500mbar')
+            return(None)
+
         self._add_name='knutson2007'
         out_file=self._working_dir+'detected_positions_thresholds_'+self._add_name+'.nc'
         if overwrite and os.path.isfile(out_file):
@@ -908,32 +932,32 @@ class tc_tracks(object):
         for t,progress in zip(self._time_i,np.array([['-']+['']*(len(self._time_i)/20+1)]*20).flatten()[0:len(self._time_i)]):
             sys.stdout.write(progress); sys.stdout.flush()
             # i vort max
-            vo_=self._VO[t,:,:].copy()
+            vo_=self._data['VO'][t,:,:].copy()
             vo_[vo_<thr_vort]=0
             coords = peak_local_max(vo_, min_distance=int(dis_vort_max))
             if coords.shape[0]>0:
                 for y_v,x_v in zip(coords[:,0],coords[:,1]):
                     y_circ,x_circ=self.area_around(y_v,x_v,dis_cores)
-                    p_window=self._MSLP[t,y_circ,x_circ].flatten()
+                    p_window=self._data['MSLP'][t,y_circ,x_circ].flatten()
                     i=np.where(p_window==p_window.min())[0][0]; y_p,x_p=y_circ[i],x_circ[i]
                     for dis in range(1,dis_MSLP_inc+1):
                         y_circ,x_circ=self.circle_around(y_p,x_p,dis)
                         # ii relative pressure min
-                        # could also be self._MSLP[t,y_circ,x_circ].mean()
-                        if self._MSLP[t,y_circ,x_circ].min()-self._MSLP[t,y_p,x_p]>thr_MSLP_inc:
+                        # could also be self._data['MSLP'][t,y_circ,x_circ].mean()
+                        if self._data['MSLP'][t,y_circ,x_circ].min()-self._data['MSLP'][t,y_p,x_p]>thr_MSLP_inc:
                             tmp=[t,y_p,x_p,1,0,0,0]
                             y_circ,x_circ=self.area_around(y_p,x_p,dis_cores)
                             # iv warm core
-                            t_window=self._T[t,y_circ,x_circ].flatten()
+                            t_window=self._data['T'][t,y_circ,x_circ].flatten()
                             i=np.where(t_window==t_window.max())[0][0]; y_t,x_t=y_circ[i],x_circ[i]
                             for dis in range(1,dis_T_drop+1):
                                 y_circ,x_circ=self.circle_around(y_t,x_t,dis)
-                                if self._T[t,y_t,x_t]-self._T[t,y_circ,x_circ].max()>thr_T_drop:
+                                if self._data['T'][t,y_t,x_t]-self._data['T'][t,y_circ,x_circ].max()>thr_T_drop:
                                     tmp[4]=1
                             # iii wind speed
-                            tmp[5]=self._MSLP[t,y_p,x_p]
+                            tmp[5]=self._data['MSLP'][t,y_p,x_p]
                             y_circ,x_circ=self.area_around(y_p,x_p,tc_size)
-                            tmp[6]=self._Wind10[t,y_circ,x_circ].max()
+                            tmp[6]=self._data['Wind10'][t,y_circ,x_circ].max()
                             detect=np.concatenate((detect,np.array([tmp])))
                             break
 
@@ -972,28 +996,28 @@ class tc_tracks(object):
     #     for t,progress in zip(self._time_i,np.array([['-']+['']*(len(self._time_i)/20+1)]*20).flatten()[0:len(self._time_i)]):
     #         sys.stdout.write(progress); sys.stdout.flush()
     #         # i vort max
-    #         vo_=self._VO[t,:,:].copy()
+    #         vo_=self._data['VO'][t,:,:].copy()
     #         vo_[vo_<thr_vort]=0
     #         coords = peak_local_max(vo_, min_distance=int(dis_vort_max))
     #         if coords.shape[0]>0:
     #             for y_v,x_v in zip(coords[:,0],coords[:,1]):
     #                 y_circ,x_circ=self.area_around(y_v,x_v,dis_cores)
-    #                 p_window=self._MSLP[t,y_circ,x_circ].flatten()
+    #                 p_window=self._data['MSLP'][t,y_circ,x_circ].flatten()
     #                 i=np.where(p_window==p_window.min())[0][0]; y_p,x_p=y_circ[i],x_circ[i]
     #                 y_area,x_area=self.area_around(y_p,x_p,dis_MSLP_inc)
     #                 # ii relative pressure min
-    #                 if self._MSLP[t,y_p,x_p]==self._MSLP[t,y_area,x_area].min():
+    #                 if self._data['MSLP'][t,y_p,x_p]==self._data['MSLP'][t,y_area,x_area].min():
     #                     box_1=self.get_box(y_p,x_p,cores_distance)
     #                     box_2=self.get_box(y_p,x_p,tc_size)
     #                     tmp=[t,y_p,x_p,1,0,0,0]
     #                     # iv warm core
-    #                     if self._T is None:
+    #                     if self._data['T'] is None:
     #                         tmp[4]=1
-    #                     elif self._T[t,1,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self._T[t,1,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>thr_T_drop:
+    #                     elif self._data['T'][t,1,box_1[0]:box_1[1],box_1[2]:box_1[3]].max()-self._data['T'][t,1,box_2[0]:box_2[1],box_2[2]:box_2[3]].mean()>thr_T_drop:
     #                         tmp[4]=1
     #                     # iii wind speed
-    #                     tmp[5]=self._MSLP[t,y_p,x_p]
-    #                     tmp[6]=self._Wind10[t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()
+    #                     tmp[5]=self._data['MSLP'][t,y_p,x_p]
+    #                     tmp[6]=self._data['Wind10'][t,box_2[0]:box_2[1],box_2[2]:box_2[3]].max()
     #                     detect=np.concatenate((detect,np.array([tmp])))
     #
     #     self._detected=da.DimArray(np.array(detect[1:,:]),axes=[range(detect.shape[0]-1),['t','y','x','pressure_low','warm_core','MSLP','Wind10']],dims=['ID','z'])
@@ -1032,33 +1056,33 @@ class tc_tracks(object):
     #     for t,progress in zip(self._time_i,np.array([['-']+['']*(len(self._time_i)/20+1)]*20).flatten()[0:len(self._time_i)]):
     #         sys.stdout.write(progress); sys.stdout.flush()
     #
-    #         vo_=self._VO[t,:,:].copy()
+    #         vo_=self._data['VO'][t,:,:].copy()
     #         vo_[vo_<thr_vort]=0
     #         coords = peak_local_max(vo_, min_distance=int(dis_vort_max))
     #         if coords.shape[0]>0:
     #             for y_v,x_v in zip(coords[:,0],coords[:,1]):
     #                 y_circ,x_circ=self.area_around(y_v,x_v,dis_cores)
     #                 # get small area around vort max
-    #                 p_window=self._MSLP_smoothed[t,y_circ,x_circ].flatten()
+    #                 p_window=self._data['MSLP_smoothed'][t,y_circ,x_circ].flatten()
     #                 # MSLP min next to vort max is center
     #                 i=np.where(p_window==p_window.min())[0][0]; y_p,x_p=y_circ[i],x_circ[i]
     #                 # find closed contours around MSLP min
-    #                 tc_area,ncont=self.find_closed_contours(self._MSLP_smoothed[t,:,:],y_p,x_p,step=p_inc_step,search_radius=p_radius,method='min')
+    #                 tc_area,ncont=self.find_closed_contours(self._data['MSLP_smoothed'][t,:,:],y_p,x_p,step=p_inc_step,search_radius=p_radius,method='min')
     #                 if ncont>0:
     #                     tmp=[t,y_p,x_p,1,0,0,0]
     #                     # find warm core center
     #                     box=self.get_box(y_p,x_p,dis_cores)
-    #                     y_,x_=np.where(self._T[t,box[0]:box[1],box[2]:box[3]]==self._T[t,box[0]:box[1],box[2]:box[3]].max())
+    #                     y_,x_=np.where(self._data['T'][t,box[0]:box[1],box[2]:box[3]]==self._data['T'][t,box[0]:box[1],box[2]:box[3]].max())
     #                     y_t,x_t=box[0]+y_[0],box[2]+x_[0]
     #                     # check if warm core exists
-    #                     warm_core_area,ncont=self.find_closed_contours(self._T[t,:,:],y_t,x_t,step=T_drop_step,search_radius=p_radius,n_contours=1,method='max')
+    #                     warm_core_area,ncont=self.find_closed_contours(self._data['T'][t,:,:],y_t,x_t,step=T_drop_step,search_radius=p_radius,n_contours=1,method='max')
     #                     yy,xx=np.where(warm_core_area==1)
     #                     if len(np.where(warm_core_area==1)[0])<warm_core_size and ncont==1:
     #                         tmp[4]=1
     #
-    #                     tmp[5]=self._MSLP[t,y_p,x_p]
+    #                     tmp[5]=self._data['MSLP'][t,y_p,x_p]
     #                     # tc area is defined by closed contours
-    #                     tmp[6]=np.nanmax(tc_area*self._Wind10[t,:,:])
+    #                     tmp[6]=np.nanmax(tc_area*self._data['Wind10'][t,:,:])
     #                     detect=np.concatenate((detect,np.array([tmp])))
     #
     #     self._detected=da.DimArray(np.array(detect[1:,:]),axes=[range(detect.shape[0]-1),['t','y','x','pressure_low','warm_core','MSLP','Wind10']],dims=['ID','z'])

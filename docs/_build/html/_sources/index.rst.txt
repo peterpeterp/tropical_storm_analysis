@@ -11,7 +11,8 @@ Welcome to storm_analysis's documentation!
 .. toctree::
    :maxdepth: 2
 
-   content
+   notebooks/Tutorial
+   api
 
 Indices and tables
 ==================

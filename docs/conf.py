@@ -49,6 +49,7 @@ extensions = [
     'sphinx.ext.napoleon',
     # 'sphinx.ext.autosummary',
     # 'sphinxcontrib.fulltoc',
+    'nbsphinx'
 ]
 
 autosummary_generate = True

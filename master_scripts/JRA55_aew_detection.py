@@ -35,36 +35,36 @@ def toYearFraction(date):
     return date.year + fraction
 
 os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
-# u_wind='easterly_waves/u_2008_sample.nc'
-# v_wind='easterly_waves/v_2008_sample.nc'
-# time_steps=12
-# level=1
-# x1,x2,y1,y2=-100,0,40,0
-# out_file='test'
-#
-# # Read u and v wind components from file.
-# u = da.read_nc(u_wind)['var33'].ix[:,level,:,:].squeeze()
-# v = da.read_nc(v_wind)['var34'].ix[:,level,:,:].squeeze()
-#
-# u.lon[u.lon>180]-=360
-# v.lon[v.lon>180]-=360
-# lon_rolling=len(u.lon)-np.where(u.lon<0)[0][0]
-# u.lon=np.roll(u.lon,lon_rolling,axis=-1)
-# v.lon=np.roll(v.lon,lon_rolling,axis=-1)
-# u.values=np.roll(u,lon_rolling,axis=-1)
-# v.values=np.roll(v,lon_rolling,axis=-1)
-#
-# u=u[:,y1:y2,x1:x2]
-# v=v[:,y1:y2,x1:x2]
-# lons,lats=np.meshgrid(u.lon,u.lat)
-#
-# u[np.isnan(u)]=0
-# v[np.isnan(v)]=0
-#
-#
-# nc=da.read_nc(u_wind)
-# time_=nc.time
-# dates=[num2date(t,units = nc.axes['time'].units,calendar = nc.axes['time'].calendar) for t in time_]
+u_wind='easterly_waves/u_2008_sample.nc'
+v_wind='easterly_waves/v_2008_sample.nc'
+time_steps=12
+level=1
+x1,x2,y1,y2=-100,0,40,0
+out_file='test'
+
+# Read u and v wind components from file.
+u = da.read_nc(u_wind)['var33'].ix[:,level,:,:].squeeze()
+v = da.read_nc(v_wind)['var34'].ix[:,level,:,:].squeeze()
+
+u.lon[u.lon>180]-=360
+v.lon[v.lon>180]-=360
+lon_rolling=len(u.lon)-np.where(u.lon<0)[0][0]
+u.lon=np.roll(u.lon,lon_rolling,axis=-1)
+v.lon=np.roll(v.lon,lon_rolling,axis=-1)
+u.values=np.roll(u,lon_rolling,axis=-1)
+v.values=np.roll(v,lon_rolling,axis=-1)
+
+u=u[:,y1:y2,x1:x2]
+v=v[:,y1:y2,x1:x2]
+lons,lats=np.meshgrid(u.lon,u.lat)
+
+u[np.isnan(u)]=0
+v[np.isnan(v)]=0
+
+
+nc=da.read_nc(u_wind)
+time_=nc.time
+dates=[num2date(t,units = nc.axes['time'].units,calendar = nc.axes['time'].calendar) for t in time_]
 
 aews=aew_detection.aew_tracks(U=u,V=v,lats=lats,lons=lons,time_=time_,dates=dates,identifier='2008',working_dir='easterly_waves/2008/')
 plt.close('all')

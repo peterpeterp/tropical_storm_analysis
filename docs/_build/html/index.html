@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Modules" href="content.html" /> 
+    <link rel="next" title="Tutorial" href="notebooks/Tutorial.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -79,7 +79,8 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="content.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/Tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Modules</a></li>
 </ul>
 
             
@@ -146,14 +147,40 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="welcome-to-storm-analysis-s-documentation">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="welcome-to-storm-analysis-s-documentation">
 <h1>Welcome to storm_analysis’s documentation!<a class="headerlink" href="#welcome-to-storm-analysis-s-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="content.html">Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="content.html#tropical-cyclone-detection-and-tracking">Tropical cyclone detection and tracking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="content.html#module-AEW_detection">African easterly wave detection and tracking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="content.html#module-TC_support">Support Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/Tutorial.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/Tutorial.html#Initialize">Initialize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/Tutorial.html#Load-input-data">Load input data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/Tutorial.html#Detect-storm-snapshots">Detect storm snapshots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/Tutorial.html#Combine-snapshots-to-tracks">Combine snapshots to tracks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#tropical-cyclone-detection-and-tracking">Tropical cyclone detection and tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-AEW_detection">African easterly wave detection and tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#module-TC_support">Support functions</a></li>
 </ul>
 </li>
 </ul>
@@ -176,7 +203,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="content.html" class="btn btn-neutral float-right" title="Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="notebooks/Tutorial.html" class="btn btn-neutral float-right" title="Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

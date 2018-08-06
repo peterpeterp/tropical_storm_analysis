@@ -1,65 +1,19 @@
-=======
-Modules
-=======
+Tropical storm detection
+========================
 
----------------------------------------
-Tropical cyclone detection and tracking
----------------------------------------
+This module gives a framework for the implementation of storm tracking
+algorithms. Currently two storm tracking algorithms are implemented.
+Thresholds of the algorithms can easily be adapted and testing new
+tracking algorithms is straight forward within this framework.
 
-.. currentmodule:: TC_detection
+Data preprocessing
+------------------
 
-This part of the documentation shows the full API reference of all public
-functions.
+Depending on the detection algorithm, climate variable fields have to be
+provided in the form of dimarray’s.
 
-.. autoclass:: tc_tracks
+.. code:: python
 
-~~~~~~~~~~~~~~~~~~~~~~~~~
-Detecting storm snapshots
-~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automethod:: tc_tracks.detect_contours
-.. automethod:: tc_tracks.detect_knutson2007
-.. automethod:: tc_tracks.find_closed_contours
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Combine storm snapshots to tracks
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automethod:: tc_tracks.combine_tracks
-
-~~~~~~~~~~~~~~~~~~
-Plotting functions
-~~~~~~~~~~~~~~~~~~
-.. automethod:: tc_tracks.init_map
-.. automethod:: tc_tracks.plot_on_map
-.. automethod:: tc_tracks.plot_track_path
-.. automethod:: tc_tracks.plot_all_tracks
-.. automethod:: tc_tracks.plot_detect_summary
-.. automethod:: tc_tracks.plot_surrounding
-
-~~~~~~~~~~~~~~~~~~~~
-Supporting functions
-~~~~~~~~~~~~~~~~~~~~
-.. automethod:: tc_tracks.get_box
-.. automethod:: tc_tracks.area_around
-.. automethod:: tc_tracks.circle_around
-.. automethod:: tc_tracks.degree_to_step
-.. automethod:: tc_tracks.tc_cat
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Analysis using observed track data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automethod:: tc_tracks.init_obs_tcs
-.. automethod:: tc_tracks.obs_track_info
-
---------------------------------------------
-African easterly wave detection and tracking
---------------------------------------------
-
-.. automodule:: AEW_detection
-  :members:
-
------------------
-Support Functions
------------------
-
-.. automodule:: TC_support
-  :members:
+   import dimarray as da
+   U850=da.read_nc(file_name_of_U)['var33']
+   V850=da.read_nc(file_name_of_V)['var34']

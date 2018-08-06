@@ -78,7 +78,8 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../content.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/Tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Modules</a></li>
 </ul>
 
             
@@ -205,7 +206,7 @@
     <span class="k">return</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
 <span class="c1">#------------ Met stuff</span>
-<div class="viewcode-block" id="rel_vort"><a class="viewcode-back" href="../content.html#TC_support.rel_vort">[docs]</a><span class="k">def</span> <span class="nf">rel_vort</span><span class="p">(</span><span class="n">U</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="rel_vort"><a class="viewcode-back" href="../api.html#TC_support.rel_vort">[docs]</a><span class="k">def</span> <span class="nf">rel_vort</span><span class="p">(</span><span class="n">U</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;adapted from wrftools: github.com/keltonhalbert/wrftools&quot;&quot;&quot;</span>
     <span class="n">xx</span><span class="p">,</span><span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
     <span class="n">xx</span><span class="o">*=</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">yy</span><span class="p">))</span><span class="o">*</span><span class="mi">6371000</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">360.</span>
@@ -299,7 +300,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">cat__</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
 
-<div class="viewcode-block" id="normalize180"><a class="viewcode-back" href="../content.html#TC_support.normalize180">[docs]</a><span class="k">def</span> <span class="nf">normalize180</span><span class="p">(</span><span class="n">lon</span><span class="p">):</span>
+<div class="viewcode-block" id="normalize180"><a class="viewcode-back" href="../api.html#TC_support.normalize180">[docs]</a><span class="k">def</span> <span class="nf">normalize180</span><span class="p">(</span><span class="n">lon</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Normalize lon to range [180, 180)&quot;&quot;&quot;</span>
     <span class="n">lower</span> <span class="o">=</span> <span class="o">-</span><span class="mf">180.</span><span class="p">;</span> <span class="n">upper</span> <span class="o">=</span> <span class="mf">180.</span>
     <span class="k">if</span> <span class="n">lon</span> <span class="o">&gt;</span> <span class="n">upper</span> <span class="ow">or</span> <span class="n">lon</span> <span class="o">==</span> <span class="n">lower</span><span class="p">:</span>

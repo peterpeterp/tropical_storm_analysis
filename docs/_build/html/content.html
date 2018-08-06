@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Modules &mdash; storm_analysis  documentation</title>
+  <title>Tropical storm detection &mdash; storm_analysis  documentation</title>
   
 
   
@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Modules" href="api.html" />
     <link rel="prev" title="Welcome to storm_analysis’s documentation!" href="index.html" /> 
 
   
@@ -79,19 +80,11 @@
             
             
               <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#tropical-cyclone-detection-and-tracking">Tropical cyclone detection and tracking</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#detecting-storm-snapshots">Detecting storm snapshots</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#combine-storm-snapshots-to-tracks">Combine storm snapshots to tracks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#plotting-functions">Plotting functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#supporting-functions">Supporting functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#analysis-using-observed-track-data">Analysis using observed track data</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tropical storm detection</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-preprocessing">Data preprocessing</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#module-AEW_detection">African easterly wave detection and tracking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-TC_support">Support Functions</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Modules</a></li>
 </ul>
 
             
@@ -139,7 +132,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Modules</li>
+      <li>Tropical storm detection</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -158,451 +151,21 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="modules">
-<h1>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="tropical-cyclone-detection-and-tracking">
-<h2>Tropical cyclone detection and tracking<a class="headerlink" href="#tropical-cyclone-detection-and-tracking" title="Permalink to this headline">¶</a></h2>
-<p>This part of the documentation shows the full API reference of all public
-functions.</p>
-<dl class="class">
-<dt id="TC_detection.tc_tracks">
-<em class="property">class </em><code class="descclassname">TC_detection.</code><code class="descname">tc_tracks</code><span class="sig-paren">(</span><em>VO</em>, <em>Wind10</em>, <em>MSLP</em>, <em>MSLP_smoothed</em>, <em>SST</em>, <em>T</em>, <em>T_diff</em>, <em>land_mask</em>, <em>lats</em>, <em>lons</em>, <em>time_</em>, <em>dates</em>, <em>identifier</em>, <em>working_dir</em>, <em>time_steps=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class can be used to detect tropical cyclones. Depending on the method used to detect storm snapshots different input data is required. Currently two storm snapshot detecion methods are implemented: <a class="reference internal" href="#TC_detection.tc_tracks.detect_contours" title="TC_detection.tc_tracks.detect_contours"><code class="xref py py-meth docutils literal notranslate"><span class="pre">detect_contours()</span></code></a> or <a class="reference internal" href="#TC_detection.tc_tracks.detect_knutson2007" title="TC_detection.tc_tracks.detect_knutson2007"><code class="xref py py-meth docutils literal notranslate"><span class="pre">detect_knutson2007()</span></code></a>. When adding new methods you should stick to the output format of these methods.</p>
-</dd></dl>
-
-<div class="section" id="detecting-storm-snapshots">
-<h3>Detecting storm snapshots<a class="headerlink" href="#detecting-storm-snapshots" title="Permalink to this headline">¶</a></h3>
-<dl class="method">
-<dt id="TC_detection.tc_tracks.detect_contours">
-<code class="descclassname">tc_tracks.</code><code class="descname">detect_contours</code><span class="sig-paren">(</span><em>overwrite=False</em>, <em>p_radius=27</em>, <em>p_inc_step=1</em>, <em>warm_core_size=3</em>, <em>T_drop_step=1</em>, <em>dis_cores=1</em>, <em>dis_mslp_min=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.detect_contours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.detect_contours" title="Permalink to this definition">¶</a></dt>
-<dd><p>This detection algorithm is a adapted from Murakami 2015.
-The method is based on the detection mean sea level pressure (MSLP) minima. If closed contours in MSLP are found around a minimum (using <a class="reference internal" href="#TC_detection.tc_tracks.find_closed_contours" title="TC_detection.tc_tracks.find_closed_contours"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_closed_contours()</span></code></a>), the minimum is taken as storm center. Within a radius of <cite>dis_cores</cite> the maximum in temperature anomaly (Ta) is suspected to be the warm core of the storm. If a closed  contour in Ta is found around the maximum in Ta, the storm is treated as a warm core storm snapshot.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>dis_mslp_min</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em><em>,</em><em>default=3</em>) – minimal allowed distance between detected mslp minima</li>
-<li><strong>p_radius</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em><em>,</em><em>defualt=27</em>) – maximum radius for mslp closed contours</li>
-<li><strong>p_inc_step</strong> (<em>float</em><em> [</em><em>hPa</em><em>]</em><em>,</em><em>default=1</em>) – step for mslp contours</li>
-<li><strong>warm_core_size</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em><em>,</em><em>default=3</em>) – maximal radius of warm core contours</li>
-<li><strong>T_drop_step</strong> (<em>float</em><em> [</em><em>K</em><em>]</em><em>,</em><em>default=1</em>) – step for Ta contours</li>
-<li><strong>dis_cores</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em><em>,</em><em>default=1</em>) – maximal distances between vort max and mslp min (mslp min and warm core)</li>
-<li><strong>overwrite</strong> (<em>bool</em><em>,</em><em>default=False</em>) – if False, existing outputfiles of the function are loaded, if True they are overwritten</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self._detected</strong> – time, position and characteristics of detected snapshots</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dimarray</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.detect_knutson2007">
-<code class="descclassname">tc_tracks.</code><code class="descname">detect_knutson2007</code><span class="sig-paren">(</span><em>thr_vort=3.5000000000000004e-05</em>, <em>dis_vort_max=4</em>, <em>dis_cores=2</em>, <em>thr_MSLP_inc=4</em>, <em>dis_MSLP_inc=5</em>, <em>thr_T_drop=0.8</em>, <em>dis_T_drop=5</em>, <em>tc_size=7</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.detect_knutson2007"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.detect_knutson2007" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detection based on thresholds</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>thr_vort</strong> (<em>float</em><em> [</em><em>1/s</em><em>]</em><em>,</em><em>default=3.5*10**</em><em>(</em><em>-5</em><em>)</em>) – threshold for relative vorticity maxima</li>
-<li><strong>dis_vort_max</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em><em>,</em><em>default=4</em>) – minimal distance between vorticity maxima</li>
-<li><strong>dis_cores</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em><em>,</em><em>default=2</em>) – maximal distances between vort max and mslp min (mslp min and warm core)</li>
-<li><strong>thr_MSLP_inc</strong> (<em>float</em><em> [</em><em>hPa</em><em>]</em><em>,</em><em>default=4</em>) – increase in MSLP from center over dis_MSLP_inc</li>
-<li><strong>dis_MSLP_inc</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em><em>,</em><em>default=5</em>) – distance over which MSLP should increase by thr_MSLP_inc</li>
-<li><strong>thr_T_drop</strong> (<em>float</em><em> [</em><em>K</em><em>]</em><em>,</em><em>default=0.8</em>) – temperature drop from warm core center over dis_T_decrease</li>
-<li><strong>dis_T_drop</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em><em>,</em><em>default=5</em>) – distance over which T should decrease by thr_T_decrease</li>
-<li><strong>tc_size</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em><em>,</em><em>default=7</em>) – radius within which maximal Wind10 is searched for</li>
-<li><strong>overwrite</strong> (<em>bool</em><em>,</em><em>default=False</em>) – if False, existing outputfiles of the function are loaded, if True they are overwritten</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self._detected</strong> – time, position and characteristics of detected snapshots</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dimarray</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.find_closed_contours">
-<code class="descclassname">tc_tracks.</code><code class="descname">find_closed_contours</code><span class="sig-paren">(</span><em>field</em>, <em>y</em>, <em>x</em>, <em>step=2</em>, <em>search_radius=30</em>, <em>n_contours=None</em>, <em>method='min'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.find_closed_contours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.find_closed_contours" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function uses opencv to detect closed contours around a given point</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>field</strong> (<em>np.array</em>) – field in which contours are searched</li>
-<li><strong>y</strong> (<em>int</em><em> [</em><em>index</em><em>]</em>) – latitude index within field of point around which contours are searched</li>
-<li><strong>x</strong> (<em>int</em><em> [</em><em>index</em><em>]</em>) – longitude index within field of point around which contours are searched</li>
-<li><strong>step</strong> (<em>float</em><em>,</em><em>default=2</em>) – step is added to the search threshold after each identified contour</li>
-<li><strong>search_radius</strong> (<em>int</em><em> [</em><em>lat/lon steps</em><em>]</em><em>,</em>) – maximal allowed radius for contours. If a contour touches this limit, the contour isn’t considered as closed. Given in lat/lon steps</li>
-<li><strong>n_contours</strong> (<em>int</em><em>, </em><em>default=None</em>) – If this is not None, the algorithm stops searching after <cite>n_contours</cite> are found</li>
-<li><strong>method</strong> (<em>str</em><em> [</em><em>&quot;min&quot;</em><em> or </em><em>&quot;max&quot;</em><em>]</em><em>,</em><em>default=&quot;min&quot;</em>) – defines whether closed contours are searched around a minimum or a maximum</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li><strong>cont</strong> (<em>np.array</em>) – array containing a lat-lon mask for each found contour. Cells in contained in the contour are 1, other are nans.</li>
-<li><strong>ncont</strong> (<em>int</em>) – number of found contours</li>
-</ul>
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+  <div class="section" id="tropical-storm-detection">
+<h1>Tropical storm detection<a class="headerlink" href="#tropical-storm-detection" title="Permalink to this headline">¶</a></h1>
+<p>This module gives a framework for the implementation of storm tracking
+algorithms. Currently two storm tracking algorithms are implemented.
+Thresholds of the algorithms can easily be adapted and testing new
+tracking algorithms is straight forward within this framework.</p>
+<div class="section" id="data-preprocessing">
+<h2>Data preprocessing<a class="headerlink" href="#data-preprocessing" title="Permalink to this headline">¶</a></h2>
+<p>Depending on the detection algorithm, climate variable fields have to be
+provided in the form of dimarray’s.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dimarray</span> <span class="k">as</span> <span class="nn">da</span>
+<span class="n">U850</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">read_nc</span><span class="p">(</span><span class="n">file_name_of_U</span><span class="p">)[</span><span class="s1">&#39;var33&#39;</span><span class="p">]</span>
+<span class="n">V850</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">read_nc</span><span class="p">(</span><span class="n">file_name_of_V</span><span class="p">)[</span><span class="s1">&#39;var34&#39;</span><span class="p">]</span>
+</pre></div>
 </div>
-<div class="section" id="combine-storm-snapshots-to-tracks">
-<h3>Combine storm snapshots to tracks<a class="headerlink" href="#combine-storm-snapshots-to-tracks" title="Permalink to this headline">¶</a></h3>
-<dl class="method">
-<dt id="TC_detection.tc_tracks.combine_tracks">
-<code class="descclassname">tc_tracks.</code><code class="descname">combine_tracks</code><span class="sig-paren">(</span><em>search_radius=6</em>, <em>total_steps=12</em>, <em>warm_steps=8</em>, <em>strong_steps=0</em>, <em>consecutive_warm_strong_steps=6</em>, <em>thr_wind=17.5</em>, <em>smooth_path_angle=2</em>, <em>velocity_jump=3.0</em>, <em>lat_formation_cutoff=40</em>, <em>overwrite=False</em>, <em>plot=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.combine_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.combine_tracks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Combines detected storm snapshots from <a class="reference internal" href="#TC_detection.tc_tracks.detect_contours" title="TC_detection.tc_tracks.detect_contours"><code class="xref py py-meth docutils literal notranslate"><span class="pre">detect_contours()</span></code></a> or <a class="reference internal" href="#TC_detection.tc_tracks.detect_knutson2007" title="TC_detection.tc_tracks.detect_knutson2007"><code class="xref py py-meth docutils literal notranslate"><span class="pre">detect_knutson2007()</span></code></a> into storm tracks.</p>
-<p>In a first step, starting with the storm snapshot with lowest MSLP, storm snapshots in the following and preceding time steps are added to the track if they are located within the <cite>search_radius</cite>. If multiple snapshots are found within the <cite>search_radius</cite> the one with lowest MSLP is selected. If a landmask was provided, all storm snapshots located over land are deleted from the beginning of the track. Finally if the track fullfills a set of conditions, it is saved.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>search_radius</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em><em>,</em><em>default=6</em>) – maximal allowed distance between two storm snapshots of consecutive time steps</li>
-<li><strong>total_steps</strong> (<em>int</em><em>, </em><em>default=12</em>) – minimal number of steps required for the track to be saved</li>
-<li><strong>warm_steps</strong> (<em>int</em><em>, </em><em>default=8</em>) – minimal number of warm core steps required for the track to be saved</li>
-<li><strong>strong_steps</strong> (<em>int</em><em>, </em><em>default=0</em>) – minimal number of time steps with wind speeds above <cite>thr_wind</cite> required for the track to be saved</li>
-<li><strong>consecutive_warm_strong_steps</strong> (<em>int</em><em>, </em><em>default=6</em>) – minimal number of consecutive warm core steps with wind speeds above <cite>thr_wind</cite> required for the track to be saved</li>
-<li><strong>thr_wind</strong> (<em>float</em><em> [</em><em>m/s</em><em>]</em><em>,</em><em>default=17.5</em>) – threshold above which a storm snapshot is considered to be a strong storm (relevant for <cite>strong_steps</cite>)</li>
-<li><strong>float</strong><strong> [</strong><strong>deg</strong><strong>]</strong><strong>, </strong><strong>default=40</strong> (<em>lat_formation_cutoff</em><em>,</em>) – maximal allowed latitude for storm formation</li>
-<li><strong>overwrite</strong> (<em>bool</em><em>, </em><em>default=False</em>) – if False, existing outputfiles of the function are loaded, if True they are overwritten</li>
-<li><strong>plot</strong> (<em>bool</em><em>, </em><em>default=True</em>) – create a plot of each saved track</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self._tcs</strong> – a dimarray containg time, position and characteristics of each track</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dimarray</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<div class="section" id="plotting-functions">
-<h3>Plotting functions<a class="headerlink" href="#plotting-functions" title="Permalink to this headline">¶</a></h3>
-<dl class="method">
-<dt id="TC_detection.tc_tracks.init_map">
-<code class="descclassname">tc_tracks.</code><code class="descname">init_map</code><span class="sig-paren">(</span><em>ax</em>, <em>transform</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.init_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.init_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>All plot functions except <a class="reference internal" href="#TC_detection.tc_tracks.plot_surrounding" title="TC_detection.tc_tracks.plot_surrounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_surrounding()</span></code></a> plot on the map initialized in this function</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ax</strong> (<em>cartopy.mpl.geoaxes.GeoAxesSubplot</em>) – an axis with cartopy projection. This ax object can be created with a command as <cite>ax = plt.axes(projection=ccrs.PlateCarree())</cite></li>
-<li><strong>transform</strong> (<em>cartopy.crs</em><em>, </em><em>default=ccrs.PlateCarree</em><em>(</em><em>)</em>) – this argument will be added to all plot functions to  interprete given lat-lon coordinates</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.plot_on_map">
-<code class="descclassname">tc_tracks.</code><code class="descname">plot_on_map</code><span class="sig-paren">(</span><em>ax</em>, <em>x_in</em>, <em>y_in</em>, <em>cat=None</em>, <em>latlon=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.plot_on_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.plot_on_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>function used to plot tracks or positions on a map (usually the map initialized in <a class="reference internal" href="#TC_detection.tc_tracks.init_map" title="TC_detection.tc_tracks.init_map"><code class="xref py py-meth docutils literal notranslate"><span class="pre">init_map()</span></code></a>)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>ax</strong> (<em>cartopy.mpl.geoaxes.GeoAxesSubplot</em>) – the axes on which to plot. This is usually <cite>self._ax</cite> except when called from <a class="reference internal" href="#TC_detection.tc_tracks.plot_surrounding" title="TC_detection.tc_tracks.plot_surrounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_surrounding()</span></code></a></li>
-<li><strong>x_in</strong> (<em>int</em><em> or </em><em>array</em>) – x-location(s) to be ploted</li>
-<li><strong>y_in</strong> (<em>int</em><em> or </em><em>array</em>) – y-location(s) to be ploted</li>
-<li><strong>cat</strong> (<em>int</em><em> or </em><em>array</em><em>, </em><em>default=None</em>) – category of the TC-scale defining the plot-color</li>
-<li><strong>latlon</strong> (<em>bool</em><em>, </em><em>default=False</em>) – if True, <cite>x_in</cite> and <cite>y_in</cite> are lons and lats. If False, they are indices of the <cite>self._lons</cite> and <cite>self._lats</cite> arrays initialized in <code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code></li>
-<li><strong>**kwargs</strong> – key word arguments used in plot functions</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the output of the plot command</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ax.plot()</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.plot_track_path">
-<code class="descclassname">tc_tracks.</code><code class="descname">plot_track_path</code><span class="sig-paren">(</span><em>track</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.plot_track_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.plot_track_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plots an individual track and saves it in <cite>self._working_dir+’track_path/’</cite></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>track</strong> (<em>dimarray</em>) – track saved by <a class="reference internal" href="#TC_detection.tc_tracks.combine_tracks" title="TC_detection.tc_tracks.combine_tracks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">combine_tracks()</span></code></a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.plot_all_tracks">
-<code class="descclassname">tc_tracks.</code><code class="descname">plot_all_tracks</code><span class="sig-paren">(</span><em>out_name=None</em>, <em>start_point=True</em>, <em>facecolor='none'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.plot_all_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.plot_all_tracks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot all tracks found in the dataset</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>out_name</strong> (<em>str</em><em>, </em><em>default=None</em>) – filename under which the plot is saved. If None, it is saved in <cite>self.working_dir</cite></li>
-<li><strong>start_point</strong> (<em>bool</em><em>, </em><em>default=True</em>) – if True, start point of the track is highlighted</li>
-<li><strong>facecolor</strong> (<em>str</em><em>, </em><em>default=&quot;none&quot;</em>) – background color of the saved plot</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.plot_detect_summary">
-<code class="descclassname">tc_tracks.</code><code class="descname">plot_detect_summary</code><span class="sig-paren">(</span><em>thr_wind=17.5</em>, <em>out_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.plot_detect_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.plot_detect_summary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plots all storm snapshots detected in the dataset. Highlights warm core snapshots with red triangles and strong storm snapshots with yellwo triangles</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>thr_wind</strong> (<em>float</em><em> [</em><em>m/s</em><em>]</em><em>, </em><em>default=17.5</em>) – threshold used to differentiate between strom and weak storms</li>
-<li><strong>out_name</strong> (<em>str</em><em>, </em><em>default=None</em>) – filename under which the plot is saved. If None, it is saved in <cite>self.working_dir</cite></li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.plot_surrounding">
-<code class="descclassname">tc_tracks.</code><code class="descname">plot_surrounding</code><span class="sig-paren">(</span><em>axes</em>, <em>time_steps=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.plot_surrounding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.plot_surrounding" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function plotting the four fields MSLP, Ta, WS and Vort for selected time steps. The function also highlights fulfilled warm core and strong storm conditions for detected snapshots. If observed data is loaded, information about observed storms is also added.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>axes</strong> (<em>array of 4 cartopy.mpl.geoaxes.GeoAxesSubplot</em>) – an array with 4 axes with cartopy projection. This ax object can be created with a command as <cite>fig,axes=plt.subplots(nrows=2,ncols=2,figsize=(11.5,5),subplot_kw={‘projection’: ccrs.PlateCarree()}); axes=axes.flatten()</cite></li>
-<li><strong>time_steps</strong> (<em>array of ints</em><em> [</em><em>indices of time axis</em><em>]</em><em>, </em><em>default=None</em>) – time steps for which plots are created. If None, plots are created for all time steps</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<div class="section" id="supporting-functions">
-<h3>Supporting functions<a class="headerlink" href="#supporting-functions" title="Permalink to this headline">¶</a></h3>
-<dl class="method">
-<dt id="TC_detection.tc_tracks.get_box">
-<code class="descclassname">tc_tracks.</code><code class="descname">get_box</code><span class="sig-paren">(</span><em>y</em>, <em>x</em>, <em>window</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.get_box"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.get_box" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds square around position</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>y</strong> (<em>index</em>) – center of square as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
-<li><strong>x</strong> (<em>index</em>) – center of square as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
-<li><strong>window</strong> – half of the length of the square</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>corners</strong> – corner coordinates of square</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple (y_min,y_max,x_min,x_max)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.area_around">
-<code class="descclassname">tc_tracks.</code><code class="descname">area_around</code><span class="sig-paren">(</span><em>y</em>, <em>x</em>, <em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.area_around"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.area_around" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds area around position as ponints within a circle defining the area</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>y</strong> (<em>index</em>) – center of circle as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
-<li><strong>x</strong> (<em>index</em>) – center of circle as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
-<li><strong>window</strong> – radius of the circle</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">ya and x indices of points within circle defining the area</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">indices</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.circle_around">
-<code class="descclassname">tc_tracks.</code><code class="descname">circle_around</code><span class="sig-paren">(</span><em>y</em>, <em>x</em>, <em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.circle_around"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.circle_around" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds circle around position</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>y</strong> (<em>index</em>) – center of circle as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
-<li><strong>x</strong> (<em>index</em>) – center of circle as an index of <cite>self._lats</cite> and <cite>self._lons</cite></li>
-<li><strong>window</strong> – radius of the circle</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">y and x indices of points on the circle</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">indices</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.degree_to_step">
-<code class="descclassname">tc_tracks.</code><code class="descname">degree_to_step</code><span class="sig-paren">(</span><em>degree</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.degree_to_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.degree_to_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts distances in degrees into steps on the lat-lon grid</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>degree</strong> (<em>float</em><em> [</em><em>deg</em><em>]</em>) – distance to be converted</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">number of steps on the lon-lat grid corresponding to the distance</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.tc_cat">
-<code class="descclassname">tc_tracks.</code><code class="descname">tc_cat</code><span class="sig-paren">(</span><em>z</em>, <em>method='pressure'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.tc_cat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.tc_cat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the category of a storm snapshot based on 10m wind speed or MSLP</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>z</strong> (<em>float</em><em> [</em><em>hPa</em><em> or </em><em>m/s</em><em>]</em>) – value tested against TC-categors thresholds</li>
-<li><strong>method</strong> (<em>str</em><em> [</em><em>'pressure'</em><em> or </em><em>'wind'</em><em>]</em><em>, </em><em>default='pressure'</em>) – specifies if <cite>z</cite> is a wind-speed or a pressure value</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cat</strong> – category of the TC form 0-5</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<div class="section" id="analysis-using-observed-track-data">
-<h3>Analysis using observed track data<a class="headerlink" href="#analysis-using-observed-track-data" title="Permalink to this headline">¶</a></h3>
-<dl class="method">
-<dt id="TC_detection.tc_tracks.init_obs_tcs">
-<code class="descclassname">tc_tracks.</code><code class="descname">init_obs_tcs</code><span class="sig-paren">(</span><em>tc_sel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.init_obs_tcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.init_obs_tcs" title="Permalink to this definition">¶</a></dt>
-<dd><p>This functions transforms ibtracks input into the format used by plot functions</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tc_sel</strong> (<em>dimarray</em>) – ibtracks loaded as dimarray</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="TC_detection.tc_tracks.obs_track_info">
-<code class="descclassname">tc_tracks.</code><code class="descname">obs_track_info</code><span class="sig-paren">(</span><em>core_radius=3</em>, <em>full_radius=7</em>, <em>overwrite=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.obs_track_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.obs_track_info" title="Permalink to this definition">¶</a></dt>
-<dd><p>Collects and sves info of input fields around observed tracks</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>core_radius</strong> (<em>int</em><em>, </em><em>default=3</em>) – radius of grid-cells around storm center which are going to be analyzed for core specific variables</li>
-<li><strong>full_radius</strong> (<em>int</em><em>, </em><em>default=7</em>) – radius of grid-cells around storm center which are going to be analyzed</li>
-<li><strong>overwrite</strong> (<em>bool</em><em>, </em><em>default=False</em>) – if False, existing outputfiles of the function are loaded, if True they are overwritten</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self._obs_track_info</strong> – array containg info at time steps and positions of observed storms</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dimarray</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-</div>
-<div class="section" id="module-AEW_detection">
-<span id="african-easterly-wave-detection-and-tracking"></span><h2>African easterly wave detection and tracking<a class="headerlink" href="#module-AEW_detection" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="AEW_detection.aew_tracks">
-<em class="property">class </em><code class="descclassname">AEW_detection.</code><code class="descname">aew_tracks</code><span class="sig-paren">(</span><em>identifier</em>, <em>working_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AEW_detection.html#aew_tracks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AEW_detection.aew_tracks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class similar to tc_tracks but for african easterly waves</p>
-</dd></dl>
-
-</div>
-<div class="section" id="module-TC_support">
-<span id="support-functions"></span><h2>Support Functions<a class="headerlink" href="#module-TC_support" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="TC_support.rel_vort">
-<code class="descclassname">TC_support.</code><code class="descname">rel_vort</code><span class="sig-paren">(</span><em>U</em>, <em>V</em>, <em>y</em>, <em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#rel_vort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.rel_vort" title="Permalink to this definition">¶</a></dt>
-<dd><p>adapted from wrftools: github.com/keltonhalbert/wrftools</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="TC_support.normalize180">
-<code class="descclassname">TC_support.</code><code class="descname">normalize180</code><span class="sig-paren">(</span><em>lon</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_support.html#normalize180"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_support.normalize180" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normalize lon to range [180, 180)</p>
-</dd></dl>
-
 </div>
 </div>
 
@@ -613,6 +176,8 @@ The method is based on the detection mean sea level pressure (MSLP) minima. If c
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api.html" class="btn btn-neutral float-right" title="Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral" title="Welcome to storm_analysis’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

@@ -58,7 +58,7 @@ African easterly wave detection and tracking
   :members:
 
 -----------------
-Support Functions
+Support functions
 -----------------
 
 .. automodule:: TC_support
