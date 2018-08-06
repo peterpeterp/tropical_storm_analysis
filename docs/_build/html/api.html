@@ -324,16 +324,20 @@ The method is based on the detection mean sea level pressure (MSLP) minima. If c
 <div class="section" id="plotting-functions">
 <h3>Plotting functions<a class="headerlink" href="#plotting-functions" title="Permalink to this headline">¶</a></h3>
 <dl class="method">
-<dt id="TC_detection.tc_tracks.init_map">
-<code class="descclassname">tc_tracks.</code><code class="descname">init_map</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.init_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.init_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>All plot functions except <a class="reference internal" href="#TC_detection.tc_tracks.plot_surrounding" title="TC_detection.tc_tracks.plot_surrounding"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_surrounding()</span></code></a> plot on the map initialized in this function</p>
+<dt id="TC_detection.tc_tracks.plot_settings">
+<code class="descclassname">tc_tracks.</code><code class="descname">plot_settings</code><span class="sig-paren">(</span><em>projection, transform=None, extent=[-180, 180, -90, 90], land_color='darkgreen', ocean_color='darkblue', figsize=(10, 5)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.plot_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.plot_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot settings used by different methods</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ax</strong> (<em>cartopy.mpl.geoaxes.GeoAxesSubplot</em>) – an axis with cartopy projection. This ax object can be created with a command as <cite>ax = plt.axes(projection=ccrs.PlateCarree())</cite></li>
-<li><strong>transform</strong> (<em>cartopy.crs</em><em>, </em><em>default=ccrs.PlateCarree</em><em>(</em><em>)</em>) – this argument will be added to all plot functions to  interprete given lat-lon coordinates</li>
+<li><strong>projection</strong> (<em>cartopy.crs projection</em>) – projection of the ouput plot</li>
+<li><strong>transform</strong> (<em>cartopy.crs projection</em>) – projection of lat-lon grid. This is usually ccrs.PlateCarree()</li>
+<li><strong>extent</strong> (<em>list</em><em>, </em><em>default=</em><em>[</em><em>-180</em><em>,</em><em>180</em><em>,</em><em>-90</em><em>,</em><em>90</em><em>]</em>) – extent of the plot</li>
+<li><strong>land_color</strong> (<em>str</em><em>, </em><em>default='darkgreen'</em>) – color of continents</li>
+<li><strong>ocean_color</strong> (<em>str</em><em>, </em><em>default='darkblue'</em>) – color of oceans</li>
+<li><strong>figsize</strong> (<em>tuple</em><em>, </em><em>default=</em><em>(</em><em>10</em><em>,</em><em>5</em><em>)</em>) – size of the plot</li>
 </ul>
 </td>
 </tr>
@@ -344,7 +348,7 @@ The method is based on the detection mean sea level pressure (MSLP) minima. If c
 <dl class="method">
 <dt id="TC_detection.tc_tracks.plot_on_map">
 <code class="descclassname">tc_tracks.</code><code class="descname">plot_on_map</code><span class="sig-paren">(</span><em>ax</em>, <em>x_in</em>, <em>y_in</em>, <em>cat=None</em>, <em>latlon=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TC_detection.html#tc_tracks.plot_on_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TC_detection.tc_tracks.plot_on_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>function used to plot tracks or positions on a map (usually the map initialized in <a class="reference internal" href="#TC_detection.tc_tracks.init_map" title="TC_detection.tc_tracks.init_map"><code class="xref py py-meth docutils literal notranslate"><span class="pre">init_map()</span></code></a>)</p>
+<dd><p>function used to plot tracks or positions on a map (usually the map initialized in <code class="xref py py-meth docutils literal notranslate"><span class="pre">init_map()</span></code>)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

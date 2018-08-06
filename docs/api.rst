@@ -28,7 +28,7 @@ Combine storm snapshots to tracks
 ~~~~~~~~~~~~~~~~~~
 Plotting functions
 ~~~~~~~~~~~~~~~~~~
-.. automethod:: tc_tracks.init_map
+.. automethod:: tc_tracks.plot_settings
 .. automethod:: tc_tracks.plot_on_map
 .. automethod:: tc_tracks.plot_track_path
 .. automethod:: tc_tracks.plot_all_tracks

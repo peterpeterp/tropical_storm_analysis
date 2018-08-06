@@ -268,14 +268,12 @@ class tc_tracks(object):
 
     def init_map(self):
         """
-        All plot functions except :meth:`plot_surrounding` plot on the map initialized in this function
+        Initializes new map based on plot settings defined in :meth:`plot_settings`
 
-        Parameters
-        ----------
+        Returns
+        -------
             ax: cartopy.mpl.geoaxes.GeoAxesSubplot
-                an axis with cartopy projection. This ax object can be created with a command as `ax = plt.axes(projection=ccrs.PlateCarree())`
-            transform: cartopy.crs, default=ccrs.PlateCarree()
-                this argument will be added to all plot functions to  interprete given lat-lon coordinates
+                an axis with cartopy projection
         """
         plt.close('all')
         fig,ax=plt.subplots(nrows=1,ncols=1,figsize=self._figsize)
