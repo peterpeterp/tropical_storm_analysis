@@ -14,19 +14,19 @@ import cartopy.crs as ccrs
 import cartopy
 sns.set_palette(sns.color_palette("plasma"))
 
-try:
-    sys.path.append('/Users/peterpfleiderer/Projects/tropical_cyclones/TC_scripts')
-    sys.path.append('/Users/peterpfleiderer/Projects/tropical_cyclones/TC_scripts/feature_tracking')
-    os.chdir('/Users/peterpfleiderer/Projects/')
-except:
-    sys.path.append('/p/projects/tumble/carls/shared_folder/tropical_cyclones/TC_detection/TC_scripts')
-    sys.path.append('/p/projects/tumble/carls/shared_folder/tropical_cyclones/TC_detection/TC_scripts/feature_tracking')
-    os.chdir('/p/projects/tumble/carls/shared_folder/')
+for base_path in ['/Users/peterpfleiderer/Projects/tropical_cyclones','tropical_cyclones','/p/projects/tumble/carls/shared_folder/tropical_cyclones']:
+    try:
+        os.chdir(base_path)
+    except:
+        pass
+
+sys.path.append('tropical_storm_analysis')
+sys.path.append('tropical_storm_analysis/feature_tracking')
 
 import TC_support ;  TC_support = reload(TC_support)
 import TC_detection;    TC_detection = reload(TC_detection)
 
-identifiers = [nn.split('_')[-3] for nn in glob.glob('data/WAH/batch_755/region/item16222_6hrly_inst/*')]
+identifiers = [nn.split('_')[-3] for nn in glob.glob('../data/WAH/batch_755/region/item16222_6hrly_inst/*')]
 print(identifiers)
 
 for identifier in identifiers:
@@ -34,7 +34,7 @@ for identifier in identifiers:
     print('*** started run '+identifier+' ***')
     try:
 
-        data_path = 'data/WAH/batch_755/region/'
+        data_path = '../data/WAH/batch_755/region/'
 
         nc=da.read_nc(data_path+'item15201_6hrly_inst/item15201_6hrly_inst_'+identifier+'_2017-06_2017-10.nc')
         time_=nc.time0
@@ -60,7 +60,7 @@ for identifier in identifiers:
         lons,lats = np.meshgrid(lons,lats)
         plate_carree = ccrs.PlateCarree()
 
-        working_dir='tropical_cyclones/detection/ATL/'+str(identifier)+'/'
+        working_dir='detection/ATL/'+str(identifier)+'/'
 
         found_tcs=TC_detection.tc_tracks(working_dir=working_dir,
                                      lats=lats,
