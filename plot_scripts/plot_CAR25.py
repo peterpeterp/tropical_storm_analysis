@@ -87,11 +87,13 @@ for year in identifiers:
     hurrs_in_seas.append(np.sum(clim_cat>0))
     tcs_in_season.append(np.sum(clim_cat>-1))
 
+sns.reset_orig()
+
 plt.close('all')
 plt.figure(figsize=(5,3))
 clim_cat=np.array(TC_support.tc_cat(np.nanmin(obs_tracks[:,:,'MSLP'],axis=1),'pressure'))
 for cat in range(1,6):
-    plt.bar(cat,np.sum(clim_cat==cat)/float(len(identifiers)),color=cat_colors[cat])
+    plt.bar(cat,np.sum(clim_cat==cat)/float(len(identifiers)),color=cat_colors[cat],label=cat)
 plt.annotate('total: '+str(int(round(np.mean(hurrs_in_seas))))+' $\pm$ '+str(int(round(np.std(hurrs_in_seas)))),xy=(0.75,0.85),xycoords='axes fraction')
 plt.ylabel('hurricanes per season')
 plt.xlabel('hurricane category')

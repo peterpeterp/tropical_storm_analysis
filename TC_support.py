@@ -19,7 +19,7 @@ def get_atl_tcs(file='/Users/peterpfleiderer/Projects/tropical_cyclones/data/All
     # select north atlantic basin
     tc_sel=TC.ix[TC['basin'][:,0]==0]
     # select time period
-    tc_sel=tc_sel.ix[tc_sel['season']>=1981,:]
+    tc_sel=tc_sel.ix[tc_sel['season']>=1900,:]
     # select main tracks
     tc_sel=tc_sel.ix[tc_sel['track_type']==0,:]
 

@@ -1,6 +1,6 @@
 from __future__ import print_function
 import os,sys,glob,time,collections,gc,calendar,weakref,resource
-from netCDF4 import Dataset,netcdftime,num2date
+from netCDF4 import Dataset,num2date
 import dimarray as da
 import numpy as np
 import matplotlib as mpl
@@ -14,8 +14,8 @@ import cartopy
 
 import cartopy.crs as ccrs
 
-os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
-sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/TC_scripts')
+os.chdir('/Users/peterpfleiderer/Projects/tropical_cyclones/')
+sys.path.append('/Users/peterpfleiderer/Projects/tropical_cyclones/TC_scripts')
 import TC_support ;  TC_support = reload(TC_support)
 
 if 'TC' not in globals():
@@ -124,7 +124,7 @@ plt.savefig('plots/ibtracks/ibtracks_genesis_only_cat1_steps.png',dpi=300)
 
 
 
-
+sns.reset_orig()
 # statistics
 hurrs_in_seas=[]
 for year in range(1979,2018):
