@@ -19,6 +19,7 @@ try:
     sys.path.append('/Users/peterpfleiderer/Projects/tropical_cyclones/TC_scripts/feature_tracking')
     os.chdir('/Users/peterpfleiderer/Projects/')
 except:
+    sys.path.append('/p/projects/tumble/carls/shared_folder/tropical_cyclonesTC_detection/TC_scripts')
     sys.path.append('/p/projects/tumble/carls/shared_folder/tropical_cyclonesTC_detection/TC_scripts/feature_tracking')
     os.chdir('/p/projects/tumble/carls/shared_folder/')
 
