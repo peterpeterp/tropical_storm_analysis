@@ -20,8 +20,19 @@ import cartopy.crs as ccrs
 import cartopy
 # sns.set_palette(sns.color_palette("plasma"))
 
-sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
-from TC_support import * ; reload(sys.modules['TC_support'])
+# sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
+# from TC_support import * ; reload(sys.modules['TC_support'])
+def toYearFraction(date):
+    date=datetime.datetime(year=date.year,month=date.month,day=date.day,hour=date.hour)
+    year = date.year
+    startOfThisYear = datetime.datetime(year=year, month=1, day=1)
+    startOfNextYear = datetime.datetime(year=year+1, month=1, day=1)
+
+    yearElapsed = (date - startOfThisYear).total_seconds()
+    yearDuration = (startOfNextYear - startOfThisYear).total_seconds()
+    fraction = yearElapsed/yearDuration
+
+    return date.year + fraction
 
 def unit_vector(vector):
     '''

@@ -26,7 +26,7 @@ except:
 import TC_support ;  TC_support = reload(TC_support)
 import TC_detection;    TC_detection = reload(TC_detection)
 
-identifiers = [nn.split('_')[-4] for nn in glob.glob('data/WAH/batch_755/region/item16222_6hrly_inst/*')]
+identifiers = [nn.split('_')[-3] for nn in glob.glob('data/WAH/batch_755/region/item16222_6hrly_inst/*')]
 print(identifiers)
 
 for identifier in identifiers:
@@ -59,7 +59,7 @@ for identifier in identifiers:
     lons,lats = np.meshgrid(lons,lats)
     plate_carree = ccrs.PlateCarree()
 
-    working_dir='tropical_cyclonesTC_detection/detection/ATL/'+str(identifier)+'/'
+    working_dir='tropical_cyclones/detection/ATL/'+str(identifier)+'/'
 
     found_tcs=TC_detection.tc_tracks(working_dir=working_dir,
                                  lats=lats,
@@ -75,11 +75,11 @@ for identifier in identifiers:
     input_data={'VO':ndimage.gaussian_filter(VO_av,sigma=(0,4,4)),'MSLP':MSLP,'MSLP_smoothed':ndimage.gaussian_filter(MSLP,sigma=(0,3,3)),'T':T,'Wind10':Wind10}
     found_tcs.add_data(input_data)
     # contours method
-    detected=found_tcs.detect_contours(overwrite=False,p_radius=27,dis_mslp_min=3,warm_core_size=3,dis_cores=1)
+    detected=found_tcs.detect_contours(overwrite=True,p_radius=27,dis_mslp_min=3,warm_core_size=3,dis_cores=1)
     ax = found_tcs.plot_detect_summary(thr_wind=3)
 
 
-    found_tcs.combine_tracks(overwrite=False,
+    found_tcs.combine_tracks(overwrite=True,
                              thr_wind=5,search_radius=6,
                              total_steps=12,warm_steps=8,consecutive_warm_strong_steps=4,plot=False)
     ax=found_tcs.plot_all_tracks()
