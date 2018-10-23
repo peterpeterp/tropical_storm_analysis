@@ -84,6 +84,6 @@ for identifier in identifiers:
                              total_steps=12,warm_steps=8,consecutive_warm_strong_steps=4,plot=False)
     ax=found_tcs.plot_all_tracks()
 
-    found_tcs.plot_surrounding()
+    #found_tcs.plot_surrounding()
 
     #
