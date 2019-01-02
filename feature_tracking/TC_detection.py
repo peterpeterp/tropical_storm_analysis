@@ -429,16 +429,16 @@ class tc_tracks(object):
 
         detect=self._detected.copy()
         self.plot_on_map(ax,detect[:,'x'],detect[:,'y'],linestyle='',marker='o',c='g')
-        warm_core=detect[detect[:,'warm_core']==1]
-        if len(warm_core[:,'x'].values)>0:
-            self.plot_on_map(ax,warm_core[:,'x'],warm_core[:,'y'],linestyle='',marker='v',c='r')
+        if 'warm_core' in detect.z:
+            warm_core=detect[detect[:,'warm_core']==1]
+            if len(warm_core[:,'x'].values)>0:
+                self.plot_on_map(ax,warm_core[:,'x'],warm_core[:,'y'],linestyle='',marker='v',c='r')
         strong_wind=detect[detect[:,'Wind10']>=thr_wind]
         if len(strong_wind[:,'x'].values)>0:
             self.plot_on_map(ax,strong_wind[:,'x'],strong_wind[:,'y'],linestyle='',marker='^',c='y')
 
         # plt.tight_layout()
         plt.savefig(out_name)
-
 
     def plot_surrounding(self,time_steps=None):
         """
@@ -1051,7 +1051,7 @@ class tc_tracks(object):
             if coords.shape[0]>0:
                 for y_v,x_v in zip(coords[:,0],coords[:,1]):
 
-                    pressure_contour,ncont=self.find_closed_contours(self._data['MSLP'][t,:,:],y_v,x_v,step=2,search_radius=tc_size,n_contours=3,method='min')
+                    pressure_contour,ncont=self.find_closed_contours(self._data['MSLP'][t,:,:],y_v,x_v,step=1,search_radius=tc_size,n_contours=3,method='min')
                     yy,xx=np.where(pressure_contour==1)
                     if ncont>0:
                         tmp=[t,y_v,x_v,1,0,0,0]
@@ -1060,7 +1060,7 @@ class tc_tracks(object):
                         tmp[6]=self._data['Wind10'][t,y_circ,x_circ].max()
                         detect=np.concatenate((detect,np.array([tmp])))
 
-        self._detected=da.DimArray(np.array(detect[1:,:]),axes=[range(detect.shape[0]-1),['t','y','x','vort_max','empty','MSLP','Wind10']],dims=['ID','z'])
+        self._detected=da.DimArray(np.array(detect[1:,:]),axes=[range(detect.shape[0]-1),['t','y','x','vort_max','warm_core','MSLP','Wind10']],dims=['ID','z'])
         da.Dataset({'detected':self._detected}).write_nc(out_file,mode='w')
         print('done')
         return self._detected

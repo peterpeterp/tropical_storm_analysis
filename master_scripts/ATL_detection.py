@@ -73,7 +73,7 @@ for identifier in identifiers:
 
 
 
-        input_data={'VO':ndimage.gaussian_filter(VO_av,sigma=(0,4,4)),'MSLP':MSLP,'MSLP_smoothed':ndimage.gaussian_filter(MSLP,sigma=(0,3,3)),'T':T,'Wind10':Wind10}
+        input_data={'VO':VO_av,'MSLP':MSLP,'MSLP_smoothed':ndimage.gaussian_filter(MSLP,sigma=(0,2,2)),'T':T,'Wind10':Wind10}
         found_tcs.add_data(input_data)
         # contours method
         detected=found_tcs.detect_contours(overwrite=True,p_radius=27,dis_mslp_min=3,warm_core_size=3,dis_cores=1)
@@ -82,10 +82,25 @@ for identifier in identifiers:
 
         found_tcs.combine_tracks(overwrite=True,
                                  thr_wind=5,search_radius=6,
-                                 total_steps=12,warm_steps=8,consecutive_warm_strong_steps=4,plot=False)
+                                 total_steps=8,warm_steps=4,consecutive_warm_strong_steps=4,plot=False)
         ax=found_tcs.plot_all_tracks()
 
-        #found_tcs.plot_surrounding()
+        found_tcs.detect_daily(overwrite=True,thr_vort=0.001*10**(-5))
+        ax = found_tcs.plot_detect_summary(thr_wind=3)
+        found_tcs.combine_tracks(overwrite=True,
+                                 thr_wind=5,search_radius=6,
+                                 total_steps=8,warm_steps=0,consecutive_warm_strong_steps=0,plot=False)
+        ax=found_tcs.plot_all_tracks()
+
+        found_tcs.detect_knutson2007(thr_vort=1*10**(-5),dis_vort_max=4,dis_cores=2,thr_MSLP_inc=2,dis_MSLP_inc=5,thr_T_drop=0.8,dis_T_drop=5,tc_size=7,overwrite=True)
+        ax = found_tcs.plot_detect_summary(thr_wind=3)
+        found_tcs.combine_tracks(overwrite=True,
+                                 thr_wind=5,search_radius=6,
+                                 total_steps=8,warm_steps=0,consecutive_warm_strong_steps=0,plot=False)
+        ax=found_tcs.plot_all_tracks()
+
+
+        found_tcs.plot_surrounding(range(400,500))
     except:
         pass
     #
