@@ -39,7 +39,7 @@ month[day>=153] = 11
 
 cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["blue","green","yellow","red","brown","violet","white"])
 
-for style in ['belanger']: #'dieng'
+for style in ['dieng']: #'belanger'
     print(style)
     nc = da.read_nc('aew_detection/ERAint/2008/2008_'+style+'_grid.nc')
     lat=nc['lats'].values
