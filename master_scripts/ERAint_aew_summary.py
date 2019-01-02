@@ -24,6 +24,8 @@ except:
     os.chdir('/p/projects/tumble/carls/shared_folder/tropical_cyclones/')
     local=False
     years=range(1979,2017)
+    plt.switch_backend('agg')
+
 
 cmap = mpl.colors.LinearSegmentedColormap.from_list("", ["blue","green","yellow","red","brown","violet","white"])
 
