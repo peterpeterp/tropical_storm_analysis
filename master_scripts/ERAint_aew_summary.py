@@ -17,13 +17,11 @@ sns.set_palette(sns.color_palette("plasma"))
 try:
     sys.path.append('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/tc_detection')
     os.chdir('/Users/peterpfleiderer/Documents/Projects/tropical_cyclones/')
-    data_path='easterly_waves/'
     local=True
     years=[2008]
 except:
-    sys.path.append('/p/projects/tumble/carls/shared_folder/TC_detection/tc_detection')
-    os.chdir('/p/projects/tumble/carls/shared_folder/TC_detection/')
-    data_path='../reanalysis/ERA_6hourly/u_v/'
+    sys.path.append('/p/projects/tumble/carls/shared_folder/tropical_cyclones/tropical_storm_analysis')
+    os.chdir('/p/projects/tumble/carls/shared_folder/tropical_cyclones/')
     local=False
     years=range(1979,2017)
 
