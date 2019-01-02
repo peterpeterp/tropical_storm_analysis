@@ -85,9 +85,9 @@ for style in ['belanger']: #'dieng'
                     _lat[:track.shape[0],-1] = lats[np.array(track.ix[:,1],np.int),np.array(track.ix[:,2],np.int)]
 
                     _time = np.vstack((_time,_dummy))
-                    _time[:track.shape[0],-1] = yrFr[track[:,'t']]+float(identifier)
+                    _time[:track.shape[0],-1] = yrFr[np.array(track[:,'t'],np.int)]+float(identifier)
                     _month = np.vstack((_month,_dummy))
-                    _month[:track.shape[0],-1] = month[track[:,'t']]
+                    _month[:track.shape[0],-1] = month[np.array(track[:,'t'],np.int)]
 
         ds = da.Dataset({
             'lon':da.DimArray(_lon,axes=[np.arange(0,100,1,np.short),np.array(_ids)],dims=['step','ID']),
