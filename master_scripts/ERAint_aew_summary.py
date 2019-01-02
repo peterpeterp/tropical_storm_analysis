@@ -60,11 +60,11 @@ for style in ['belanger']: #'dieng'
     occurence=lats.copy()*0.0
     genesis=lats.copy()*0.0
 
-    _time = np.zeros([100,1]) * np.nan
-    _month = np.zeros([100,1]) * np.nan
-    _lon = np.zeros([100,1]) * np.nan
-    _lat = np.zeros([100,1]) * np.nan
-    _dummy = np.zeros([100,1]) * np.nan
+    _time = np.zeros([300,1]) * np.nan
+    _month = np.zeros([300,1]) * np.nan
+    _lon = np.zeros([300,1]) * np.nan
+    _lat = np.zeros([300,1]) * np.nan
+    _dummy = np.zeros([300,1]) * np.nan
     _ids = []
 
     if os.path.isfile('aew_detection/ERAint/ERAint_all_tracks_AEW_'+style+'.nc')==False or True:
