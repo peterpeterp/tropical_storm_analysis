@@ -90,10 +90,10 @@ for style in ['belanger']: #'dieng'
                     _month[:track.shape[0],-1] = month[np.array(track[:,'t'],np.int)]
 
         ds = da.Dataset({
-            'lon':da.DimArray(_lon,axes=[np.arange(0,300,1,np.short),np.array(_ids)],dims=['step','ID']),
-            'lat':da.DimArray(_lat,axes=[np.arange(0,300,1,np.short),np.array(_ids)],dims=['step','ID']),
-            'time':da.DimArray(_time,axes=[np.arange(0,300,1,np.short),np.array(_ids)],dims=['step','ID']),
-            'month':da.DimArray(_month,axes=[np.arange(0,300,1,np.short),np.array(_ids)],dims=['step','ID']),
+            'lon':da.DimArray(_lon[:,1:],axes=[np.arange(0,300,1,np.short),np.array(_ids)],dims=['step','ID']),
+            'lat':da.DimArray(_lat[:,1:],axes=[np.arange(0,300,1,np.short),np.array(_ids)],dims=['step','ID']),
+            'time':da.DimArray(_time[:,1:],axes=[np.arange(0,300,1,np.short),np.array(_ids)],dims=['step','ID']),
+            'month':da.DimArray(_month[:,1:],axes=[np.arange(0,300,1,np.short),np.array(_ids)],dims=['step','ID']),
         })
         ds.write_nc('aew_detection/ERAint/ERAint_all_tracks_AEW_'+style+'_clean.nc')
 
