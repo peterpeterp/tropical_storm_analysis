@@ -64,6 +64,7 @@ for style in ['belanger']: #'dieng'
     _month = np.zeros([100,1]) * np.nan
     _lon = np.zeros([100,1]) * np.nan
     _lat = np.zeros([100,1]) * np.nan
+    _dummy = np.zeros([100,1]) * np.nan
     _ids = []
 
     if os.path.isfile('aew_detection/ERAint/ERAint_all_tracks_AEW_'+style+'.nc')==False or True:
@@ -78,14 +79,14 @@ for style in ['belanger']: #'dieng'
                     for point in track.values.tolist():
                         occurence[int(point[1]),int(point[2])]+=1
 
-                    _lon = np.vstack((_lon,_lon[:,0].copy()))
+                    _lon = np.vstack((_lon,_dummy))
                     _lon[:track.shape[0],-1] = lons[np.array(track.ix[:,1],np.int),np.array(track.ix[:,2],np.int)]
-                    _lat = np.vstack((_lat,_lat[:,0].copy()))
+                    _lat = np.vstack((_lat,_dummy))
                     _lat[:track.shape[0],-1] = lats[np.array(track.ix[:,1],np.int),np.array(track.ix[:,2],np.int)]
 
-                    _time = np.vstack((_time,_time[:,0].copy()))
+                    _time = np.vstack((_time,_dummy))
                     _time[:track.shape[0],-1] = yrFr[track[:,'t']]+float(identifier)
-                    _month = np.vstack((_month,_month[:,0].copy()))
+                    _month = np.vstack((_month,_dummy))
                     _month[:track.shape[0],-1] = month[track[:,'t']]
 
         ds = da.Dataset({
